@@ -31,8 +31,8 @@ After you've built your project it should now be automatically uploaded to the s
 What's next?
 ------------
 
-By default the plugin uploads applications in the state <i>Development</i>, which is typically only accessible to developers. Once a developer is satisfied with their work they can manually move the version to <i>Review</i>, using the store's web interface. After a version has passed review it can be moved to <i>Release</i> to make it available to end users.
+By default the plugin uploads applications in the state <i>Development</i>, which is typically only accessible to developers. Once a developer is satisfied with their work, they can manually move the version to <i>Review</i>, using the store's web interface. After a version has passed review it can then be moved to <i>Release</i>, making it available to end users.
 
-If developers already test each build on their local machine you might want to skip the first step. In this case you can set the applications upload status to <i>Review</i> in the post-build step's advanced settings. Or, instead of doing this for every project separately, you can also configure the default value in Jenkins' system configuration. This means the binary is now directly uploaded to <i>Review</i>, making it available to testers.
+If developers already test builds on their local machines, you might want to skip the first step. In this case you can set the application's upload status to <i>Review</i> in the post-build step's advanced settings. Or, instead of doing this separately for every project, you can also configure the default value in Jenkins' system configuration. This means the binary is now directly uploaded to <i>Review</i>.
 
 It is also possible to skip the review process altogether by uploading applications directly to <i>Release</i>. Usually not recommended unless you want all of your users to become beta testers. Or you're just that confident in your own abilities.
