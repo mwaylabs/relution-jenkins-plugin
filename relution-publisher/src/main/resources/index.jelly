@@ -1,0 +1,6 @@
+<!-- This view is used to render the installed plugins page. -->
+<div>
+	This plugin adds the ability to automatically upload and publish build artifacts on a
+	Relution Enterprise Appstore, making them available to developers,
+	testers and/or users.
+</div>

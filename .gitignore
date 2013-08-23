@@ -4,3 +4,15 @@
 *.jar
 *.war
 *.ear
+
+# Binary folders
+target/
+work/
+
+# Platform files
+.DS_Store
+
+# Misc
+.idea
+test-*
+*.iml
