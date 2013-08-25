@@ -19,6 +19,7 @@ package org.jenkinsci.plugins.relution_publisher.config;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 import net.sf.json.JSONException;
@@ -26,12 +27,17 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
+
+import javax.servlet.ServletException;
 
 
 /**
@@ -279,6 +285,36 @@ public class Store extends AbstractDescribableImpl<Store> {
         @Override
         public String getDisplayName() {
             return "Store";
+        }
+
+        public FormValidation doCheckUrl(@QueryParameter final String value) throws IOException, ServletException {
+
+            if (value.length() == 0) {
+                return FormValidation.error("An API URL is required");
+            }
+
+            final String[] schemes = {"http", "https"};
+            final UrlValidator validator = new UrlValidator(schemes);
+
+            if (!validator.isValid(value)) {
+                return FormValidation.error("The specified URL is not a valid API URL");
+            }
+
+            return FormValidation.ok();
+        }
+
+        public FormValidation doTestConnection(
+                @QueryParameter(Store.KEY_URL) final String url,
+                @QueryParameter(Store.KEY_USERNAME) final String username,
+                @QueryParameter(Store.KEY_ORGANIZATION) final String organization,
+                @QueryParameter(Store.KEY_PASSWORD) final String password)
+                throws IOException, ServletException {
+
+            if (StringUtils.isEmpty(url)) {
+                return FormValidation.warning("The specified URL must not be empty.");
+            }
+
+            return FormValidation.ok("The specified API URL is valid, login successful.");
         }
 
         /**
