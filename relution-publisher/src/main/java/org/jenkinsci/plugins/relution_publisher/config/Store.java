@@ -28,13 +28,19 @@ import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.http.HttpStatus;
+import org.apache.http.ParseException;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
+import org.jenkinsci.plugins.relution_publisher.net.Request;
+import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
+import org.jenkinsci.plugins.relution_publisher.net.Response;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.Locale;
 
 import javax.servlet.ServletException;
@@ -51,22 +57,24 @@ import javax.servlet.ServletException;
  */
 public class Store extends AbstractDescribableImpl<Store> {
 
-    public final static String KEY_URL            = "url";
-    public final static String KEY_ORGANIZATION   = "organization";
+    public final static String    KEY_URL            = "url";
+    public final static String    KEY_ORGANIZATION   = "organization";
 
-    public final static String KEY_USERNAME       = "username";
-    public final static String KEY_PASSWORD       = "password";
+    public final static String    KEY_USERNAME       = "username";
+    public final static String    KEY_PASSWORD       = "password";
 
-    public final static String KEY_RELEASE_STATUS = "releaseStatus";
+    public final static String    KEY_RELEASE_STATUS = "releaseStatus";
 
-    private String             mUrl;
+    private final static String[] URL_SCHEMES        = {"http", "https"};
 
-    private String             mOrganization;
+    private String                mUrl;
 
-    private String             mUsername;
-    private String             mPassword;
+    private String                mOrganization;
 
-    private String             mReleaseStatus;
+    private String                mUsername;
+    private String                mPassword;
+
+    private String                mReleaseStatus;
 
     /**
      * Creates a new instance of the {@link Store} class initialized with the values in
@@ -289,15 +297,41 @@ public class Store extends AbstractDescribableImpl<Store> {
 
         public FormValidation doCheckUrl(@QueryParameter final String value) throws IOException, ServletException {
 
-            if (value.length() == 0) {
-                return FormValidation.error("An API URL is required");
+            if (StringUtils.isEmpty(value)) {
+                return FormValidation.error("API URL must not be empty");
             }
 
-            final String[] schemes = {"http", "https"};
-            final UrlValidator validator = new UrlValidator(schemes);
+            final UrlValidator validator = new UrlValidator(URL_SCHEMES);
 
             if (!validator.isValid(value)) {
-                return FormValidation.error("The specified URL is not a valid API URL");
+                return FormValidation.error(
+                        "API URL must have valid scheme (%s).",
+                        StringUtils.join(URL_SCHEMES, ", "));
+            }
+
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckUsername(@QueryParameter final String value) {
+
+            if (StringUtils.isEmpty(value)) {
+                return FormValidation.error("User name must not be empty");
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckOrganization(@QueryParameter final String value) {
+
+            if (StringUtils.isEmpty(value)) {
+                return FormValidation.error("Organization must not be empty");
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckPassword(@QueryParameter final String value) {
+
+            if (StringUtils.isEmpty(value)) {
+                return FormValidation.warning("Consider using a password for security reasons");
             }
 
             return FormValidation.ok();
@@ -311,16 +345,42 @@ public class Store extends AbstractDescribableImpl<Store> {
                 throws IOException, ServletException {
 
             if (StringUtils.isEmpty(url)) {
-                return FormValidation.warning("The specified URL must not be empty.");
+                return FormValidation.warning("Unable to validate, the specified URL is empty.");
             }
 
-            return FormValidation.ok("The specified API URL is valid, login successful.");
+            final Store store = new Store(url, organization, username, password, null);
+            final Request request = RequestFactory.createAppStoreItemsRequest(store);
+
+            try {
+                final Response response = request.execute();
+                final int code = response.getHttpCode();
+
+                switch (code) {
+                    case HttpStatus.SC_OK:
+                        return FormValidation.ok("Connection attempt completed successfully");
+
+                    case HttpStatus.SC_FORBIDDEN:
+                        return FormValidation.error("Connection attempt failed, authentication error, please verify credentials (%d)", code);
+
+                    default:
+                        return FormValidation.warning("Connection attempt successful, but API call failed, is this an API URL? (%d)", code);
+                }
+
+            } catch (final UnknownHostException e) {
+                return FormValidation.error("Connection attempt failed, the specified host name is unreachable");
+
+            } catch (final ParseException e) {
+                return FormValidation.error("Unable to parse server response");
+
+            } catch (final URISyntaxException e) {
+                return FormValidation.error("The specified URL is invalid (syntax error)");
+
+            } catch (final Exception e) {
+                return FormValidation.error("Unknown error");
+
+            }
         }
 
-        /**
-         * List of the Statuses to an App.
-         * @return List with the statuses an app could have.
-         */
         public ListBoxModel doFillReleaseStatusItems() {
             final ListBoxModel items = new ListBoxModel();
             ReleaseStatus.fillListBox(items);
