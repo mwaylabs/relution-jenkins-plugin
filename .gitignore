@@ -8,6 +8,7 @@
 # Binary folders
 target/
 work/
+bin/
 
 # Platform files
 .DS_Store
