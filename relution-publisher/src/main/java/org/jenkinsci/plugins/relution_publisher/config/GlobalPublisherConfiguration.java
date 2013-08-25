@@ -16,6 +16,8 @@
 
 package org.jenkinsci.plugins.relution_publisher.config;
 
+import hudson.Extension;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -31,6 +33,7 @@ import jenkins.model.GlobalConfiguration;
 /**
  * Saves and restores the global configuration used by the plugin.
  */
+@Extension
 public class GlobalPublisherConfiguration extends GlobalConfiguration {
 
     public final static String KEY_STORES     = "stores";
@@ -93,6 +96,13 @@ public class GlobalPublisherConfiguration extends GlobalConfiguration {
 
         this.save();
         return false;
+    }
+
+    /**
+     * Gets the list of {@link Store}s configured for this publisher.
+     */
+    public List<Store> getStores() {
+        return this.stores;
     }
 
     /**

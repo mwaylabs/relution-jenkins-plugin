@@ -16,6 +16,11 @@
 
 package org.jenkinsci.plugins.relution_publisher.config;
 
+import hudson.Extension;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
+import hudson.util.ListBoxModel;
+
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
@@ -38,7 +43,7 @@ import java.util.Locale;
  * a version to this store. The default release status can be overridden on a per Jenkins project
  * basis.
  */
-public class Store {
+public class Store extends AbstractDescribableImpl<Store> {
 
     public final static String KEY_URL            = "url";
     public final static String KEY_ORGANIZATION   = "organization";
@@ -266,5 +271,24 @@ public class Store {
                 this.getHostName(),
                 this.mUsername,
                 this.mOrganization);
+    }
+
+    @Extension
+    public static class StoreDescriptor extends Descriptor<Store> {
+
+        @Override
+        public String getDisplayName() {
+            return "Store";
+        }
+
+        /**
+         * List of the Statuses to an App.
+         * @return List with the statuses an app could have.
+         */
+        public ListBoxModel doFillReleaseStatusItems() {
+            final ListBoxModel items = new ListBoxModel();
+            ReleaseStatus.fillListBox(items);
+            return items;
+        }
     }
 }
