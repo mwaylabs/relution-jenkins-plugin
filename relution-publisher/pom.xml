@@ -60,5 +60,12 @@
 			<artifactId>httpmime</artifactId>
 			<version>4.2.5</version>
 		</dependency>
+
+		<!-- Gson: JSON to Java converter (and vice-versa) -->
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.2.4</version>
+		</dependency>
 	</dependencies>
 </project>

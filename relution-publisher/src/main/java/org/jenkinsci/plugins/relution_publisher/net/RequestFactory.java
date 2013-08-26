@@ -17,6 +17,8 @@
 package org.jenkinsci.plugins.relution_publisher.net;
 
 import org.jenkinsci.plugins.relution_publisher.config.Store;
+import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
+import org.jenkinsci.plugins.relution_publisher.net.responses.ApplicationResponse;
 
 
 public final class RequestFactory {
@@ -41,10 +43,11 @@ public final class RequestFactory {
         return sb.toString();
     }
 
-    private static Request createBaseRequest(final int method, final Store store, final String... parts) {
+    private static <T extends ApiResponse> Request<T> createBaseRequest(final int method, final Class<T> responseClass, final Store store,
+            final String... parts) {
 
         final String url = RequestFactory.getUrl(store, parts);
-        final Request request = new Request(method, url);
+        final Request<T> request = new Request<T>(method, url, responseClass);
 
         request.addHeader("Accept", "application/json");
         request.addHeader("Authorization", "Basic " + store.getAuthorizationToken());
@@ -52,10 +55,11 @@ public final class RequestFactory {
         return request;
     }
 
-    public static Request createAppStoreItemsRequest(final Store store) {
+    public static Request<ApplicationResponse> createAppStoreItemsRequest(final Store store) {
 
-        final Request request = RequestFactory.createBaseRequest(
+        final Request<ApplicationResponse> request = RequestFactory.createBaseRequest(
                 Request.Method.GET,
+                ApplicationResponse.class,
                 store,
                 URL_APP_STORE_ITEMS);
 

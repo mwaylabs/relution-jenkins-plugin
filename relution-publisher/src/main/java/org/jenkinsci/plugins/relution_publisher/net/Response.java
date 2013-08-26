@@ -18,43 +18,53 @@ package org.jenkinsci.plugins.relution_publisher.net;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.util.EntityUtils;
+import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 
 
-public class Response {
+public class Response<T extends ApiResponse> {
 
-    private final static Charset CHARSET = Charset.forName("UTF-8");
+    public final static int      ERROR_INVALID_RESPONSE = -600;
 
-    private final Request        mRequest;
-    private HttpResponse         mResponse;
+    private final static Charset CHARSET                = Charset.forName("UTF-8");
 
-    public Response(final Request request) {
-        this.mRequest = request;
+    private final Class<T>       mResponseClass;
+
+    private int                  mStatusCode;
+    private String               mRawData;
+    private T                    mData;
+
+    public Response(final Class<T> responseClass) {
+
+        this.mResponseClass = responseClass;
     }
 
     protected void setHttpResponse(final HttpResponse response) {
-        this.mResponse = response;
+
+        try {
+            this.mStatusCode = response.getStatusLine().getStatusCode();
+
+            final HttpEntity entity = response.getEntity();
+            this.mRawData = EntityUtils.toString(entity, CHARSET);
+
+            this.mData = ApiResponse.fromJson(this.mRawData, this.mResponseClass);
+
+        } catch (final Exception e) {
+            this.mStatusCode = ERROR_INVALID_RESPONSE;
+        }
     }
 
-    public HttpResponse getHttpResponse() {
-        return this.mResponse;
+    public int getStatusCode() {
+        return this.mStatusCode;
     }
 
-    public Request getRequest() {
-        return this.mRequest;
+    public String getRawData() {
+        return this.mRawData;
     }
 
-    public String getData() throws ParseException, IOException {
-
-        final HttpEntity entity = this.mResponse.getEntity();
-        return EntityUtils.toString(entity, CHARSET);
-    }
-
-    public int getHttpCode() {
-        return this.mResponse.getStatusLine().getStatusCode();
+    public T getData() {
+        return this.mData;
     }
 }

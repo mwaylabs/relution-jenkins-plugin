@@ -348,22 +348,24 @@ public class Store extends AbstractDescribableImpl<Store> {
                 return FormValidation.warning("Unable to validate, the specified URL is empty.");
             }
 
-            final Store store = new Store(url, organization, username, password, null);
-            final Request request = RequestFactory.createAppStoreItemsRequest(store);
-
             try {
-                final Response response = request.execute();
-                final int code = response.getHttpCode();
+                final Store store = new Store(url, organization, username, password, null);
+                final Request<?> request = RequestFactory.createAppStoreItemsRequest(store);
+                final Response<?> response = request.execute();
 
-                switch (code) {
+                switch (response.getStatusCode()) {
                     case HttpStatus.SC_OK:
                         return FormValidation.ok("Connection attempt completed successfully");
 
                     case HttpStatus.SC_FORBIDDEN:
-                        return FormValidation.error("Connection attempt failed, authentication error, please verify credentials (%d)", code);
+                        return FormValidation.error(
+                                "Connection attempt failed, authentication error, please verify credentials (%d)",
+                                response.getStatusCode());
 
                     default:
-                        return FormValidation.warning("Connection attempt successful, but API call failed, is this an API URL? (%d)", code);
+                        return FormValidation.warning(
+                                "Connection attempt successful, but API call failed, is this an API URL? (%d)",
+                                response.getStatusCode());
                 }
 
             } catch (final UnknownHostException e) {

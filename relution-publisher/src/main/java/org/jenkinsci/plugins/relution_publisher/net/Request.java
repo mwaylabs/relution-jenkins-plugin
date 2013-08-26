@@ -30,6 +30,7 @@ import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
+import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,13 +39,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class Request {
+public class Request<T extends ApiResponse> {
 
     private final RequestQueryFields  mQueryFields = new RequestQueryFields();
-    private final int                 mMethod;
-    private final String              mUrl;
+
     private final Map<String, String> mHeaders     = new HashMap<String, String>();
     private HttpEntity                mHttpEntity;
+
+    private final int                 mMethod;
+    private final String              mUrl;
+    private final Class<T>            mResponseClass;
 
     private BasicCookieStore          mCookieStore;
     private HttpHost                  mProxyHost;
@@ -54,9 +58,11 @@ public class Request {
      * @param method 0: GET, 1: POST, 2: PUT, 3: DELETE
      * @param url specific url to which the request response
      */
-    public Request(final int method, final String url) {
+    public Request(final int method, final String url, final Class<T> responseClass) {
+
         this.mMethod = method;
         this.mUrl = url;
+        this.mResponseClass = responseClass;
     }
 
     private HttpRequestBase createHttpRequest(final int method, final HttpEntity entity) {
@@ -126,10 +132,10 @@ public class Request {
         this.mHttpEntity = entity;
     }
 
-    public Response execute() throws URISyntaxException, ClientProtocolException, IOException {
+    public Response<T> execute() throws URISyntaxException, ClientProtocolException, IOException {
 
         final DefaultHttpClient client = new DefaultHttpClient();
-        final Response response = new Response(this);
+        final Response<T> response = new Response<T>(this.mResponseClass);
 
         try {
             if (this.mProxyHost != null) {
