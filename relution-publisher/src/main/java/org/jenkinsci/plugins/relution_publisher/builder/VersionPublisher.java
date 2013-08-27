@@ -221,7 +221,7 @@ public class VersionPublisher implements FileCallable<Boolean> {
 
     private void setChangeLog(final File basePath, final Version version) {
 
-        if (this.publication.getChangeLogPath() == null) {
+        if (StringUtils.isBlank(this.publication.getChangeLogPath())) {
             return;
         }
 
@@ -237,7 +237,7 @@ public class VersionPublisher implements FileCallable<Boolean> {
 
     private void setDescription(final File basePath, final Version version) {
 
-        if (this.publication.getDescriptionPath() == null) {
+        if (StringUtils.isBlank(this.publication.getDescriptionPath())) {
             return;
         }
 
