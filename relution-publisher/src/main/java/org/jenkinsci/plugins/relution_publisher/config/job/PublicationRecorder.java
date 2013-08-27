@@ -19,6 +19,7 @@ package org.jenkinsci.plugins.relution_publisher.config.job;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
@@ -27,11 +28,16 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 
 import org.jenkinsci.plugins.relution_publisher.builder.VersionPublisher;
+import org.jenkinsci.plugins.relution_publisher.config.global.GlobalPublisherConfiguration;
+import org.jenkinsci.plugins.relution_publisher.config.global.Store;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
+import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
 import java.util.List;
+
+import javax.inject.Inject;
 
 
 /**
@@ -65,16 +71,66 @@ public class PublicationRecorder extends Recorder {
     @Override
     public boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
 
+        final Log log = new Log(listener.getLogger());
+        log.write();
+
+        if (build.getResult() != Result.SUCCESS) {
+            log.write(this, "Skipped, build was unsuccessful");
+            build.setResult(Result.NOT_BUILT);
+            return true;
+        }
+
+        if (this.publications == null) {
+            log.write(this, "Skipped, no publications configured");
+            build.setResult(Result.UNSTABLE);
+            return true;
+        }
+
+        final GlobalPublisherConfiguration configuration = this.getDescriptor().getGlobalConfiguration();
+
+        for (final Publication publication : this.publications) {
+
+            final Store store = configuration.getStore(publication.getStoreId());
+            this.publish(build, publication, store, log);
+            log.write();
+        }
+
         return true;
+    }
+
+    private void publish(final AbstractBuild<?, ?> build, final Publication publication, final Store store, final Log log)
+            throws IOException, InterruptedException {
+
+        if (store == null) {
+            log.write(
+                    this,
+                    "The store configured for '%s' no longer exists, please verify your configuration.",
+                    publication.getArtifactPath());
+
+            build.setResult(Result.UNSTABLE);
+            return;
+        }
+
+        final VersionPublisher publisher = new VersionPublisher(build, publication, store, log);
+
+        log.write(this, "Publishing '%s' to '%s'", publication.getArtifactPath(), store.toString());
+        build.getWorkspace().act(publisher);
     }
 
     @Extension
     public static final class PublicationRecorderDescriptor extends BuildStepDescriptor<Publisher> {
 
-        private List<Publication> publications;
+        @Inject
+        private GlobalPublisherConfiguration globalConfiguration;
+
+        private List<Publication>            publications;
 
         public PublicationRecorderDescriptor() {
             this.load();
+        }
+
+        public GlobalPublisherConfiguration getGlobalConfiguration() {
+            return this.globalConfiguration;
         }
 
         public List<Publication> getPublications() {

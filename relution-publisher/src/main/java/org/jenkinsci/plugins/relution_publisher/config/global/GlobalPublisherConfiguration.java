@@ -106,6 +106,26 @@ public class GlobalPublisherConfiguration extends GlobalConfiguration {
     }
 
     /**
+     * Gets the store with the specified identifier.
+     * @param storeId A store's {@link Store#getIdentifier() identifier}.
+     * @return The {@link Store} with the specified id, or <code>null</code> if no such store
+     * exists.
+     */
+    public Store getStore(final String storeId) {
+
+        if (this.stores == null) {
+            return null;
+        }
+
+        for (final Store store : this.stores) {
+            if (store.getIdentifier().equals(storeId)) {
+                return store;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Gets the host name of the proxy server to use.
      */
     public String getProxyHost() {

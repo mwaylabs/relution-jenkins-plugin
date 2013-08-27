@@ -33,7 +33,7 @@ public class Version {
     private final String              uuid;
     private String                    appUuid;
 
-    private final String              versionName;
+    private String                    versionName;
     private final int                 versionCode;
 
     private String                    releaseStatus;
@@ -122,6 +122,10 @@ public class Version {
 
     public String getVersionName() {
         return this.versionName;
+    }
+
+    public void setVersionName(final String versionName) {
+        this.versionName = versionName;
     }
 
     public int getVersionCode() {
