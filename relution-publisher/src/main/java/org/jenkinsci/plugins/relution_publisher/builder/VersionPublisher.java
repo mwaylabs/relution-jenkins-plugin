@@ -183,6 +183,7 @@ public class VersionPublisher implements FileCallable<Boolean> {
     private void setVersionName(final Version version) {
 
         if (StringUtils.isBlank(this.publication.getVersionName())) {
+            this.log.write(this, "No name set, default name will be used.");
             return;
         }
 
@@ -193,6 +194,7 @@ public class VersionPublisher implements FileCallable<Boolean> {
             throws ClientProtocolException, URISyntaxException, IOException {
 
         if (StringUtils.isBlank(this.publication.getIconPath())) {
+            this.log.write(this, "No icon set, default icon will be used.");
             return;
         }
 
@@ -222,6 +224,7 @@ public class VersionPublisher implements FileCallable<Boolean> {
     private void setChangeLog(final File basePath, final Version version) {
 
         if (StringUtils.isBlank(this.publication.getChangeLogPath())) {
+            this.log.write(this, "No change log set.");
             return;
         }
 
@@ -229,6 +232,9 @@ public class VersionPublisher implements FileCallable<Boolean> {
         final String changeLog = this.readFile(basePath, filePath);
 
         if (!StringUtils.isBlank(changeLog)) {
+            final String text = this.getEllipsizedText(changeLog.replace("\n", "<br/>"), 50);
+            this.log.write(this, "Set change log to: '%s'", text);
+
             for (final String key : version.getChangelog().keySet()) {
                 version.getChangelog().put(key, changeLog);
             }
@@ -238,6 +244,7 @@ public class VersionPublisher implements FileCallable<Boolean> {
     private void setDescription(final File basePath, final Version version) {
 
         if (StringUtils.isBlank(this.publication.getDescriptionPath())) {
+            this.log.write(this, "No description set.");
             return;
         }
 
@@ -245,6 +252,9 @@ public class VersionPublisher implements FileCallable<Boolean> {
         final String description = this.readFile(basePath, filePath);
 
         if (!StringUtils.isBlank(description)) {
+            final String text = this.getEllipsizedText(description.replace("\n", "<br/>"), 50);
+            this.log.write(this, "Set change log to: '%s'", text);
+
             for (final String key : version.getDescription().keySet()) {
                 version.getDescription().put(key, description);
             }
@@ -339,6 +349,7 @@ public class VersionPublisher implements FileCallable<Boolean> {
         }
 
         for (final String fileName : fileSet.getDirectoryScanner().getIncludedFiles()) {
+            this.log.write(this, "Reading file '%s'...", fileName);
             final File file = new File(directory, fileName);
             this.readFile(file, sb);
         }
@@ -416,6 +427,16 @@ public class VersionPublisher implements FileCallable<Boolean> {
         }
 
         return true;
+    }
+
+    private String getEllipsizedText(final String input, final int maxLen) {
+
+        if (input.length() <= maxLen) {
+            return input;
+        }
+
+        final String output = input.substring(0, maxLen - 3) + "...";
+        return output;
     }
 
     private boolean isEmpty(final List<?> list) {
