@@ -33,9 +33,7 @@ import org.jenkinsci.plugins.relution_publisher.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.jenkinsci.plugins.relution_publisher.net.Request;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
-import org.jenkinsci.plugins.relution_publisher.net.Response;
-import org.jenkinsci.plugins.relution_publisher.net.responses.ApplicationResponse;
-import org.jenkinsci.plugins.relution_publisher.net.responses.UploadResponse;
+import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -76,7 +74,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         try {
             this.log.write(this, "Uploading build artifact...");
-            final List<Response<UploadResponse>> responses = this.uploadAsset(basePath, this.publication.getArtifactPath());
+            final List<ApiResponse<Asset>> responses = this.uploadAsset(basePath, this.publication.getArtifactPath());
 
             if (this.isEmpty(responses)) {
                 this.log.write(this, "No artifact to upload found.");
@@ -84,7 +82,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
                 return true;
             }
 
-            for (final Response<UploadResponse> response : responses) {
+            for (final ApiResponse<Asset> response : responses) {
                 this.uploadVersion(basePath, response);
             }
 
@@ -95,7 +93,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return true;
     }
 
-    private void uploadVersion(final File basePath, final Response<UploadResponse> response)
+    private void uploadVersion(final File basePath, final ApiResponse<Asset> response)
             throws ClientProtocolException, URISyntaxException, IOException {
 
         if (!this.verifyUploadResponse(response)) {
@@ -104,8 +102,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        final UploadResponse data = response.getData();
-        final List<Asset> assets = data.getResults();
+        final List<Asset> assets = response.getResults();
 
         if (assets.size() != 1) {
             this.log.write(this, "More than one unpersisted asset object returned by server.");
@@ -123,8 +120,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             throws ClientProtocolException, URISyntaxException, IOException {
 
         this.log.write(this, "Retrieving application associated with file '%s'...", asset.getUuid());
-        final Request<ApplicationResponse> request = RequestFactory.createAppFromFileRequest(this.store, asset.getUuid());
-        final Response<ApplicationResponse> response = request.execute();
+        final Request<Application> request = RequestFactory.createAppFromFileRequest(this.store, asset.getUuid());
+        final ApiResponse<Application> response = request.execute();
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Retrieval of the application failed.");
@@ -132,8 +129,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        final ApplicationResponse data = response.getData();
-        final Application app = this.getApplication(data, asset);
+        final List<Application> applications = response.getResults();
+        final Application app = this.getApplication(applications, asset);
 
         if (app == null) {
             this.build.setResult(Result.UNSTABLE);
@@ -200,7 +197,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         this.log.write(this, "Uploading application icon...");
         final String filePath = this.publication.getIconPath();
-        final List<Response<UploadResponse>> responses = this.uploadAsset(basePath, filePath);
+        final List<ApiResponse<Asset>> responses = this.uploadAsset(basePath, filePath);
 
         if (this.isEmpty(responses)) {
             this.log.write(this, "Failed to upload application icon.");
@@ -208,7 +205,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        final Response<UploadResponse> response = responses.get(0);
+        final ApiResponse<Asset> response = responses.get(0);
 
         if (!this.verifyUploadResponse(response)) {
             this.log.write(this, "Failed to upload application icon.");
@@ -216,9 +213,15 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        final UploadResponse data = response.getData();
+        final List<Asset> assets = response.getResults();
 
-        version.setIcon(data.getResults().get(0));
+        if (assets.size() != 1) {
+            this.log.write(this, "More than one unpersisted asset object returned by server.");
+            this.build.setResult(Result.UNSTABLE);
+            return;
+        }
+
+        version.setIcon(assets.get(0));
     }
 
     private void setChangeLog(final File basePath, final Version version) {
@@ -266,8 +269,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         this.log.write(this, "Application is new, persisting application...");
 
-        final Request<ApplicationResponse> request = RequestFactory.createPersistApplicationRequest(this.store, app);
-        final Response<ApplicationResponse> response = request.execute();
+        final Request<Application> request = RequestFactory.createPersistApplicationRequest(this.store, app);
+        final ApiResponse<Application> response = request.execute();
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting application.");
@@ -283,8 +286,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         this.log.write(this, "Version is new, persisting version...");
 
-        final Request<ApplicationResponse> request = RequestFactory.createPersistVersionRequest(this.store, version);
-        final Response<ApplicationResponse> response = request.execute();
+        final Request<Application> request = RequestFactory.createPersistVersionRequest(this.store, version);
+        final ApiResponse<Application> response = request.execute();
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting version.");
@@ -295,7 +298,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "Version persisted successfully.");
     }
 
-    private List<Response<UploadResponse>> uploadAsset(final File basePath, final String filePath, final String uploadToken)
+    private List<ApiResponse<Asset>> uploadAsset(final File basePath, final String filePath, final String uploadToken)
             throws ClientProtocolException, URISyntaxException, IOException {
 
         final FileSet fileSet = Util.createFileSet(basePath, filePath);
@@ -306,13 +309,13 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return null;
         }
 
-        final List<Response<UploadResponse>> responses = new ArrayList<Response<UploadResponse>>();
+        final List<ApiResponse<Asset>> responses = new ArrayList<ApiResponse<Asset>>();
 
         for (final String fileName : fileSet.getDirectoryScanner().getIncludedFiles()) {
             final File file = new File(directory, fileName);
 
             this.log.write(this, "Uploading file '%s'...", fileName);
-            final Request<UploadResponse> request = RequestFactory.createUploadRequest(this.store, file, uploadToken);
+            final Request<Asset> request = RequestFactory.createUploadRequest(this.store, file, uploadToken);
             responses.add(request.execute());
             this.log.write(this, "Upload of file completed.");
         }
@@ -320,15 +323,15 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return responses;
     }
 
-    private List<Response<UploadResponse>> uploadAsset(final File basePath, final String filePath)
+    private List<ApiResponse<Asset>> uploadAsset(final File basePath, final String filePath)
             throws ClientProtocolException, URISyntaxException, IOException {
 
         return this.uploadAsset(basePath, filePath, "");
     }
 
-    private Application getApplication(final ApplicationResponse response, final Asset asset) {
+    private Application getApplication(final List<Application> applications, final Asset asset) {
 
-        for (final Application app : response.getResults()) {
+        for (final Application app : applications) {
             for (final Version version : app.getVersions()) {
                 if (version.getFile() != null && StringUtils.equals(asset.getUuid(), version.getFile().getUuid())) {
                     return app;
@@ -385,21 +388,16 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return null;
     }
 
-    private boolean verifyUploadResponse(final Response<UploadResponse> response) {
+    private boolean verifyUploadResponse(final ApiResponse<Asset> response) {
 
-        final UploadResponse data = response.getData();
+        final List<Asset> assets = response.getResults();
 
-        if (data == null) {
-            this.log.write(this, "Error uploading file (%d): %s", response.getStatusCode(), response.getRawData());
+        if (response.getStatus() != 0) {
+            this.log.write(this, "Error uploading file (%d): %s", response.getStatusCode(), response.getMessage());
             return false;
         }
 
-        if (data.getStatus() != 0) {
-            this.log.write(this, "Error uploading file (%d): %s", response.getStatusCode(), data.getMessage());
-            return false;
-        }
-
-        if (this.isEmpty(data.getResults())) {
+        if (this.isEmpty(assets)) {
             this.log.write(this, "Error uploading file, the server returned no asset objects.");
             return false;
         }
@@ -407,21 +405,16 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return true;
     }
 
-    private boolean verifyApplicationResponse(final Response<ApplicationResponse> response) {
+    private boolean verifyApplicationResponse(final ApiResponse<Application> response) {
 
-        final ApplicationResponse data = response.getData();
+        final List<Application> applications = response.getResults();
 
-        if (data == null) {
-            this.log.write(this, "Error creating application object (%d): %s", response.getStatusCode(), response.getRawData());
+        if (response.getStatus() != 0) {
+            this.log.write(this, "Error creating application object (%d): %s", response.getStatusCode(), response.getMessage());
             return false;
         }
 
-        if (data.getStatus() != 0) {
-            this.log.write(this, "Error creating application object (%d): %s", response.getStatusCode(), data.getMessage());
-            return false;
-        }
-
-        if (this.isEmpty(data.getResults())) {
+        if (this.isEmpty(applications)) {
             this.log.write(this, "Error creating application object, the server returned no application objects.");
             return false;
         }

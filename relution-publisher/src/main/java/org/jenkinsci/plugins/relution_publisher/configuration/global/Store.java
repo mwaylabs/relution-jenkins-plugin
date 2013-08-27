@@ -33,7 +33,7 @@ import org.apache.http.ParseException;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
 import org.jenkinsci.plugins.relution_publisher.net.Request;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
-import org.jenkinsci.plugins.relution_publisher.net.Response;
+import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -249,7 +249,7 @@ public class Store extends AbstractDescribableImpl<Store> {
      * Gets the unique identifier for the {@link Store}.
      */
     public String getIdentifier() {
-    
+
         return String.format(
                 "%s:%s:%s",
                 this.mUsername,
@@ -363,7 +363,7 @@ public class Store extends AbstractDescribableImpl<Store> {
             try {
                 final Store store = new Store(url, organization, username, password, null);
                 final Request<?> request = RequestFactory.createAppStoreItemsRequest(store);
-                final Response<?> response = request.execute();
+                final ApiResponse<?> response = request.execute();
 
                 switch (response.getStatusCode()) {
                     case HttpStatus.SC_OK:
@@ -390,7 +390,7 @@ public class Store extends AbstractDescribableImpl<Store> {
                 return FormValidation.error("The specified URL is invalid (syntax error)");
 
             } catch (final Exception e) {
-                return FormValidation.error("Unknown error");
+                return FormValidation.error("Unknown error: %s", e);
 
             }
         }

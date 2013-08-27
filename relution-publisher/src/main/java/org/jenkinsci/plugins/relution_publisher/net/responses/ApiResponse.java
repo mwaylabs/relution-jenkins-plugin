@@ -19,6 +19,8 @@ package org.jenkinsci.plugins.relution_publisher.net.responses;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpResponse;
 import org.jenkinsci.plugins.relution_publisher.entities.ApiObject;
 import org.jenkinsci.plugins.relution_publisher.entities.Error;
 
@@ -29,11 +31,14 @@ import java.util.List;
 /**
  * Represents a response returned by the Relution server.
  */
-public abstract class ApiResponse<TResult extends ApiObject> {
+public class ApiResponse<TResult extends ApiObject> {
 
     public final static Gson    GSON    = new GsonBuilder().setPrettyPrinting().create();
 
-    private final int           status;
+    private int                 statusCode;
+    private String              reason;
+
+    private final Integer       status;
     private final String        message;
 
     private final Error         errors;
@@ -49,27 +54,49 @@ public abstract class ApiResponse<TResult extends ApiObject> {
      * @param clazz A {@link Class} that extends {@link ApiResponse}.
      * @return An instance of the specified class.
      */
-    public static <T extends ApiResponse<?>> T fromJson(final String json, final Class<T> clazz) {
+    public static <T extends ApiObject> ApiResponse<T> fromJson(final String json, final Class<? extends ApiResponse<T>> clazz) {
+
         return ApiResponse.GSON.fromJson(json, clazz);
     }
 
     /**
      * Initializes a new instance of the {@link ApiResponse} class.
      */
-    protected ApiResponse() {
+    public ApiResponse() {
 
-        this.status = 0;
+        this.status = null;
+
         this.message = null;
-
         this.errors = null;
 
         this.total = 0;
     }
 
     /**
-     * Gets the status code returned by the server.
+     * Initializes the response from the specified {@link HttpResponse}.
+     * @param httpResponse A {@link HttpResponse} used to initialize internal fields.
+     */
+    public void init(final HttpResponse httpResponse) {
+
+        this.statusCode = httpResponse.getStatusLine().getStatusCode();
+        this.reason = httpResponse.getStatusLine().getReasonPhrase();
+    }
+
+    /**
+     * Gets the HTTP status code returned by the server.
+     */
+    public int getStatusCode() {
+        return this.statusCode;
+    }
+
+    /**
+     * Gets the status returned by the server.
      */
     public int getStatus() {
+
+        if (this.status == null) {
+            return this.statusCode;
+        }
         return this.status;
     }
 
@@ -77,6 +104,10 @@ public abstract class ApiResponse<TResult extends ApiObject> {
      * Gets the message returned by the server.
      */
     public String getMessage() {
+
+        if (StringUtils.isBlank(this.message)) {
+            return this.reason;
+        }
         return this.message;
     }
 
