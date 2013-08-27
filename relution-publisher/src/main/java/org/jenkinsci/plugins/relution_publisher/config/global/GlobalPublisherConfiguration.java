@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.config;
+package org.jenkinsci.plugins.relution_publisher.config.global;
 
 import hudson.Extension;
 

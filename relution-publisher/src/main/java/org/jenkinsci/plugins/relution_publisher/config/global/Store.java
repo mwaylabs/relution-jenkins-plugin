@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.config;
+package org.jenkinsci.plugins.relution_publisher.config.global;
 
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
@@ -243,6 +243,18 @@ public class Store extends AbstractDescribableImpl<Store> {
         json.put(KEY_RELEASE_STATUS, this.mReleaseStatus);
 
         return json;
+    }
+
+    /**
+     * Gets the unique identifier for the {@link Store}.
+     */
+    public String getIdentifier() {
+    
+        return String.format(
+                "%s:%s:%s",
+                this.mUsername,
+                this.mOrganization,
+                this.mUrl);
     }
 
     @Override

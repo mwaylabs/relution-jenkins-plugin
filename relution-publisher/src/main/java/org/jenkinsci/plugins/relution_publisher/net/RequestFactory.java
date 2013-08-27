@@ -16,7 +16,7 @@
 
 package org.jenkinsci.plugins.relution_publisher.net;
 
-import org.jenkinsci.plugins.relution_publisher.config.Store;
+import org.jenkinsci.plugins.relution_publisher.config.global.Store;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApplicationResponse;
 
