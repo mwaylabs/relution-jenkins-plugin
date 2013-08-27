@@ -19,7 +19,7 @@ package org.jenkinsci.plugins.relution_publisher.net;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
-import org.jenkinsci.plugins.relution_publisher.config.global.Store;
+import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.entities.Application;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;

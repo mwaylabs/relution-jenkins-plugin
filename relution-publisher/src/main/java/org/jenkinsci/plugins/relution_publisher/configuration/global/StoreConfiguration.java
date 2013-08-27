@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.config.global;
+package org.jenkinsci.plugins.relution_publisher.configuration.global;
 
 import hudson.Extension;
 
@@ -34,7 +34,7 @@ import jenkins.model.GlobalConfiguration;
  * Saves and restores the global configuration used by the plugin.
  */
 @Extension
-public class GlobalPublisherConfiguration extends GlobalConfiguration {
+public class StoreConfiguration extends GlobalConfiguration {
 
     public final static String KEY_STORES     = "stores";
     public final static String KEY_PROXY_URL  = "proxyHost";
@@ -46,10 +46,10 @@ public class GlobalPublisherConfiguration extends GlobalConfiguration {
     private int                proxyPort;
 
     /**
-     * Initializes a new instance of the {@link GlobalPublisherConfiguration} class.
+     * Initializes a new instance of the {@link StoreConfiguration} class.
      */
     @DataBoundConstructor
-    public GlobalPublisherConfiguration() {
+    public StoreConfiguration() {
         this.load();
     }
 

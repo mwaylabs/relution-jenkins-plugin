@@ -36,7 +36,7 @@
 			method="testConnection"
 			with="url,username,organization,password" />
 		<f:entry
-			title="${%Upload application to}"
+			title="${%Upload applications to}"
 			field="releaseStatus">
 			<f:select />
 			<!-- <f:textbox /> -->

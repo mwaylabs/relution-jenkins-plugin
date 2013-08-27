@@ -17,23 +17,23 @@
 			<f:textbox />
 		</f:entry>
 		<f:entry
-			title="${%Relution store}"
+			title="${%Store to deploy to}"
 			field="storeId">
 			<f:select />
 		</f:entry>
 		<f:advanced>
 			<f:entry
-				title="${%Upload application to}"
+				title="${%Deploy versions to}"
 				field="releaseStatus">
 				<f:select />
 			</f:entry>
 			<f:entry
-				title="${%Application name (optional)}"
+				title="${%Version name (optional)}"
 				field="versionName">
 				<f:textbox />
 			</f:entry>
 			<f:entry
-				title="${%Application icon (optional)}"
+				title="${%Version icon (optional)}"
 				field="iconPath">
 				<f:textbox />
 			</f:entry>

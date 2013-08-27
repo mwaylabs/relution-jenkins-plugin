@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.config.global;
+package org.jenkinsci.plugins.relution_publisher.configuration.global;
 
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;

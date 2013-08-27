@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.config.job;
+package org.jenkinsci.plugins.relution_publisher.configuration.jobs;
 
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
-import org.jenkinsci.plugins.relution_publisher.config.global.GlobalPublisherConfiguration;
-import org.jenkinsci.plugins.relution_publisher.config.global.Store;
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
+import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 import java.util.List;
 
@@ -177,11 +180,19 @@ public class Publication extends AbstractDescribableImpl<Publication> {
     public static class PublicationDescriptor extends Descriptor<Publication> {
 
         @Inject
-        private GlobalPublisherConfiguration globalConfiguration;
+        private StoreConfiguration globalConfiguration;
 
         @Override
         public String getDisplayName() {
             return "Publication";
+        }
+
+        public FormValidation doCheckArtifactPath(@QueryParameter final String value) {
+
+            if (StringUtils.isEmpty(value)) {
+                return FormValidation.error("Path must not be empty");
+            }
+            return FormValidation.ok();
         }
 
         public ListBoxModel doFillStoreIdItems() {

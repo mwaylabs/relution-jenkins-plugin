@@ -25,8 +25,8 @@ import hudson.remoting.VirtualChannel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.tools.ant.types.FileSet;
-import org.jenkinsci.plugins.relution_publisher.config.global.Store;
-import org.jenkinsci.plugins.relution_publisher.config.job.Publication;
+import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
+import org.jenkinsci.plugins.relution_publisher.configuration.jobs.Publication;
 import org.jenkinsci.plugins.relution_publisher.entities.Application;
 import org.jenkinsci.plugins.relution_publisher.entities.Asset;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class VersionPublisher implements FileCallable<Boolean> {
+public class ArtifactFileUploader implements FileCallable<Boolean> {
 
     private final AbstractBuild<?, ?> build;
 
@@ -56,13 +56,13 @@ public class VersionPublisher implements FileCallable<Boolean> {
     private final Log                 log;
 
     /**
-     * Initializes a new instance of the {@link VersionPublisher} class.
+     * Initializes a new instance of the {@link ArtifactFileUploader} class.
      * @param build The build that produced the artifact to be published.
      * @param publication The {@link Publication} that describes the artifact to be published.
      * @param store The {@link Store} to which the publication should be published.
      * @param log The {@link Log} to write log messages to.
      */
-    public VersionPublisher(final AbstractBuild<?, ?> build, final Publication publication, final Store store, final Log log) {
+    public ArtifactFileUploader(final AbstractBuild<?, ?> build, final Publication publication, final Store store, final Log log) {
 
         this.build = build;
 
@@ -79,7 +79,7 @@ public class VersionPublisher implements FileCallable<Boolean> {
             final List<Response<UploadResponse>> responses = this.uploadAsset(basePath, this.publication.getArtifactPath());
 
             if (this.isEmpty(responses)) {
-                this.log.write(this, "No build artifacts uploaded.");
+                this.log.write(this, "No artifact to upload found.");
                 this.build.setResult(Result.NOT_BUILT);
                 return true;
             }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.config.job;
+package org.jenkinsci.plugins.relution_publisher.configuration.jobs;
 
 import hudson.Extension;
 import hudson.Launcher;
@@ -27,9 +27,9 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 
-import org.jenkinsci.plugins.relution_publisher.builder.VersionPublisher;
-import org.jenkinsci.plugins.relution_publisher.config.global.GlobalPublisherConfiguration;
-import org.jenkinsci.plugins.relution_publisher.config.global.Store;
+import org.jenkinsci.plugins.relution_publisher.builder.ArtifactFileUploader;
+import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
+import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -42,14 +42,14 @@ import javax.inject.Inject;
 
 /**
  * Publishes a {@link Version} to the Relution Enterprise Appstore using the
- * {@link VersionPublisher} to perform the actual upload of the file.
+ * {@link ArtifactFileUploader} to perform the actual upload of the file.
  */
-public class PublicationRecorder extends Recorder {
+public class ArtifactPublisher extends Recorder {
 
     private final List<Publication> publications;
 
     @DataBoundConstructor
-    public PublicationRecorder(final List<Publication> publications) {
+    public ArtifactPublisher(final List<Publication> publications) {
         this.getDescriptor().setPublications(publications);
         this.publications = publications;
     }
@@ -86,7 +86,7 @@ public class PublicationRecorder extends Recorder {
             return true;
         }
 
-        final GlobalPublisherConfiguration configuration = this.getDescriptor().getGlobalConfiguration();
+        final StoreConfiguration configuration = this.getDescriptor().getGlobalConfiguration();
 
         for (final Publication publication : this.publications) {
 
@@ -111,7 +111,7 @@ public class PublicationRecorder extends Recorder {
             return;
         }
 
-        final VersionPublisher publisher = new VersionPublisher(build, publication, store, log);
+        final ArtifactFileUploader publisher = new ArtifactFileUploader(build, publication, store, log);
 
         log.write(this, "Publishing '%s' to '%s'", publication.getArtifactPath(), store.toString());
         build.getWorkspace().act(publisher);
@@ -121,15 +121,15 @@ public class PublicationRecorder extends Recorder {
     public static final class PublicationRecorderDescriptor extends BuildStepDescriptor<Publisher> {
 
         @Inject
-        private GlobalPublisherConfiguration globalConfiguration;
+        private StoreConfiguration globalConfiguration;
 
-        private List<Publication>            publications;
+        private List<Publication>  publications;
 
         public PublicationRecorderDescriptor() {
             this.load();
         }
 
-        public GlobalPublisherConfiguration getGlobalConfiguration() {
+        public StoreConfiguration getGlobalConfiguration() {
             return this.globalConfiguration;
         }
 
