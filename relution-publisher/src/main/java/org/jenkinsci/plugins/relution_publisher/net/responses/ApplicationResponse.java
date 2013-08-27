@@ -18,15 +18,11 @@ package org.jenkinsci.plugins.relution_publisher.net.responses;
 
 import org.jenkinsci.plugins.relution_publisher.entities.Application;
 
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Represents a response returned by the Relution server when {@link Application}
+ * objects are requested.
+ */
+public class ApplicationResponse extends ApiResponse<Application> {
 
-public class ApplicationResponse extends ApiResponse {
-
-    private final List<Application> results = new ArrayList<Application>();
-
-    public List<Application> getApplications() {
-        return this.results;
-    }
 }

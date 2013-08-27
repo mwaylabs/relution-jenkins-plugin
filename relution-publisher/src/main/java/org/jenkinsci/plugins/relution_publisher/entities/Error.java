@@ -19,6 +19,6 @@ package org.jenkinsci.plugins.relution_publisher.entities;
 /**
  * Represents an API error returned by the Relution Enterprise Appstore.
  */
-public class Error {
+public class Error extends ApiObject {
 
 }

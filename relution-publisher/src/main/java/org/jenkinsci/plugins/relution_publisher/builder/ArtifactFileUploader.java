@@ -105,7 +105,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         }
 
         final UploadResponse data = response.getData();
-        final List<Asset> assets = data.getAssets();
+        final List<Asset> assets = data.getResults();
 
         if (assets.size() != 1) {
             this.log.write(this, "More than one unpersisted asset object returned by server.");
@@ -218,7 +218,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         final UploadResponse data = response.getData();
 
-        version.setIcon(data.getAssets().get(0));
+        version.setIcon(data.getResults().get(0));
     }
 
     private void setChangeLog(final File basePath, final Version version) {
@@ -328,7 +328,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
     private Application getApplication(final ApplicationResponse response, final Asset asset) {
 
-        for (final Application app : response.getApplications()) {
+        for (final Application app : response.getResults()) {
             for (final Version version : app.getVersions()) {
                 if (version.getFile() != null && StringUtils.equals(asset.getUuid(), version.getFile().getUuid())) {
                     return app;
@@ -399,7 +399,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return false;
         }
 
-        if (this.isEmpty(data.getAssets())) {
+        if (this.isEmpty(data.getResults())) {
             this.log.write(this, "Error uploading file, the server returned no asset objects.");
             return false;
         }
@@ -421,7 +421,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return false;
         }
 
-        if (this.isEmpty(data.getApplications())) {
+        if (this.isEmpty(data.getResults())) {
             this.log.write(this, "Error creating application object, the server returned no application objects.");
             return false;
         }

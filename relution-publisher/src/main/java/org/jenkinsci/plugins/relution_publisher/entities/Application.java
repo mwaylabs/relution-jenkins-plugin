@@ -28,9 +28,8 @@ import java.util.Map;
  * Represents an application available in the Relution Enterprise Appstore. An application
  * has at least one {@link Version} associated with it.
  */
-public class Application {
+public class Application extends ApiObject {
 
-    private final String                    uuid;
     private final String                    type;
     private final String                    internalName;
 
@@ -54,7 +53,6 @@ public class Application {
 
     protected Application() {
 
-        this.uuid = null;
         this.type = null;
         this.internalName = null;
 
@@ -66,10 +64,6 @@ public class Application {
         this.creationDate = null;
         this.modifiedBy = null;
         this.modificationDate = null;
-    }
-
-    public String getUuid() {
-        return this.uuid;
     }
 
     public String getType() {

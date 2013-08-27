@@ -21,9 +21,7 @@ package org.jenkinsci.plugins.relution_publisher.entities;
  * file represented by a version or additional files associated with a version (e.g. images, videos
  * or other binary files).
  */
-public class Asset {
-
-    private final String  uuid;
+public class Asset extends ApiObject {
 
     private final String  name;
     private final String  link;
@@ -36,8 +34,6 @@ public class Asset {
 
     protected Asset() {
 
-        this.uuid = null;
-
         this.name = null;
         this.link = null;
         this.contentType = null;
@@ -46,10 +42,6 @@ public class Asset {
         this.modificationDate = null;
 
         this.downloadCount = null;
-    }
-
-    public String getUuid() {
-        return this.uuid;
     }
 
     public String getName() {

@@ -28,9 +28,8 @@ import java.util.Map;
  * Represents a distinct version of an {@link Application} that is available for download
  * in the Relution Enterprise Appstore.
  */
-public class Version {
+public class Version extends ApiObject {
 
-    private final String              uuid;
     private String                    appUuid;
 
     private String                    versionName;
@@ -69,7 +68,7 @@ public class Version {
     private transient String          s;
 
     protected Version() {
-        this.uuid = null;
+
         this.appUuid = null;
 
         this.releaseStatus = null;
@@ -94,10 +93,6 @@ public class Version {
 
         this.modifiedBy = null;
         this.modificationDate = null;
-    }
-
-    public String getUuid() {
-        return this.uuid;
     }
 
     public String getAppUuid() {

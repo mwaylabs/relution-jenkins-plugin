@@ -19,24 +19,29 @@ package org.jenkinsci.plugins.relution_publisher.net.responses;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.jenkinsci.plugins.relution_publisher.entities.ApiObject;
 import org.jenkinsci.plugins.relution_publisher.entities.Error;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * Represents a response returned by the Relution server.
  */
-public abstract class ApiResponse {
+public abstract class ApiResponse<TResult extends ApiObject> {
 
-    public final static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public final static Gson    GSON    = new GsonBuilder().setPrettyPrinting().create();
 
-    private final int        status;
-    private final String     message;
+    private final int           status;
+    private final String        message;
 
-    private final Error      errors;
+    private final Error         errors;
 
-    private final int        total;
+    private final int           total;
+    private final List<TResult> results = new ArrayList<TResult>();
 
-    private transient String s;
+    private transient String    s;
 
     /**
      * Converts the specified JSON formatted string to an instance of the specified class. 
@@ -44,7 +49,7 @@ public abstract class ApiResponse {
      * @param clazz A {@link Class} that extends {@link ApiResponse}.
      * @return An instance of the specified class.
      */
-    public static <T extends ApiResponse> T fromJson(final String json, final Class<T> clazz) {
+    public static <T extends ApiResponse<?>> T fromJson(final String json, final Class<T> clazz) {
         return ApiResponse.GSON.fromJson(json, clazz);
     }
 
@@ -87,6 +92,10 @@ public abstract class ApiResponse {
      */
     public int getCount() {
         return this.total;
+    }
+
+    public List<TResult> getResults() {
+        return this.results;
     }
 
     /**

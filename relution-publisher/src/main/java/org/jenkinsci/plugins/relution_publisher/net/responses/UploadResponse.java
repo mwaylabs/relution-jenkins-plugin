@@ -18,15 +18,7 @@ package org.jenkinsci.plugins.relution_publisher.net.responses;
 
 import org.jenkinsci.plugins.relution_publisher.entities.Asset;
 
-import java.util.ArrayList;
-import java.util.List;
 
+public class UploadResponse extends ApiResponse<Asset> {
 
-public class UploadResponse extends ApiResponse {
-
-    private final List<Asset> results = new ArrayList<Asset>();
-
-    public List<Asset> getAssets() {
-        return this.results;
-    }
 }

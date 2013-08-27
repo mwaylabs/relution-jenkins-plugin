@@ -23,21 +23,10 @@ import java.util.Map;
 /**
  * Represents a category associated with a {@link Version}.
  */
-public class Category {
-
-    private final String              uuid;
+public class Category extends ApiObject {
 
     private final Map<String, String> name        = new HashMap<String, String>();
     private final Map<String, String> description = new HashMap<String, String>();
-
-    protected Category() {
-
-        this.uuid = null;
-    }
-
-    public String getUuid() {
-        return this.uuid;
-    }
 
     public Map<String, String> getName() {
         return this.name;

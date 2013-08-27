@@ -19,9 +19,7 @@ package org.jenkinsci.plugins.relution_publisher.entities;
 /**
  * Represents a constraint associated with a {@link Version}.
  */
-public class Constraint {
-
-    private final String uuid;
+public class Constraint extends ApiObject {
 
     private final String name;
     private final Object value;
@@ -29,15 +27,9 @@ public class Constraint {
 
     protected Constraint() {
 
-        this.uuid = null;
-
         this.name = null;
         this.value = null;
         this.type = null;
-    }
-
-    public String getUuid() {
-        return this.uuid;
     }
 
     public String getName() {
