@@ -301,6 +301,11 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     private List<ApiResponse<Asset>> uploadAsset(final File basePath, final String filePath, final String uploadToken)
             throws ClientProtocolException, URISyntaxException, IOException {
 
+        if (StringUtils.isBlank(filePath)) {
+            this.log.write(this, "No file to upload specified, filter expression is empty, upload failed.");
+            return null;
+        }
+
         final FileSet fileSet = Util.createFileSet(basePath, filePath);
         final File directory = fileSet.getDirectoryScanner().getBasedir();
 
