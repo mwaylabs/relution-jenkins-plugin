@@ -375,7 +375,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             final File file = new File(directory, fileName);
             this.readFile(file, sb);
         }
-        return sb.toString();
+        return this.getEllipsizedText(sb.toString(), 49152);
     }
 
     private void readFile(final File file, final StringBuilder sb) {
@@ -384,7 +384,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             final BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
 
-            while ((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null && sb.length() < 49152) {
                 sb.append(line);
                 sb.append("\n");
             }
