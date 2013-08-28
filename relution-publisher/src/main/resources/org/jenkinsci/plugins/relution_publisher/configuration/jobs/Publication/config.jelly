@@ -28,12 +28,12 @@
 				<f:select />
 			</f:entry>
 			<f:entry
-				title="${%Version name (optional)}"
-				field="versionName">
+				title="${%Application name (optional)}"
+				field="name">
 				<f:textbox />
 			</f:entry>
 			<f:entry
-				title="${%Version icon (optional)}"
+				title="${%Application icon (optional)}"
 				field="iconPath">
 				<f:textbox />
 			</f:entry>
@@ -45,6 +45,11 @@
 			<f:entry
 				title="${%Description path (optional)}"
 				field="descriptionPath">
+				<f:textbox />
+			</f:entry>
+			<f:entry
+				title="${%Version name (optional)}"
+				field="versionName">
 				<f:textbox />
 			</f:entry>
 		</f:advanced>

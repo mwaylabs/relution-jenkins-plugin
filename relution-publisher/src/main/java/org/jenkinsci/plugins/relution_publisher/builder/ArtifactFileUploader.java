@@ -161,11 +161,13 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         this.setReleaseStatus(version);
 
-        this.setVersionName(version);
-        this.setVersionIcon(basePath, version);
+        this.setName(version);
+        this.setIcon(basePath, version);
 
         this.setChangeLog(basePath, version);
         this.setDescription(basePath, version);
+
+        this.setVersionName(version);
     }
 
     private void setReleaseStatus(final Version version) {
@@ -177,17 +179,19 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         version.setReleaseStatus(this.publication.getReleaseStatus());
     }
 
-    private void setVersionName(final Version version) {
+    private void setName(final Version version) {
 
-        if (StringUtils.isBlank(this.publication.getVersionName())) {
+        if (StringUtils.isBlank(this.publication.getName())) {
             this.log.write(this, "No name set, default name will be used.");
             return;
         }
 
-        version.setVersionName(this.publication.getVersionName());
+        for (final String key : version.getName().keySet()) {
+            version.getName().put(key, this.publication.getName());
+        }
     }
 
-    private void setVersionIcon(final File basePath, final Version version)
+    private void setIcon(final File basePath, final Version version)
             throws ClientProtocolException, URISyntaxException, IOException {
 
         if (StringUtils.isBlank(this.publication.getIconPath())) {
@@ -262,6 +266,16 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
                 version.getDescription().put(key, description);
             }
         }
+    }
+
+    private void setVersionName(final Version version) {
+
+        if (StringUtils.isBlank(this.publication.getVersionName())) {
+            this.log.write(this, "No version name set, default name will be used.");
+            return;
+        }
+
+        version.setVersionName(this.publication.getVersionName());
     }
 
     private void persistApplication(final Application app)

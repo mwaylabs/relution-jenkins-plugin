@@ -45,28 +45,31 @@ public class Publication extends AbstractDescribableImpl<Publication> {
 
     private String releaseStatus;
 
-    private String versionName;
+    private String name;
     private String iconPath;
     private String changeLogPath;
     private String descriptionPath;
+    private String versionName;
 
     @DataBoundConstructor
     public Publication(
             final String artifactPath,
             final String storeId,
             final String releaseStatus,
-            final String versionName,
+            final String name,
             final String iconPath,
             final String changeLogPath,
-            final String descriptionPath) {
+            final String descriptionPath,
+            final String versionName) {
 
         this.setArtifactPath(artifactPath);
         this.setStoreId(storeId);
         this.setReleaseStatus(releaseStatus);
-        this.setVersionName(versionName);
+        this.setName(name);
         this.setIconPath(iconPath);
         this.setChangeLogPath(changeLogPath);
         this.setDescriptionPath(descriptionPath);
+        this.setVersionName(versionName);
     }
 
     /**
@@ -115,19 +118,18 @@ public class Publication extends AbstractDescribableImpl<Publication> {
     }
 
     /**
-     * Gets the name to use for the version when uploading the artifact to the store.
+     * Gets the name to show for the application version uploaded to the store.
      */
-    public String getVersionName() {
-        return this.versionName;
+    public String getName() {
+        return this.name;
     }
 
     /**
-     * Sets the name to use for the version when uploading the artifact to the store.
-     * @param versionName The name to use, or <code>null</code> to use the name specified by
-     * the artifact's meta-data.
+     * Sets the name to show for the application version uploaded to the store.
+     * @param name The name to show.
      */
-    public void setVersionName(final String versionName) {
-        this.versionName = versionName;
+    public void setName(final String name) {
+        this.name = name;
     }
 
     /**
@@ -176,6 +178,24 @@ public class Publication extends AbstractDescribableImpl<Publication> {
         this.descriptionPath = descriptionPath;
     }
 
+    /**
+     * Gets the name to use for the version when uploading the artifact to the store.
+     */
+    public String getVersionName() {
+        return this.versionName;
+    }
+
+    /**
+     * Sets the name to use for the version when uploading the artifact to the store.
+     * <p/>
+     * This is not the application's name, but its version name, i.e. the human readable version.
+     * @param versionName The version name to use, or <code>null</code> to use the version name
+     * specified by the artifact's meta-data.
+     */
+    public void setVersionName(final String versionName) {
+        this.versionName = versionName;
+    }
+
     @Extension
     public static class PublicationDescriptor extends Descriptor<Publication> {
 
@@ -191,6 +211,14 @@ public class Publication extends AbstractDescribableImpl<Publication> {
 
             if (StringUtils.isEmpty(value)) {
                 return FormValidation.error("Path must not be empty");
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckVersionName(@QueryParameter final String value) {
+
+            if (!StringUtils.isBlank(value)) {
+                return FormValidation.warning("You are overwriting the human readable version, are you sure this is what you want?");
             }
             return FormValidation.ok();
         }
