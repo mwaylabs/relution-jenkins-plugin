@@ -59,8 +59,8 @@ public class ArtifactPublisher extends Recorder {
     }
 
     @Override
-    public PublicationRecorderDescriptor getDescriptor() {
-        return (PublicationRecorderDescriptor) super.getDescriptor();
+    public ArtifactPublisherDescriptor getDescriptor() {
+        return (ArtifactPublisherDescriptor) super.getDescriptor();
     }
 
     @Override
@@ -118,14 +118,14 @@ public class ArtifactPublisher extends Recorder {
     }
 
     @Extension
-    public static final class PublicationRecorderDescriptor extends BuildStepDescriptor<Publisher> {
+    public static final class ArtifactPublisherDescriptor extends BuildStepDescriptor<Publisher> {
 
         @Inject
         private StoreConfiguration globalConfiguration;
 
         private List<Publication>  publications;
 
-        public PublicationRecorderDescriptor() {
+        public ArtifactPublisherDescriptor() {
             this.load();
         }
 
