@@ -118,15 +118,20 @@ public class Request<T extends ApiObject> {
 
     private ApiResponse<T> getJsonString(final HttpResponse httpResponse) {
 
+        String payload = null;
+
         try {
             final HttpEntity entity = httpResponse.getEntity();
-            final String json = EntityUtils.toString(entity, CHARSET);
-            return ApiResponse.fromJson(json, this.mResponseClass);
+            payload = EntityUtils.toString(entity, CHARSET);
+
+            return ApiResponse.fromJson(payload, this.mResponseClass);
 
         } catch (final Exception e) {
             e.printStackTrace();
         }
-        return new ApiResponse<T>();
+        final ApiResponse<T> response = new ApiResponse<T>();
+        response.setMessage(payload);
+        return response;
     }
 
     private ApiResponse<T> parseNetworkResponse(final HttpResponse httpResponse) {

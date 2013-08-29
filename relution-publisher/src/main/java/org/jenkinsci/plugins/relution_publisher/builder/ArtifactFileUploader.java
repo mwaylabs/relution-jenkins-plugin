@@ -96,7 +96,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     private void uploadVersion(final File basePath, final ApiResponse<Asset> response)
             throws ClientProtocolException, URISyntaxException, IOException {
 
-        if (!this.verifyUploadResponse(response)) {
+        if (!this.verifyAssetResponse(response)) {
             this.log.write(this, "Upload of the build artifact failed.");
             this.build.setResult(Result.UNSTABLE);
             return;
@@ -111,7 +111,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         }
 
         final Asset asset = assets.get(0);
-        this.log.write(this, "Upload completed, received upload token %s", asset.getUuid());
+        this.log.write(this, "Upload completed, received token %s", asset.getUuid());
 
         this.retrieveApplication(basePath, asset);
     }
@@ -119,12 +119,12 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     private void retrieveApplication(final File basePath, final Asset asset)
             throws ClientProtocolException, URISyntaxException, IOException {
 
-        this.log.write(this, "Retrieving application associated with file '%s'...", asset.getUuid());
+        this.log.write(this, "Requesting application object associated with token '%s'...", asset.getUuid());
         final Request<Application> request = RequestFactory.createAppFromFileRequest(this.store, asset.getUuid());
         final ApiResponse<Application> response = request.execute();
 
         if (!this.verifyApplicationResponse(response)) {
-            this.log.write(this, "Retrieval of the application failed.");
+            this.log.write(this, "Retrieval of the application object failed.");
             this.build.setResult(Result.UNSTABLE);
             return;
         }
@@ -211,7 +211,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         final ApiResponse<Asset> response = responses.get(0);
 
-        if (!this.verifyUploadResponse(response)) {
+        if (!this.verifyAssetResponse(response)) {
             this.log.write(this, "Failed to upload application icon.");
             this.build.setResult(Result.UNSTABLE);
             return;
@@ -407,12 +407,12 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return null;
     }
 
-    private boolean verifyUploadResponse(final ApiResponse<Asset> response) {
+    private boolean verifyAssetResponse(final ApiResponse<Asset> response) {
 
         final List<Asset> assets = response.getResults();
 
         if (response.getStatus() != 0) {
-            this.log.write(this, "Error uploading file (%d): %s", response.getStatusCode(), response.getMessage());
+            this.log.write(this, "Error uploading file (%d), server's response:\n%s", response.getStatusCode(), response.getMessage());
             return false;
         }
 
@@ -429,7 +429,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         final List<Application> applications = response.getResults();
 
         if (response.getStatus() != 0) {
-            this.log.write(this, "Error creating application object (%d): %s", response.getStatusCode(), response.getMessage());
+            this.log.write(this, "Error creating application object (%d), server's response:\n%s", response.getStatusCode(), response.getMessage());
             return false;
         }
 

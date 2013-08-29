@@ -39,7 +39,7 @@ public class ApiResponse<TResult extends ApiObject> {
     private String              reason;
 
     private final Integer       status;
-    private final String        message;
+    private String              message;
 
     private final Error         errors;
 
@@ -112,6 +112,14 @@ public class ApiResponse<TResult extends ApiObject> {
     }
 
     /**
+     * Sets the message returned by the server.
+     * @param message The message to set.
+     */
+    public void setMessage(final String message) {
+        this.message = message;
+    }
+
+    /**
      * Gets the {@link Error} returned by the server, or <code>null</null> if no error occurred.
      */
     public Error getError() {
@@ -125,6 +133,9 @@ public class ApiResponse<TResult extends ApiObject> {
         return this.total;
     }
 
+    /**
+     * Gets the results returned by the server.
+     */
     public List<TResult> getResults() {
         return this.results;
     }
