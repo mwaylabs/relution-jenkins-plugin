@@ -45,7 +45,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * Uploads build artifacts to a {@link Store} that has been specified in a Jenkins project's
+ * post-build action, in the form of a {@link Publication}. 
+ */
 public class ArtifactFileUploader implements FileCallable<Boolean> {
+
+    private static final long         serialVersionUID = 1L;
 
     private final AbstractBuild<?, ?> build;
 
@@ -70,7 +76,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     @Override
-    public Boolean invoke(final File basePath, final VirtualChannel channel) throws IOException, InterruptedException {
+    public Boolean invoke(final File basePath, final VirtualChannel channel)
+            throws IOException, InterruptedException {
 
         try {
             this.log.write(this, "Uploading build artifact...");
