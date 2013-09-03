@@ -127,7 +127,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             throws ClientProtocolException, URISyntaxException, IOException {
 
         this.log.write(this, "Requesting application object associated with token '%s'...", asset.getUuid());
-        final Request<Application> request = RequestFactory.createAppFromFileRequest(this.store, asset.getUuid());
+        final Request<Application> request = RequestFactory.createAppFromFileRequest(this.store, asset);
         final ApiResponse<Application> response = request.execute();
 
         if (!this.verifyApplicationResponse(response)) {
@@ -319,7 +319,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "Version persisted successfully.");
     }
 
-    private List<ApiResponse<Asset>> uploadAsset(final File basePath, final String filePath, final String uploadToken)
+    private List<ApiResponse<Asset>> uploadAsset(final File basePath, final String filePath)
             throws ClientProtocolException, URISyntaxException, IOException {
 
         if (StringUtils.isBlank(filePath)) {
@@ -341,18 +341,12 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             final File file = new File(directory, fileName);
 
             this.log.write(this, "Uploading file '%s'...", fileName);
-            final Request<Asset> request = RequestFactory.createUploadRequest(this.store, file, uploadToken);
+            final Request<Asset> request = RequestFactory.createUploadRequest(this.store, file);
             responses.add(request.execute());
             this.log.write(this, "Upload of file completed.");
         }
 
         return responses;
-    }
-
-    private List<ApiResponse<Asset>> uploadAsset(final File basePath, final String filePath)
-            throws ClientProtocolException, URISyntaxException, IOException {
-
-        return this.uploadAsset(basePath, filePath, "");
     }
 
     private Application getApplication(final List<Application> applications, final Asset asset) {
