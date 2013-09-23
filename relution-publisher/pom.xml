@@ -6,11 +6,27 @@
 		<version>1.528</version><!-- which version of Jenkins is this plugin built against? -->
 	</parent>
 
+	<url>http://wiki.jenkins-ci.org/display/JENKINS/relution-plugin</url>
+
 	<groupId>org.jenkins-ci.plugins</groupId>
 	<artifactId>relution-publisher</artifactId>
 	<name>Relution Enterprise Appstore Publisher plugin</name>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>hpi</packaging>
+
+	<scm>
+		<connection>scm:git:ssh://github.com/mwaylabs/relution-jenkins-plugin.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/mwaylabs/relution-jenkins-plugin.git</developerConnection>
+		<url>https://github.com/mwaylabs/relution-jenkins-plugin.git</url>
+	</scm>
+	
+	<developers>
+		<developer>
+			<id>mwaylabs</id>
+			<name>M-Way Solutions</name>
+			<email>jenkins.ios.bot@mwaysolutions.com</email>
+		</developer>
+	</developers>
 
 	<!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
 	<repositories>
