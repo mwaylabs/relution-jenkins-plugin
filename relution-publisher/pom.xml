@@ -11,13 +11,13 @@
 	<groupId>org.jenkins-ci.plugins</groupId>
 	<artifactId>relution-publisher</artifactId>
 	<name>Relution Enterprise Appstore Publisher plugin</name>
-	<version>1.1</version>
+	<version>1.0-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 
 	<scm>
-		<connection>scm:git:ssh://github.com/jenkinsci/relution-plugin</connection>
-		<developerConnection>scm:git:ssh://git@github.com/jenkinsci/relution-plugin</developerConnection>
-		<url>https://github.com/jenkinsci/relution-plugin</url>
+		<connection>scm:git:ssh://github.com/mwaylabs/relution-jenkins-plugin.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/mwaylabs/relution-jenkins-plugin.git</developerConnection>
+		<url>https://github.com/mwaylabs/relution-jenkins-plugin.git</url>
 	</scm>
 	
 	<developers>
