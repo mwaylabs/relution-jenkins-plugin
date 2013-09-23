@@ -15,9 +15,9 @@
 	<packaging>hpi</packaging>
 
 	<scm>
-		<connection>scm:git:ssh://github.com/mwaylabs/relution-jenkins-plugin.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/mwaylabs/relution-jenkins-plugin.git</developerConnection>
-		<url>https://github.com/mwaylabs/relution-jenkins-plugin.git</url>
+		<connection>scm:git:ssh://github.com/jenkinsci/relution-plugin</connection>
+		<developerConnection>scm:git:ssh://git@github.com/jenkinsci/relution-plugin</developerConnection>
+		<url>https://github.com/jenkinsci/relution-plugin</url>
 	</scm>
 	
 	<developers>
