@@ -6,7 +6,7 @@
 		<version>1.528</version><!-- which version of Jenkins is this plugin built against? -->
 	</parent>
 
-	<url>http://wiki.jenkins-ci.org/display/JENKINS/relution-plugin</url>
+	<url>https://wiki.jenkins-ci.org/display/JENKINS/Relution-Publisher</url>
 
 	<groupId>org.jenkins-ci.plugins</groupId>
 	<artifactId>relution-publisher</artifactId>
