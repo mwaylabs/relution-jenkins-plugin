@@ -110,6 +110,16 @@ public class Publication extends AbstractDescribableImpl<Publication> {
     }
 
     /**
+     * Gets a value indicating whether the {@link ReleaseStatus} of the publication equals the
+     * default value.
+     * @return <code>true</code> if the release status is equal to {@link ReleaseStatus#DEFAULT};
+     * otherwise, <code>false</code>.
+     */
+    public boolean usesDefaultReleaseStatus() {
+        return StringUtils.isBlank(this.releaseStatus) || this.releaseStatus.equals(ReleaseStatus.DEFAULT.key);
+    }
+
+    /**
      * Sets the key of the {@link ReleaseStatus} to use when uploading an artifact to the store.
      * @param releaseStatus The release status to use.
      */
@@ -238,7 +248,7 @@ public class Publication extends AbstractDescribableImpl<Publication> {
         public ListBoxModel doFillReleaseStatusItems() {
 
             final ListBoxModel items = new ListBoxModel();
-            ReleaseStatus.fillListBox(items);
+            ReleaseStatus.fillListBoxWithDefault(items);
             return items;
         }
     }

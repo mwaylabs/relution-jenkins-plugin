@@ -19,6 +19,8 @@ package org.jenkinsci.plugins.relution_publisher.constants;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
 
+import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
+
 
 /**
  * Indicates the release status of a build artifact.
@@ -37,6 +39,12 @@ import hudson.util.ListBoxModel.Option;
  * i.e. if the application is not reviewed/tested by a human.
  */
 public final class ReleaseStatus {
+
+    /**
+     * Versions produced by the build process should use the release status defined in the
+     * associated {@link Store}.
+     */
+    public final static ReleaseStatus DEFAULT     = new ReleaseStatus("DEFAULT", "(default)");
 
     /**
      * Versions produced by the build process should be uploaded to <code>Development</code>.
@@ -65,6 +73,11 @@ public final class ReleaseStatus {
 
     private Option                    option;
 
+    /**
+     * Initializes a new instance of the {@link ReleaseStatus} class.
+     * @param key The key to use for the release status.
+     * @param name The display name for the release status. 
+     */
     private ReleaseStatus(final String key, final String name) {
 
         this.key = key;
@@ -92,5 +105,58 @@ public final class ReleaseStatus {
         list.add(0, DEVELOPMENT.asOption());
         list.add(1, REVIEW.asOption());
         list.add(2, RELEASE.asOption());
+    }
+
+    /**
+     * Adds all available {@link ReleaseStatus} items to the specified list box as drop down items,
+     * including the special status {@link #DEFAULT}. If <i>Default</i> is selected, the release
+     * status defined in the build's {@link Store} configuration is used.
+     * @param list The {@link ListBoxModel} to which the items should be added.
+     */
+    public static void fillListBoxWithDefault(final ListBoxModel list) {
+
+        list.add(0, DEFAULT.asOption());
+        list.add(1, DEVELOPMENT.asOption());
+        list.add(2, REVIEW.asOption());
+        list.add(3, RELEASE.asOption());
+    }
+
+    /**
+     * Returns a hash code for this release status. The hash code is the same as its
+     * {@link #key}'s hash code.
+     * @return A hash code value for this object.
+     * @see String#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return this.key.hashCode();
+    }
+
+    /**
+     * Indicates whether the specified object, which must also be a {@link ReleaseStatus}, is equal
+     * to this instance.
+     * <p/>
+     * Release statuses are considered equal if their {@link #key} is equal.
+     * @param obj The {@link Object} to compare to this instance.
+     * @return <code>true</code> if the specified object is a release status and is equal to this
+     * instance; otherwise, <code>false</code>.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj instanceof ReleaseStatus) {
+            final ReleaseStatus other = (ReleaseStatus) obj;
+            return this.key.equals(other.key);
+        }
+
+        return false;
     }
 }

@@ -179,11 +179,13 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
     private void setReleaseStatus(final Version version) {
 
-        if (StringUtils.isBlank(this.publication.getReleaseStatus())) {
-            return;
-        }
+        final String key = !this.publication.usesDefaultReleaseStatus()
+                ? this.publication.getReleaseStatus()
+                : this.store.getReleaseStatus();
 
-        version.setReleaseStatus(this.publication.getReleaseStatus());
+        if (!StringUtils.isBlank(key)) {
+            version.setReleaseStatus(key);
+        }
     }
 
     private void setName(final Version version) {
