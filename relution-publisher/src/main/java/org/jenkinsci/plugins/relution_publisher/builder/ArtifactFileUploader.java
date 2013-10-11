@@ -52,6 +52,7 @@ import java.util.List;
 public class ArtifactFileUploader implements FileCallable<Boolean> {
 
     private static final long         serialVersionUID = 1L;
+    private static final int          MAX_TEXT_LENGTH  = 49152;
 
     private final AbstractBuild<?, ?> build;
 
@@ -126,7 +127,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     private void retrieveApplication(final File basePath, final Asset asset)
             throws ClientProtocolException, URISyntaxException, IOException {
 
-        this.log.write(this, "Requesting application object associated with token '%s'...", asset.getUuid());
+        this.log.write(this, "Requesting application object associated with token \"%s\"...", asset.getUuid());
         final Request<Application> request = RequestFactory.createAppFromFileRequest(this.store, asset);
         final ApiResponse<Application> response = request.execute();
 
@@ -249,7 +250,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (!StringUtils.isBlank(changeLog)) {
             final String text = this.getEllipsizedText(changeLog.replace("\n", "<br/>"), 50);
-            this.log.write(this, "Set change log to: '%s'", text);
+            this.log.write(this, "Set change log to: \"%s\" (%d characters)", text, changeLog.length());
 
             for (final String key : version.getChangelog().keySet()) {
                 version.getChangelog().put(key, changeLog);
@@ -269,7 +270,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (!StringUtils.isBlank(description)) {
             final String text = this.getEllipsizedText(description.replace("\n", "<br/>"), 50);
-            this.log.write(this, "Set change log to: '%s'", text);
+            this.log.write(this, "Set change log to: \"%s\" (%d characters)", text, description.length());
 
             for (final String key : version.getDescription().keySet()) {
                 version.getDescription().put(key, description);
@@ -333,7 +334,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         final File directory = fileSet.getDirectoryScanner().getBasedir();
 
         if (fileSet.getDirectoryScanner().getIncludedFilesCount() < 1) {
-            this.log.write(this, "The file specified by '%s' does not exist, upload failed.", filePath);
+            this.log.write(this, "The file specified by \"%s\" does not exist, upload failed.", filePath);
             return null;
         }
 
@@ -342,7 +343,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         for (final String fileName : fileSet.getDirectoryScanner().getIncludedFiles()) {
             final File file = new File(directory, fileName);
 
-            this.log.write(this, "Uploading file '%s'...", fileName);
+            this.log.write(this, "Uploading file \"%s\"...", fileName);
             final Request<Asset> request = RequestFactory.createUploadRequest(this.store, file);
             responses.add(request.execute());
             this.log.write(this, "Upload of file completed.");
@@ -370,15 +371,15 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         final StringBuilder sb = new StringBuilder();
 
         if (fileSet.getDirectoryScanner().getIncludedFilesCount() < 1) {
-            this.log.write(this, "The file specified by '%s' does not exist.", filePath);
+            this.log.write(this, "The file specified by \"%s\" does not exist.", filePath);
         }
 
         for (final String fileName : fileSet.getDirectoryScanner().getIncludedFiles()) {
-            this.log.write(this, "Reading file '%s'...", fileName);
+            this.log.write(this, "Reading file \"%s\"...", fileName);
             final File file = new File(directory, fileName);
             this.readFile(file, sb);
         }
-        return this.getEllipsizedText(sb.toString(), 49152);
+        return this.getEllipsizedText(sb.toString(), MAX_TEXT_LENGTH);
     }
 
     private void readFile(final File file, final StringBuilder sb) {
@@ -387,10 +388,15 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             final BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
 
-            while ((line = br.readLine()) != null && sb.length() < 49152) {
+            while ((line = br.readLine()) != null && sb.length() < MAX_TEXT_LENGTH) {
                 sb.append(line);
                 sb.append("\n");
             }
+
+            if (sb.length() >= MAX_TEXT_LENGTH) {
+                this.log.write(this, "Text in file \"%s\" exceeds %d characters and will be truncated.", file.getName(), MAX_TEXT_LENGTH);
+            }
+
             br.close();
 
         } catch (final FileNotFoundException e) {
