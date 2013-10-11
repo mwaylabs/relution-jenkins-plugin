@@ -349,6 +349,19 @@ public class Store extends AbstractDescribableImpl<Store> {
             return FormValidation.ok();
         }
 
+        public FormValidation doCheckReleaseStatus(@QueryParameter final String value) {
+
+            if (StringUtils.equals(value, ReleaseStatus.REVIEW.key)) {
+                return FormValidation.ok("User account may require additional permissions to upload to \"Review\".");
+            }
+
+            if (StringUtils.equals(value, ReleaseStatus.RELEASE.key)) {
+                return FormValidation.ok("User account may require additional permissions to upload to \"Release\".");
+            }
+
+            return FormValidation.ok();
+        }
+
         public FormValidation doTestConnection(
                 @QueryParameter(Store.KEY_URL) final String url,
                 @QueryParameter(Store.KEY_USERNAME) final String username,

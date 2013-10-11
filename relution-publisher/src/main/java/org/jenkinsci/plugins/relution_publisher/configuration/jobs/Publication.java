@@ -245,6 +245,19 @@ public class Publication extends AbstractDescribableImpl<Publication> {
             return items;
         }
 
+        public FormValidation doCheckReleaseStatus(@QueryParameter final String value) {
+
+            if (StringUtils.equals(value, ReleaseStatus.REVIEW.key)) {
+                return FormValidation.ok("User account may require additional permissions to upload to \"Review\".");
+            }
+
+            if (StringUtils.equals(value, ReleaseStatus.RELEASE.key)) {
+                return FormValidation.ok("User account may require additional permissions to upload to \"Release\".");
+            }
+
+            return FormValidation.ok();
+        }
+
         public ListBoxModel doFillReleaseStatusItems() {
 
             final ListBoxModel items = new ListBoxModel();
