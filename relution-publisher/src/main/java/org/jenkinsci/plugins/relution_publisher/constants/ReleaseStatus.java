@@ -17,7 +17,6 @@
 package org.jenkinsci.plugins.relution_publisher.constants;
 
 import hudson.util.ListBoxModel;
-import hudson.util.ListBoxModel.Option;
 
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 
@@ -38,7 +37,7 @@ import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
  * Changing the release status for an application allows to skip parts of this manual process,
  * i.e. if the application is not reviewed/tested by a human.
  */
-public final class ReleaseStatus {
+public final class ReleaseStatus extends Choice {
 
     /**
      * Versions produced by the build process should use the release status defined in the
@@ -62,38 +61,12 @@ public final class ReleaseStatus {
     public final static ReleaseStatus RELEASE     = new ReleaseStatus("RELEASE", "Release");
 
     /**
-     * The key for the release status.
-     */
-    public final String               key;
-
-    /**
-     * The display name for the release status.
-     */
-    public final String               name;
-
-    private Option                    option;
-
-    /**
      * Initializes a new instance of the {@link ReleaseStatus} class.
      * @param key The key to use for the release status.
      * @param name The display name for the release status. 
      */
     private ReleaseStatus(final String key, final String name) {
-
-        this.key = key;
-        this.name = name;
-    }
-
-    /**
-     * Converts the {@link ReleaseStatus} to a a drop down item for a {@link ListBoxModel}.
-     * @return An {@link Option}.
-     */
-    public Option asOption() {
-
-        if (this.option == null) {
-            this.option = new Option(this.name, this.key);
-        }
-        return this.option;
+        super(key, name);
     }
 
     /**
@@ -119,44 +92,5 @@ public final class ReleaseStatus {
         list.add(1, DEVELOPMENT.asOption());
         list.add(2, REVIEW.asOption());
         list.add(3, RELEASE.asOption());
-    }
-
-    /**
-     * Returns a hash code for this release status. The hash code is the same as its
-     * {@link #key}'s hash code.
-     * @return A hash code value for this object.
-     * @see String#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        return this.key.hashCode();
-    }
-
-    /**
-     * Indicates whether the specified object, which must also be a {@link ReleaseStatus}, is equal
-     * to this instance.
-     * <p/>
-     * Release statuses are considered equal if their {@link #key} is equal.
-     * @param obj The {@link Object} to compare to this instance.
-     * @return <code>true</code> if the specified object is a release status and is equal to this
-     * instance; otherwise, <code>false</code>.
-     */
-    @Override
-    public boolean equals(final Object obj) {
-
-        if (obj == null) {
-            return false;
-        }
-
-        if (obj == this) {
-            return true;
-        }
-
-        if (obj instanceof ReleaseStatus) {
-            final ReleaseStatus other = (ReleaseStatus) obj;
-            return this.key.equals(other.key);
-        }
-
-        return false;
     }
 }

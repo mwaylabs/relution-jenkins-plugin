@@ -25,6 +25,7 @@ import hudson.util.ListBoxModel;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
+import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -44,6 +45,7 @@ public class Publication extends AbstractDescribableImpl<Publication> {
     private String storeId;
 
     private String releaseStatus;
+    private String archiveMode;
 
     private String name;
     private String iconPath;
@@ -56,6 +58,7 @@ public class Publication extends AbstractDescribableImpl<Publication> {
             final String artifactPath,
             final String storeId,
             final String releaseStatus,
+            final String archiveMode,
             final String name,
             final String iconPath,
             final String changeLogPath,
@@ -65,6 +68,7 @@ public class Publication extends AbstractDescribableImpl<Publication> {
         this.setArtifactPath(artifactPath);
         this.setStoreId(storeId);
         this.setReleaseStatus(releaseStatus);
+        this.setArchiveMode(archiveMode);
         this.setName(name);
         this.setIconPath(iconPath);
         this.setChangeLogPath(changeLogPath);
@@ -125,6 +129,31 @@ public class Publication extends AbstractDescribableImpl<Publication> {
      */
     public void setReleaseStatus(final String releaseStatus) {
         this.releaseStatus = releaseStatus;
+    }
+
+    /**
+     * Gets the key of the {@link ArchiveMode} to use when uploading an artifact to the store.
+     */
+    public String getArchiveMode() {
+        return this.archiveMode;
+    }
+
+    /**
+     * Gets a value indicating whether the {@link ArchiveMode} of the publication equals the
+     * default value.
+     * @return <code>true</code> if the archive mode is equal to {@link ArchiveMode#DEFAULT};
+     * otherwise, <code>false</code>.
+     */
+    public boolean usesDefaultArchiveMode() {
+        return StringUtils.isBlank(this.archiveMode) || this.archiveMode.equals(ArchiveMode.DEFAULT.key);
+    }
+
+    /**
+     * Sets the key of the {@link ArchiveMode} to use when uploading an artifact to the store.
+     * @param archiveMode The archive mode to use.
+     */
+    public void setArchiveMode(final String archiveMode) {
+        this.archiveMode = archiveMode;
     }
 
     /**
@@ -262,6 +291,12 @@ public class Publication extends AbstractDescribableImpl<Publication> {
 
             final ListBoxModel items = new ListBoxModel();
             ReleaseStatus.fillListBoxWithDefault(items);
+            return items;
+        }
+
+        public ListBoxModel doFillArchiveModeItems() {
+            final ListBoxModel items = new ListBoxModel();
+            ArchiveMode.fillListBoxWithDefault(items);
             return items;
         }
     }

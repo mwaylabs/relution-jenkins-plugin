@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpStatus;
 import org.apache.http.ParseException;
+import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
 import org.jenkinsci.plugins.relution_publisher.net.Request;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
@@ -75,6 +76,7 @@ public class Store extends AbstractDescribableImpl<Store> {
     private String                mPassword;
 
     private String                mReleaseStatus;
+    private String                mArchiveMode;
 
     /**
      * Creates a new instance of the {@link Store} class initialized with the values in
@@ -99,7 +101,7 @@ public class Store extends AbstractDescribableImpl<Store> {
      * to this store.
      */
     @DataBoundConstructor
-    public Store(final String url, final String organization, final String username, final String password, final String releaseStatus) {
+    public Store(final String url, final String organization, final String username, final String password, final String releaseStatus, final String archiveMode) {
 
         this.setUrl(url);
         this.setOrganization(organization);
@@ -108,6 +110,7 @@ public class Store extends AbstractDescribableImpl<Store> {
         this.setPassword(password);
 
         this.setReleaseStatus(releaseStatus);
+        this.setArchiveMode(archiveMode);
     }
 
     /**
@@ -200,6 +203,23 @@ public class Store extends AbstractDescribableImpl<Store> {
      */
     public void setReleaseStatus(final String releaseStatus) {
         this.mReleaseStatus = releaseStatus;
+    }
+
+    /**
+     * Gets the key of the default {@link ArchiveMode} to use when uploading a version to the
+     * store.
+     */
+    public String getArchiveMode() {
+        return this.mArchiveMode;
+    }
+
+    /**
+     * Sets the key of the default {@link ArchiveMode} to use when uploading a version to the
+     * store.
+     * @param archiveMode The archive mode to use.
+     */
+    public void setArchiveMode(final String archiveMode) {
+        this.mArchiveMode = archiveMode;
     }
 
     /**
@@ -374,7 +394,7 @@ public class Store extends AbstractDescribableImpl<Store> {
             }
 
             try {
-                final Store store = new Store(url, organization, username, password, null);
+                final Store store = new Store(url, organization, username, password, null, null);
                 final Request<?> request = RequestFactory.createAppStoreItemsRequest(store);
                 final ApiResponse<?> response = request.execute();
 
@@ -411,6 +431,12 @@ public class Store extends AbstractDescribableImpl<Store> {
         public ListBoxModel doFillReleaseStatusItems() {
             final ListBoxModel items = new ListBoxModel();
             ReleaseStatus.fillListBox(items);
+            return items;
+        }
+
+        public ListBoxModel doFillArchiveModeItems() {
+            final ListBoxModel items = new ListBoxModel();
+            ArchiveMode.fillListBox(items);
             return items;
         }
     }

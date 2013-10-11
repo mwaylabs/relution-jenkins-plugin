@@ -39,7 +39,11 @@
 			title="${%Upload applications to}"
 			field="releaseStatus">
 			<f:select />
-			<!-- <f:textbox /> -->
+		</f:entry>
+		<f:entry
+			title="${%Archivation mode}"
+			field="archiveMode">
+			<f:select />
 		</f:entry>
 		<f:entry title="">
 			<div align="right">

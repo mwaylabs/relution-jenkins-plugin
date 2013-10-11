@@ -28,6 +28,11 @@
 				<f:select />
 			</f:entry>
 			<f:entry
+				title="${%Archivation mode}"
+				field="archiveMode">
+				<f:select />
+			</f:entry>
+			<f:entry
 				title="${%Application name (optional)}"
 				field="name">
 				<f:textbox />
