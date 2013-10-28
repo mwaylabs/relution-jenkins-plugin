@@ -27,6 +27,7 @@ import org.jenkinsci.plugins.relution_publisher.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApplicationResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.AssetResponse;
+import org.jenkinsci.plugins.relution_publisher.net.responses.EmptyResponse;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -201,6 +202,22 @@ public final class RequestFactory {
 
         final StringEntity entity = new StringEntity(version.toJson(), CHARSET);
         request.setEntity(entity);
+
+        return request;
+    }
+
+    public static Request<ApiObject> createDeleteVersionRequest(final Store store, final Version version) {
+
+        final Request<ApiObject> request = RequestFactory.createBaseRequest(
+                Request.Method.DELETE,
+                EmptyResponse.class,
+                store,
+                URL_APPS,
+                version.getAppUuid(),
+                URL_VERSIONS,
+                version.getUuid());
+
+        request.addHeader("Content-Type", "application/json");
 
         return request;
     }

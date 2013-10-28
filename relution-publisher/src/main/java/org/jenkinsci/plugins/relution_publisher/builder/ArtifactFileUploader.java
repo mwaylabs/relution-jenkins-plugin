@@ -27,6 +27,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.jobs.Publication;
+import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
+import org.jenkinsci.plugins.relution_publisher.entities.ApiObject;
 import org.jenkinsci.plugins.relution_publisher.entities.Application;
 import org.jenkinsci.plugins.relution_publisher.entities.Asset;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
@@ -158,9 +160,78 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (app.getUuid() == null) {
             this.persistApplication(app);
+
         } else {
+            final List<Version> archived = this.getArchivedVersions(app, version);
+
             version.setAppUuid(app.getUuid());
             this.persistVersion(version);
+
+            this.manageArchivedVersions(archived, version);
+        }
+
+        this.log.write(
+                this,
+                "Uploaded version \"%s\" (%d) to \"%s\"",
+                version.getVersionName(),
+                version.getVersionCode(),
+                version.getReleaseStatus());
+    }
+
+    private List<Version> getArchivedVersions(final Application app, final Version version) {
+
+        final List<Version> archived = new ArrayList<Version>();
+
+        for (final Version current : app.getVersions()) {
+            if (StringUtils.equals(current.getReleaseStatus(), version.getReleaseStatus()) && current.getVersionCode() != version.getVersionCode()) {
+                archived.add(current);
+            }
+        }
+
+        return archived;
+    }
+
+    private void manageArchivedVersions(final List<Version> archived, final Version version) {
+
+        final String key = !this.publication.usesDefaultArchiveMode()
+                ? this.publication.getArchiveMode()
+                : this.store.getArchiveMode();
+
+        if (StringUtils.equals(key, ArchiveMode.OVERWRITE.key)) {
+            this.log.write(this, "Delete previous application version from \"%s\"", version.getReleaseStatus());
+
+            for (final Version current : archived) {
+                this.deleteVersion(current);
+            }
+
+        } else {
+            this.log.write(this, "Keep previous application version (moved to archive)");
+
+        }
+    }
+
+    private void deleteVersion(final Version version) {
+
+        this.log.write(
+                this,
+                "Deleting version \"%s\" (%d) from \"%s\"...",
+                version.getVersionName(),
+                version.getVersionCode(),
+                version.getReleaseStatus());
+
+        try {
+            final Request<ApiObject> request = RequestFactory.createDeleteVersionRequest(this.store, version);
+            final ApiResponse<ApiObject> response = request.execute();
+
+            if (!this.verifyDeleteResponse(response)) {
+                this.log.write(this, "Error deleting version");
+                this.build.setResult(Result.UNSTABLE);
+                return;
+            }
+
+        } catch (final Exception e) {
+            this.log.write(this, "Error deleting version: %s", e.toString());
+            e.printStackTrace();
         }
     }
 
@@ -421,7 +492,12 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         final List<Asset> assets = response.getResults();
 
         if (response.getStatus() != 0) {
-            this.log.write(this, "Error uploading file (%d), server's response:\n%s", response.getStatusCode(), response.getMessage());
+            this.log.write(
+                    this,
+                    "Error uploading file (%d), server's response:\n\n%s\n",
+                    response.getStatusCode(),
+                    response.getMessage());
+
             return false;
         }
 
@@ -438,12 +514,32 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         final List<Application> applications = response.getResults();
 
         if (response.getStatus() != 0) {
-            this.log.write(this, "Error creating application object (%d), server's response:\n%s", response.getStatusCode(), response.getMessage());
+            this.log.write(
+                    this,
+                    "Error creating application object (%d), server's response:\n\n%s\n",
+                    response.getStatusCode(),
+                    response.getMessage());
+
             return false;
         }
 
         if (this.isEmpty(applications)) {
             this.log.write(this, "Error creating application object, the server returned no application objects.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean verifyDeleteResponse(final ApiResponse<ApiObject> response) {
+
+        if (response.getStatus() != 0) {
+            this.log.write(
+                    this,
+                    "Error deleting application object (%d), server's response:\n\n%s\n",
+                    response.getStatusCode(),
+                    response.getMessage());
+
             return false;
         }
 
