@@ -36,6 +36,7 @@ import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.jenkinsci.plugins.relution_publisher.net.Request;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
+import org.jenkinsci.plugins.relution_publisher.util.Builds;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -88,7 +89,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
             if (this.isEmpty(responses)) {
                 this.log.write(this, "No artifact to upload found.");
-                this.build.setResult(Result.NOT_BUILT);
+                Builds.set(this.build, Result.NOT_BUILT, this.log);
                 return true;
             }
 
@@ -98,7 +99,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         } catch (final URISyntaxException e) {
             this.log.write(this, "Publication failed with %s", e.toString());
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
         }
         return true;
     }
@@ -108,7 +109,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (!this.verifyAssetResponse(response)) {
             this.log.write(this, "Upload of the build artifact failed.");
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 
@@ -116,7 +117,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (assets.size() != 1) {
             this.log.write(this, "More than one unpersisted asset object returned by server.");
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 
@@ -135,7 +136,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Retrieval of the application object failed.");
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 
@@ -143,7 +144,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         final Application app = this.getApplication(applications, asset);
 
         if (app == null) {
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
             this.log.write(this, "Could not find application object associated with the file.");
             return;
         }
@@ -152,7 +153,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (version == null) {
             this.log.write(this, "Could not find version object associated with the file.");
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 
@@ -225,7 +226,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
             if (!this.verifyDeleteResponse(response)) {
                 this.log.write(this, "Error deleting version");
-                this.build.setResult(Result.UNSTABLE);
+                Builds.set(this.build, Result.UNSTABLE, this.log);
                 return;
             }
 
@@ -286,7 +287,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (this.isEmpty(responses)) {
             this.log.write(this, "Failed to upload application icon.");
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 
@@ -294,7 +295,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (!this.verifyAssetResponse(response)) {
             this.log.write(this, "Failed to upload application icon.");
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 
@@ -302,7 +303,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (assets.size() != 1) {
             this.log.write(this, "More than one unpersisted asset object returned by server.");
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 
@@ -369,7 +370,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting application.");
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 
@@ -386,7 +387,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting version.");
-            this.build.setResult(Result.UNSTABLE);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 

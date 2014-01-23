@@ -32,6 +32,7 @@ import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
+import org.jenkinsci.plugins.relution_publisher.util.Builds;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
@@ -76,13 +77,13 @@ public class ArtifactPublisher extends Recorder {
 
         if (build.getResult() != Result.SUCCESS) {
             log.write(this, "Skipped, build was unsuccessful");
-            build.setResult(Result.NOT_BUILT);
+            Builds.set(build, Result.NOT_BUILT, log);
             return true;
         }
 
         if (this.publications == null) {
             log.write(this, "Skipped, no publications configured");
-            build.setResult(Result.UNSTABLE);
+            Builds.set(build, Result.UNSTABLE, log);
             return true;
         }
 
@@ -107,7 +108,7 @@ public class ArtifactPublisher extends Recorder {
                     "The store configured for '%s' no longer exists, please verify your configuration.",
                     publication.getArtifactPath());
 
-            build.setResult(Result.UNSTABLE);
+            Builds.set(build, Result.UNSTABLE, log);
             return;
         }
 
