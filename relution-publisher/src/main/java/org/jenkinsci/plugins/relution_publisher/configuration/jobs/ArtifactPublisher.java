@@ -27,9 +27,11 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.relution_publisher.builder.ArtifactFileUploader;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
+import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.jenkinsci.plugins.relution_publisher.util.Builds;
@@ -75,12 +77,6 @@ public class ArtifactPublisher extends Recorder {
         final Log log = new Log(listener.getLogger());
         log.write();
 
-        if (build.getResult() != Result.SUCCESS) {
-            log.write(this, "Skipped, build was unsuccessful");
-            Builds.set(build, Result.NOT_BUILT, log);
-            return true;
-        }
-
         if (this.publications == null) {
             log.write(this, "Skipped, no publications configured");
             Builds.set(build, Result.UNSTABLE, log);
@@ -112,10 +108,33 @@ public class ArtifactPublisher extends Recorder {
             return;
         }
 
+        if (!this.shouldPublish(build, publication, store, log)) {
+            log.write(this, "Not publishing to '%s' because result of build was %s", store, build.getResult());
+            return;
+        }
+
         final ArtifactFileUploader publisher = new ArtifactFileUploader(build, publication, store, log);
 
         log.write(this, "Publishing '%s' to '%s'", publication.getArtifactPath(), store.toString());
         build.getWorkspace().act(publisher);
+    }
+
+    private boolean shouldPublish(final AbstractBuild<?, ?> build, final Publication publication, final Store store, final Log log) {
+
+        if (build.getResult() == Result.SUCCESS) {
+            return true;
+        }
+
+        final String key = !publication.usesDefaultUploadMode()
+                ? publication.getUploadMode()
+                : store.getUploadMode();
+
+        if (build.getResult() == Result.UNSTABLE && StringUtils.equals(key, UploadMode.UNSTABLE.key)) {
+            log.write(this, "Will upload build with result %s, as configured", build.getResult());
+            return true;
+        }
+
+        return false;
     }
 
     @Extension

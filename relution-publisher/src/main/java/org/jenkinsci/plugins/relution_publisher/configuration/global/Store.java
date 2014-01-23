@@ -32,6 +32,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.ParseException;
 import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
+import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
 import org.jenkinsci.plugins.relution_publisher.net.Request;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
@@ -65,6 +66,8 @@ public class Store extends AbstractDescribableImpl<Store> {
     public final static String    KEY_PASSWORD       = "password";
 
     public final static String    KEY_RELEASE_STATUS = "releaseStatus";
+    public final static String    KEY_ARCHIVE_MODE   = "archiveMode";
+    public final static String    KEY_UPLOAD_MODE    = "uploadMode";
 
     private final static String[] URL_SCHEMES        = {"http", "https"};
 
@@ -77,6 +80,7 @@ public class Store extends AbstractDescribableImpl<Store> {
 
     private String                mReleaseStatus;
     private String                mArchiveMode;
+    private String                mUploadMode;
 
     /**
      * Creates a new instance of the {@link Store} class initialized with the values in
@@ -101,7 +105,14 @@ public class Store extends AbstractDescribableImpl<Store> {
      * to this store.
      */
     @DataBoundConstructor
-    public Store(final String url, final String organization, final String username, final String password, final String releaseStatus, final String archiveMode) {
+    public Store(
+            final String url,
+            final String organization,
+            final String username,
+            final String password,
+            final String releaseStatus,
+            final String archiveMode,
+            final String uploadMode) {
 
         this.setUrl(url);
         this.setOrganization(organization);
@@ -111,6 +122,7 @@ public class Store extends AbstractDescribableImpl<Store> {
 
         this.setReleaseStatus(releaseStatus);
         this.setArchiveMode(archiveMode);
+        this.setUploadMode(uploadMode);
     }
 
     /**
@@ -126,6 +138,8 @@ public class Store extends AbstractDescribableImpl<Store> {
         this.setPassword(storeJsonObject.getString(KEY_PASSWORD));
 
         this.setReleaseStatus(storeJsonObject.getString(KEY_RELEASE_STATUS));
+        this.setArchiveMode(storeJsonObject.getString(KEY_ARCHIVE_MODE));
+        this.setUploadMode(storeJsonObject.getString(KEY_UPLOAD_MODE));
     }
 
     /**
@@ -223,6 +237,23 @@ public class Store extends AbstractDescribableImpl<Store> {
     }
 
     /**
+     * Gets the key of the default {@link UploadMode} that determines which artifacts to upload to
+     * the store.
+     */
+    public String getUploadMode() {
+        return this.mUploadMode;
+    }
+
+    /**
+     * Sets the key of the default {@link UploadMode} that determines which artifacts to upload to
+     * the store.
+     * @param uploadMode The upload mode to use.
+     */
+    public void setUploadMode(final String uploadMode) {
+        this.mUploadMode = uploadMode;
+    }
+
+    /**
      * Gets the host component of the store's {@link #getUrl() URL}.
      */
     public String getHostName() {
@@ -261,6 +292,8 @@ public class Store extends AbstractDescribableImpl<Store> {
         json.put(KEY_PASSWORD, this.mPassword);
 
         json.put(KEY_RELEASE_STATUS, this.mReleaseStatus);
+        json.put(KEY_ARCHIVE_MODE, this.mArchiveMode);
+        json.put(KEY_UPLOAD_MODE, this.mUploadMode);
 
         return json;
     }
@@ -394,7 +427,7 @@ public class Store extends AbstractDescribableImpl<Store> {
             }
 
             try {
-                final Store store = new Store(url, organization, username, password, null, null);
+                final Store store = new Store(url, organization, username, password, null, null, null);
                 final Request<?> request = RequestFactory.createAppStoreItemsRequest(store);
                 final ApiResponse<?> response = request.execute();
 
@@ -437,6 +470,12 @@ public class Store extends AbstractDescribableImpl<Store> {
         public ListBoxModel doFillArchiveModeItems() {
             final ListBoxModel items = new ListBoxModel();
             ArchiveMode.fillListBox(items);
+            return items;
+        }
+
+        public ListBoxModel doFillUploadModeItems() {
+            final ListBoxModel items = new ListBoxModel();
+            UploadMode.fillListBox(items);
             return items;
         }
     }

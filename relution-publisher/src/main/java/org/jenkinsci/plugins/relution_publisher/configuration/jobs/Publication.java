@@ -27,6 +27,7 @@ import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
 import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
+import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -46,6 +47,7 @@ public class Publication extends AbstractDescribableImpl<Publication> {
 
     private String releaseStatus;
     private String archiveMode;
+    private String uploadMode;
 
     private String name;
     private String iconPath;
@@ -59,6 +61,7 @@ public class Publication extends AbstractDescribableImpl<Publication> {
             final String storeId,
             final String releaseStatus,
             final String archiveMode,
+            final String uploadMode,
             final String name,
             final String iconPath,
             final String changeLogPath,
@@ -69,6 +72,7 @@ public class Publication extends AbstractDescribableImpl<Publication> {
         this.setStoreId(storeId);
         this.setReleaseStatus(releaseStatus);
         this.setArchiveMode(archiveMode);
+        this.setUploadMode(uploadMode);
         this.setName(name);
         this.setIconPath(iconPath);
         this.setChangeLogPath(changeLogPath);
@@ -154,6 +158,33 @@ public class Publication extends AbstractDescribableImpl<Publication> {
      */
     public void setArchiveMode(final String archiveMode) {
         this.archiveMode = archiveMode;
+    }
+
+    /**
+     * Gets the key of the {@link UploadMode} that determines which artifacts to upload to the
+     * store.
+     */
+    public String getUploadMode() {
+        return this.uploadMode;
+    }
+
+    /**
+     * Gets a value indicating whether the {@link UploadMode} of the publication equals the
+     * default value.
+     * @return <code>true</code> if the upload mode is equal to {@link UploadMode#DEFAULT};
+     * otherwise, <code>false</code>.
+     */
+    public boolean usesDefaultUploadMode() {
+        return StringUtils.isBlank(this.uploadMode) || this.uploadMode.equals(UploadMode.DEFAULT.key);
+    }
+
+    /**
+     * Sets the key of the {@link UploadMode} that determines which artifacts to upload to the
+     * store.
+     * @param uploadMode The upload mode to use.
+     */
+    public void setUploadMode(final String uploadMode) {
+        this.uploadMode = uploadMode;
     }
 
     /**
@@ -297,6 +328,12 @@ public class Publication extends AbstractDescribableImpl<Publication> {
         public ListBoxModel doFillArchiveModeItems() {
             final ListBoxModel items = new ListBoxModel();
             ArchiveMode.fillListBoxWithDefault(items);
+            return items;
+        }
+
+        public ListBoxModel doFillUploadModeItems() {
+            final ListBoxModel items = new ListBoxModel();
+            UploadMode.fillListBoxWithDefault(items);
             return items;
         }
     }

@@ -23,8 +23,13 @@
 		</f:entry>
 		<f:advanced>
 			<f:entry
-				title="${%Deploy versions to}"
+				title="${%Upload versions to}"
 				field="releaseStatus">
+				<f:select />
+			</f:entry>
+			<f:entry
+				title="${%Upload versions if}"
+				field="uploadMode">
 				<f:select />
 			</f:entry>
 			<f:entry

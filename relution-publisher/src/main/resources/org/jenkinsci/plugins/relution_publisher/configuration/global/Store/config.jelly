@@ -36,8 +36,13 @@
 			method="testConnection"
 			with="url,username,organization,password" />
 		<f:entry
-			title="${%Upload applications to}"
+			title="${%Upload versions to}"
 			field="releaseStatus">
+			<f:select />
+		</f:entry>
+		<f:entry
+			title="${%Upload versions if}"
+			field="uploadMode">
 			<f:select />
 		</f:entry>
 		<f:entry
