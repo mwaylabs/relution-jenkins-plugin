@@ -69,6 +69,9 @@ public class Store extends AbstractDescribableImpl<Store> {
     public final static String    KEY_ARCHIVE_MODE   = "archiveMode";
     public final static String    KEY_UPLOAD_MODE    = "uploadMode";
 
+    public final static String    KEY_PROXY_HOST     = "proxyHost";
+    public final static String    KEY_PROXY_PORT     = "proxyPort";
+
     private final static String[] URL_SCHEMES        = {"http", "https"};
 
     private String                mUrl;
@@ -81,6 +84,9 @@ public class Store extends AbstractDescribableImpl<Store> {
     private String                mReleaseStatus;
     private String                mArchiveMode;
     private String                mUploadMode;
+
+    private String                mProxyHost;
+    private int                   mProxyPort;
 
     /**
      * Creates a new instance of the {@link Store} class initialized with the values in
@@ -112,7 +118,9 @@ public class Store extends AbstractDescribableImpl<Store> {
             final String password,
             final String releaseStatus,
             final String archiveMode,
-            final String uploadMode) {
+            final String uploadMode,
+            final String proxyHost,
+            final int proxyPort) {
 
         this.setUrl(url);
         this.setOrganization(organization);
@@ -123,6 +131,19 @@ public class Store extends AbstractDescribableImpl<Store> {
         this.setReleaseStatus(releaseStatus);
         this.setArchiveMode(archiveMode);
         this.setUploadMode(uploadMode);
+
+        this.setProxyHost(proxyHost);
+        this.setProxyPort(proxyPort);
+    }
+
+    public Store(
+            final String url,
+            final String organization,
+            final String username,
+            final String password,
+            final String proxyHost,
+            final int proxyPort) {
+        this(url, organization, username, password, null, null, null, proxyHost, proxyPort);
     }
 
     /**
@@ -140,6 +161,9 @@ public class Store extends AbstractDescribableImpl<Store> {
         this.setReleaseStatus(storeJsonObject.getString(KEY_RELEASE_STATUS));
         this.setArchiveMode(storeJsonObject.getString(KEY_ARCHIVE_MODE));
         this.setUploadMode(storeJsonObject.getString(KEY_UPLOAD_MODE));
+
+        this.setProxyHost(storeJsonObject.getString(KEY_PROXY_HOST));
+        this.setProxyPort(storeJsonObject.optInt(KEY_PROXY_PORT, 0));
     }
 
     /**
@@ -254,6 +278,36 @@ public class Store extends AbstractDescribableImpl<Store> {
     }
 
     /**
+     * Gets the host name of the proxy server to use.
+     */
+    public String getProxyHost() {
+        return this.mProxyHost;
+    }
+
+    /**
+     * Sets the host name of the proxy server to use.
+     * @param proxyHost A host name.
+     */
+    public void setProxyHost(final String proxyHost) {
+        this.mProxyHost = proxyHost;
+    }
+
+    /**
+     * Gets the port number of the proxy server to use.
+     */
+    public int getProxyPort() {
+        return this.mProxyPort;
+    }
+
+    /**
+     * Sets the port number of the proxy server to use.
+     * @param proxyPort A port number.
+     */
+    public void setProxyPort(final int proxyPort) {
+        this.mProxyPort = proxyPort;
+    }
+
+    /**
      * Gets the host component of the store's {@link #getUrl() URL}.
      */
     public String getHostName() {
@@ -294,6 +348,9 @@ public class Store extends AbstractDescribableImpl<Store> {
         json.put(KEY_RELEASE_STATUS, this.mReleaseStatus);
         json.put(KEY_ARCHIVE_MODE, this.mArchiveMode);
         json.put(KEY_UPLOAD_MODE, this.mUploadMode);
+
+        json.put(KEY_PROXY_HOST, this.mProxyHost);
+        json.put(KEY_PROXY_PORT, this.mProxyPort);
 
         return json;
     }
@@ -419,15 +476,21 @@ public class Store extends AbstractDescribableImpl<Store> {
                 @QueryParameter(Store.KEY_URL) final String url,
                 @QueryParameter(Store.KEY_USERNAME) final String username,
                 @QueryParameter(Store.KEY_ORGANIZATION) final String organization,
-                @QueryParameter(Store.KEY_PASSWORD) final String password)
+                @QueryParameter(Store.KEY_PASSWORD) final String password,
+                @QueryParameter(Store.KEY_PROXY_HOST) final String proxyHost,
+                @QueryParameter(Store.KEY_PROXY_PORT) final int proxyPort)
                 throws IOException, ServletException {
 
             if (StringUtils.isEmpty(url)) {
                 return FormValidation.warning("Unable to validate, the specified URL is empty.");
             }
 
+            if (!StringUtils.isEmpty(proxyHost) && proxyPort <= 0) {
+                return FormValidation.warning("Host name for proxy set, but invalid port configured.");
+            }
+
             try {
-                final Store store = new Store(url, organization, username, password, null, null, null);
+                final Store store = new Store(url, organization, username, password, proxyHost, proxyPort);
                 final Request<?> request = RequestFactory.createAppStoreItemsRequest(store);
                 final ApiResponse<?> response = request.execute();
 

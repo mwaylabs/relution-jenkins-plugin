@@ -16,6 +16,7 @@
 
 package org.jenkinsci.plugins.relution_publisher.net;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
@@ -88,6 +89,10 @@ public final class RequestFactory {
 
         request.addHeader("Accept", "application/json");
         request.addHeader("Authorization", "Basic " + store.getAuthorizationToken());
+
+        if (!StringUtils.isBlank(store.getProxyHost()) && store.getProxyPort() != 0) {
+            request.setProxy(store.getProxyHost(), store.getProxyPort());
+        }
 
         return request;
     }

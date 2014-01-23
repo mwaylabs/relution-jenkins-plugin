@@ -142,6 +142,10 @@ public class Request<T extends ApiObject> {
         return response;
     }
 
+    public void setProxy(final String hostname, final int port) {
+        this.mProxyHost = new HttpHost(hostname, port);
+    }
+
     public void addHeader(final String name, final String value) {
         this.mHeaders.put(name, value);
     }

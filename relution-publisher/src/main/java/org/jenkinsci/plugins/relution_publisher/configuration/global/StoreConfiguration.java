@@ -36,14 +36,9 @@ import jenkins.model.GlobalConfiguration;
 @Extension
 public class StoreConfiguration extends GlobalConfiguration {
 
-    public final static String KEY_STORES     = "stores";
-    public final static String KEY_PROXY_URL  = "proxyHost";
-    public final static String KEY_PROXY_PORT = "proxyPort";
+    public final static String KEY_STORES = "stores";
 
-    private final List<Store>  stores         = new ArrayList<Store>();
-
-    private String             proxyHost;
-    private int                proxyPort;
+    private final List<Store>  stores     = new ArrayList<Store>();
 
     /**
      * Initializes a new instance of the {@link StoreConfiguration} class.
@@ -91,9 +86,6 @@ public class StoreConfiguration extends GlobalConfiguration {
             this.addStore(store);
         }
 
-        this.proxyHost = json.getString(KEY_PROXY_URL);
-        this.proxyPort = json.optInt(KEY_PROXY_PORT, 0);
-
         this.save();
         return false;
     }
@@ -123,35 +115,5 @@ public class StoreConfiguration extends GlobalConfiguration {
             }
         }
         return null;
-    }
-
-    /**
-     * Gets the host name of the proxy server to use.
-     */
-    public String getProxyHost() {
-        return this.proxyHost;
-    }
-
-    /**
-     * Sets the host name of the proxy server to use.
-     * @param proxyHost A host name.
-     */
-    public void setProxyHost(final String proxyHost) {
-        this.proxyHost = proxyHost;
-    }
-
-    /**
-     * Gets the port number of the proxy server to use.
-     */
-    public int getProxyPort() {
-        return this.proxyPort;
-    }
-
-    /**
-     * Sets the port number of the proxy server to use.
-     * @param proxyPort A port number.
-     */
-    public void setProxyPort(final int proxyPort) {
-        this.proxyPort = proxyPort;
     }
 }

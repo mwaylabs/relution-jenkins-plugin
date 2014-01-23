@@ -15,6 +15,19 @@
 			field="url">
 			<f:textbox />
 		</f:entry>
+		<f:advanced title="${%Proxy settings}">
+			<f:entry
+				title="${%Proxy host}"
+				field="proxyHost">
+				<f:textbox />
+			</f:entry>
+
+			<f:entry
+				title="${%Proxy port}"
+				field="proxyPort">
+				<f:textbox />
+			</f:entry>
+		</f:advanced>
 		<f:entry
 			title="${%User name}"
 			field="username">
@@ -34,7 +47,7 @@
 			title="${%Test connection}"
 			progress="${%Connecting...}"
 			method="testConnection"
-			with="url,username,organization,password" />
+			with="url,username,organization,password,proxyHost,proxyPort" />
 		<f:entry
 			title="${%Upload versions to}"
 			field="releaseStatus">
