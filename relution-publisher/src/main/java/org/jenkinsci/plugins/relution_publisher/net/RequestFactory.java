@@ -21,14 +21,13 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
-import org.jenkinsci.plugins.relution_publisher.entities.ApiObject;
 import org.jenkinsci.plugins.relution_publisher.entities.Application;
 import org.jenkinsci.plugins.relution_publisher.entities.Asset;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApplicationResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.AssetResponse;
-import org.jenkinsci.plugins.relution_publisher.net.responses.EmptyResponse;
+import org.jenkinsci.plugins.relution_publisher.net.responses.StringResponse;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -81,7 +80,7 @@ public final class RequestFactory {
         return sb.toString();
     }
 
-    private static <T extends ApiObject> Request<T> createBaseRequest(final int method, final Class<? extends ApiResponse<T>> responseClass, final Store store,
+    private static <T> Request<T> createBaseRequest(final int method, final Class<? extends ApiResponse<T>> responseClass, final Store store,
             final String... parts) {
 
         final String url = RequestFactory.getUrl(store, parts);
@@ -211,11 +210,11 @@ public final class RequestFactory {
         return request;
     }
 
-    public static Request<ApiObject> createDeleteVersionRequest(final Store store, final Version version) {
+    public static Request<String> createDeleteVersionRequest(final Store store, final Version version) {
 
-        final Request<ApiObject> request = RequestFactory.createBaseRequest(
+        final Request<String> request = RequestFactory.createBaseRequest(
                 Request.Method.DELETE,
-                EmptyResponse.class,
+                StringResponse.class,
                 store,
                 URL_APPS,
                 version.getAppUuid(),

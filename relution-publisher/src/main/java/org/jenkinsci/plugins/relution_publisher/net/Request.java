@@ -31,7 +31,6 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
-import org.jenkinsci.plugins.relution_publisher.entities.ApiObject;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 
 import java.io.IOException;
@@ -42,7 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class Request<T extends ApiObject> {
+public class Request<T> {
 
     private final static Charset                  CHARSET      = Charset.forName("UTF-8");
 

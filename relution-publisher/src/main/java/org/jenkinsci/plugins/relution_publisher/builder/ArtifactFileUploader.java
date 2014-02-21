@@ -28,7 +28,6 @@ import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.jobs.Publication;
 import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
-import org.jenkinsci.plugins.relution_publisher.entities.ApiObject;
 import org.jenkinsci.plugins.relution_publisher.entities.Application;
 import org.jenkinsci.plugins.relution_publisher.entities.Asset;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
@@ -221,8 +220,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
                 version.getReleaseStatus());
 
         try {
-            final Request<ApiObject> request = RequestFactory.createDeleteVersionRequest(this.store, version);
-            final ApiResponse<ApiObject> response = request.execute();
+            final Request<String> request = RequestFactory.createDeleteVersionRequest(this.store, version);
+            final ApiResponse<String> response = request.execute();
 
             if (!this.verifyDeleteResponse(response)) {
                 this.log.write(this, "Error deleting version");
@@ -532,7 +531,9 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return true;
     }
 
-    private boolean verifyDeleteResponse(final ApiResponse<ApiObject> response) {
+    private boolean verifyDeleteResponse(final ApiResponse<String> response) {
+
+        this.log.write(this, "Status: %d", response.getStatus());
 
         if (response.getStatus() != 0) {
             this.log.write(

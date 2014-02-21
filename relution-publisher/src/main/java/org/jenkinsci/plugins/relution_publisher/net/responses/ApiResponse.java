@@ -21,7 +21,6 @@ import com.google.gson.GsonBuilder;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
-import org.jenkinsci.plugins.relution_publisher.entities.ApiObject;
 import org.jenkinsci.plugins.relution_publisher.entities.Error;
 
 import java.util.ArrayList;
@@ -31,22 +30,22 @@ import java.util.List;
 /**
  * Represents a response returned by the Relution server.
  */
-public class ApiResponse<TResult extends ApiObject> {
+public class ApiResponse<T> {
 
-    public final static Gson    GSON    = new GsonBuilder().setPrettyPrinting().create();
+    public final static Gson GSON    = new GsonBuilder().setPrettyPrinting().create();
 
-    private int                 statusCode;
-    private String              reason;
+    private int              statusCode;
+    private String           reason;
 
-    private final Integer       status;
-    private String              message;
+    private final Integer    status;
+    private String           message;
 
-    private final Error         errors;
+    private final Error      errors;
 
-    private final int           total;
-    private final List<TResult> results = new ArrayList<TResult>();
+    private final int        total;
+    private final List<T>    results = new ArrayList<T>();
 
-    private transient String    s;
+    private transient String s;
 
     /**
      * Converts the specified JSON formatted string to an instance of the specified class. 
@@ -54,7 +53,7 @@ public class ApiResponse<TResult extends ApiObject> {
      * @param clazz A {@link Class} that extends {@link ApiResponse}.
      * @return An instance of the specified class.
      */
-    public static <T extends ApiObject> ApiResponse<T> fromJson(final String json, final Class<? extends ApiResponse<T>> clazz) {
+    public static <T> ApiResponse<T> fromJson(final String json, final Class<? extends ApiResponse<T>> clazz) {
 
         return ApiResponse.GSON.fromJson(json, clazz);
     }
@@ -136,7 +135,7 @@ public class ApiResponse<TResult extends ApiObject> {
     /**
      * Gets the results returned by the server.
      */
-    public List<TResult> getResults() {
+    public List<T> getResults() {
         return this.results;
     }
 
