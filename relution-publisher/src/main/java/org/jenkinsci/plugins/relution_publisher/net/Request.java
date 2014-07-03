@@ -27,7 +27,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
@@ -54,7 +53,6 @@ public class Request<T> {
     private final String                          mUrl;
     private final Class<? extends ApiResponse<T>> mResponseClass;
 
-    private BasicCookieStore                      mCookieStore;
     private HttpHost                              mProxyHost;
 
     /**
@@ -175,7 +173,6 @@ public class Request<T> {
                 client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, this.mProxyHost);
             }
             client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-            client.setCookieStore(this.mCookieStore);
 
             final HttpRequestBase httpRequest = this.createHttpRequest();
             final HttpResponse httpResponse = client.execute(httpRequest);
