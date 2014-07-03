@@ -17,6 +17,7 @@
 package org.jenkinsci.plugins.relution_publisher.configuration.jobs;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.Result;
@@ -109,14 +110,21 @@ public class ArtifactPublisher extends Recorder {
         }
 
         if (!this.shouldPublish(build, publication, store, log)) {
-            log.write(this, "Not publishing to '%s' because result of build was %s", store, build.getResult());
+            log.write(this, "Not publishing to '%s' because result of build was %s.", store, build.getResult());
             return;
         }
 
         final ArtifactFileUploader publisher = new ArtifactFileUploader(build, publication, store, log);
 
         log.write(this, "Publishing '%s' to '%s'", publication.getArtifactPath(), store.toString());
-        build.getWorkspace().act(publisher);
+        final FilePath workspace = build.getWorkspace();
+
+        if (workspace == null) {
+            log.write(this, "Unable to publish, workspace of build is undefined.");
+            return;
+        }
+
+        workspace.act(publisher);
     }
 
     private boolean shouldPublish(final AbstractBuild<?, ?> build, final Publication publication, final Store store, final Log log) {
