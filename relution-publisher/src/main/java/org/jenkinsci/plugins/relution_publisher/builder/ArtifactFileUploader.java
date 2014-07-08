@@ -86,11 +86,15 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             throws IOException, InterruptedException {
 
         try {
-            this.log.write(this, "Uploading build artifact...");
+            this.log.write(this, "Uploading build artifacts...");
             final List<ApiResponse<Asset>> responses = this.uploadAssets(basePath, this.publication.getArtifactPath());
 
-            if (this.isEmpty(responses)) {
-                this.log.write(this, "No artifact to upload found.");
+            if (this.isEmpty(responses) && this.build.getResult() == Result.UNSTABLE) {
+                this.log.write(this, "Upload of build artifacts failed.");
+                return true;
+
+            } else if (this.isEmpty(responses)) {
+                this.log.write(this, "No artifacts to upload found.");
                 Builds.set(this.build, Result.NOT_BUILT, this.log);
                 return true;
             }
@@ -99,10 +103,15 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
                 this.uploadVersion(basePath, response);
             }
 
+        } catch (final IOException e) {
+            this.log.write(this, "Publication failed with I/O error, %s", e.getMessage());
+            Builds.set(this.build, Result.UNSTABLE, this.log);
+
         } catch (final URISyntaxException e) {
             this.log.write(this, "Publication failed with %s", e.toString());
             Builds.set(this.build, Result.UNSTABLE, this.log);
         }
+
         return true;
     }
 
@@ -110,7 +119,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             throws ClientProtocolException, URISyntaxException, IOException {
 
         if (!this.verifyAssetResponse(response)) {
-            this.log.write(this, "Upload of the build artifact failed.");
+            this.log.write(this, "Upload of build artifacts failed.");
             Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
@@ -118,13 +127,13 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         final List<Asset> assets = response.getResults();
 
         if (assets.size() != 1) {
-            this.log.write(this, "More than one unpersisted asset object returned by server.");
+            this.log.write(this, "More than one unpersisted asset returned by server.");
             Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 
         final Asset asset = assets.get(0);
-        this.log.write(this, "Upload completed, received token %s", asset.getUuid());
+        this.log.write(this, "Upload completed, received token {%s}", asset.getUuid());
 
         this.retrieveApplication(basePath, asset);
     }
@@ -132,12 +141,12 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     private void retrieveApplication(final File basePath, final Asset asset)
             throws ClientProtocolException, URISyntaxException, IOException {
 
-        this.log.write(this, "Requesting application object associated with token \"%s\"...", asset.getUuid());
+        this.log.write(this, "Requesting application associated with token {%s}...", asset.getUuid());
         final Request<Application> request = RequestFactory.createAppFromFileRequest(this.store, asset);
         final ApiResponse<Application> response = request.execute();
 
         if (!this.verifyApplicationResponse(response)) {
-            this.log.write(this, "Retrieval of the application object failed.");
+            this.log.write(this, "Retrieval of application failed.");
             Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
@@ -147,18 +156,21 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         if (app == null) {
             Builds.set(this.build, Result.UNSTABLE, this.log);
-            this.log.write(this, "Could not find application object associated with the file.");
+            this.log.write(this, "Could not find application associated with uploaded file.");
             return;
         }
 
+        this.log.write(this, "Application \"%s\" was retrieved.", app.getInternalName());
+        this.log.write(this, "Searching version associated with uploaded file...");
         final Version version = this.getVersion(app, asset);
 
         if (version == null) {
-            this.log.write(this, "Could not find version object associated with the file.");
+            this.log.write(this, "Could not find version associated with uploaded file.");
             Builds.set(this.build, Result.UNSTABLE, this.log);
             return;
         }
 
+        this.log.write(this, "Found version \"%s\".", version.getVersionName());
         this.setVersionMetadata(basePath, version);
 
         if (app.getUuid() == null) {
@@ -194,7 +206,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return archived;
     }
 
-    private void manageArchivedVersions(final List<Version> archived, final Version version) {
+    private void manageArchivedVersions(final List<Version> archived, final Version version) throws URISyntaxException {
 
         final String key = !this.publication.usesDefaultArchiveMode()
                 ? this.publication.getArchiveMode()
@@ -213,7 +225,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         }
     }
 
-    private void deleteVersion(final Version version) {
+    private void deleteVersion(final Version version) throws URISyntaxException {
 
         this.log.write(
                 this,
@@ -232,8 +244,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
                 return;
             }
 
-        } catch (final Exception e) {
-            this.log.write(this, "Error deleting version: %s", e.toString());
+        } catch (final IOException e) {
+            this.log.write(this, "Error deleting version: %s", e.getMessage());
             e.printStackTrace();
         }
     }
