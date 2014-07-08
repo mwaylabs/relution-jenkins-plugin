@@ -31,13 +31,17 @@ public class Log {
         this.stream.println();
     }
 
-    public void write(final Object source, final String format, final Object... args) {
+    public void write(final Class<?> source, final String format, final Object... args) {
 
         final String message = String.format(
                 "[%s] %s",
-                source.getClass().getSimpleName(),
+                source.getSimpleName(),
                 String.format(format, args));
 
         this.stream.println(message);
+    }
+
+    public void write(final Object source, final String format, final Object... args) {
+        this.write(source.getClass(), format, args);
     }
 }
