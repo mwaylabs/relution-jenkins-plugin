@@ -29,6 +29,8 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 
@@ -42,11 +44,23 @@ import java.util.Map;
 
 public class Request<T> {
 
-    private final static Charset                  CHARSET      = Charset.forName("UTF-8");
+    /**
+     * The connection attempt will time out if a connection cannot be established within the
+     * specified amount of time, in milliseconds. 
+     */
+    private final static int                      TIMEOUT_CONNECTION_MS = 15000;
 
-    private final RequestQueryFields              mQueryFields = new RequestQueryFields();
+    /**
+     * The connection will time out if the period of inactivity after receiving a data packet
+     * exceeds the specified value, in milliseconds. 
+     */
+    private final static int                      TIMEOUT_SOCKET_MS     = 10000;
 
-    private final Map<String, String>             mHeaders     = new HashMap<String, String>();
+    private final static Charset                  CHARSET               = Charset.forName("UTF-8");
+
+    private final RequestQueryFields              mQueryFields          = new RequestQueryFields();
+
+    private final Map<String, String>             mHeaders              = new HashMap<String, String>();
     private HttpEntity                            mHttpEntity;
 
     private final int                             mMethod;
@@ -169,10 +183,15 @@ public class Request<T> {
         final DefaultHttpClient client = new DefaultHttpClient();
 
         try {
+            final HttpParams params = client.getParams();
+
+            HttpConnectionParams.setSoTimeout(params, TIMEOUT_SOCKET_MS);
+            HttpConnectionParams.setConnectionTimeout(params, TIMEOUT_CONNECTION_MS);
+            params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+
             if (this.mProxyHost != null) {
-                client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, this.mProxyHost);
+                params.setParameter(ConnRoutePNames.DEFAULT_PROXY, this.mProxyHost);
             }
-            client.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 
             final HttpRequestBase httpRequest = this.createHttpRequest();
             final HttpResponse httpResponse = client.execute(httpRequest);
