@@ -16,6 +16,8 @@
 
 package org.jenkinsci.plugins.relution_publisher.builder;
 
+import com.google.common.base.Stopwatch;
+
 import hudson.FilePath.FileCallable;
 import hudson.Util;
 import hudson.model.Result;
@@ -45,6 +47,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -84,7 +87,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         try {
             this.log.write(this, "Uploading build artifact...");
-            final List<ApiResponse<Asset>> responses = this.uploadAsset(basePath, this.publication.getArtifactPath());
+            final List<ApiResponse<Asset>> responses = this.uploadAssets(basePath, this.publication.getArtifactPath());
 
             if (this.isEmpty(responses)) {
                 this.log.write(this, "No artifact to upload found.");
@@ -282,7 +285,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         this.log.write(this, "Uploading application icon...");
         final String filePath = this.publication.getIconPath();
-        final List<ApiResponse<Asset>> responses = this.uploadAsset(basePath, filePath);
+        final List<ApiResponse<Asset>> responses = this.uploadAssets(basePath, filePath);
 
         if (this.isEmpty(responses)) {
             this.log.write(this, "Failed to upload application icon.");
@@ -393,8 +396,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "Version persisted successfully.");
     }
 
-    private List<ApiResponse<Asset>> uploadAsset(final File basePath, final String filePath)
-            throws ClientProtocolException, URISyntaxException, IOException {
+    private List<ApiResponse<Asset>> uploadAssets(final File basePath, final String filePath)
+            throws ClientProtocolException, URISyntaxException {
 
         if (StringUtils.isBlank(filePath)) {
             this.log.write(this, "No file to upload specified, filter expression is empty, upload failed.");
@@ -412,15 +415,61 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         final List<ApiResponse<Asset>> responses = new ArrayList<ApiResponse<Asset>>();
 
         for (final String fileName : fileSet.getDirectoryScanner().getIncludedFiles()) {
-            final File file = new File(directory, fileName);
+            final ApiResponse<Asset> response = this.uploadAsset(directory, fileName);
 
-            this.log.write(this, "Uploading file \"%s\"...", fileName);
-            final Request<Asset> request = RequestFactory.createUploadRequest(this.store, file);
-            responses.add(request.execute());
-            this.log.write(this, "Upload of file completed.");
+            if (response != null) {
+                responses.add(response);
+            }
         }
 
         return responses;
+    }
+
+    private ApiResponse<Asset> uploadAsset(final File directory, final String fileName)
+            throws URISyntaxException, ClientProtocolException {
+
+        try {
+            final Stopwatch sw = new Stopwatch();
+            final File file = new File(directory, fileName);
+            final Request<Asset> request = RequestFactory.createUploadRequest(this.store, file);
+
+            this.log.write(this, "Uploading \"%s\" (%,d Byte)...", fileName, file.length());
+
+            sw.start();
+            final ApiResponse<Asset> response = request.execute();
+            sw.stop();
+
+            final String speed = this.getUploadSpeed(sw, file);
+            this.log.write(this, "Upload of file completed (%s, %s).", sw, speed);
+
+            return response;
+
+        } catch (final IOException e) {
+            this.log.write(this, "Upload of file failed (%s)", e.getMessage());
+            Builds.set(this.build, Result.UNSTABLE, this.log);
+        }
+        return null;
+    }
+
+    private String getUploadSpeed(final Stopwatch sw, final File file) {
+
+        final float seconds = sw.elapsedTime(TimeUnit.SECONDS);
+
+        if (file.length() == 0 || seconds == 0) {
+            return "Unknown";
+        }
+
+        final String[] units = {"", "K", "M", "G"};
+
+        float speed = file.length() / seconds;
+        int index = 0;
+
+        while (speed > 2048 && index < units.length) {
+            speed /= 1024;
+            ++index;
+        }
+
+        return String.format("%,.0f %sB/s", speed, units[index]);
     }
 
     private Application getApplication(final List<Application> applications, final Asset asset) {
