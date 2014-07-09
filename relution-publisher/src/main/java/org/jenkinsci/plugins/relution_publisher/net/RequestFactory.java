@@ -18,8 +18,6 @@ package org.jenkinsci.plugins.relution_publisher.net;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.entities.Application;
 import org.jenkinsci.plugins.relution_publisher.entities.Asset;
@@ -30,6 +28,7 @@ import org.jenkinsci.plugins.relution_publisher.net.responses.AssetResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.StringResponse;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 
@@ -120,8 +119,9 @@ public final class RequestFactory {
      * @param store The {@link Store} this request should be executed against.
      * @param file The {@link File} to upload.
      * @return A request that can be used to upload a file to the server.
+     * @throws IOException The specified file could not be buffered for sending.
      */
-    public static Request<Asset> createUploadRequest(final Store store, final File file) {
+    public static Request<Asset> createUploadRequest(final Store store, final File file) throws IOException {
 
         final Request<Asset> request = RequestFactory.createBaseRequest(
                 Request.Method.POST,
@@ -129,10 +129,7 @@ public final class RequestFactory {
                 store,
                 URL_FILES);
 
-        final MultipartEntity entity = new MultipartEntity();
-        entity.addPart("file", new FileBody(file));
-        request.setEntity(entity);
-
+        request.setFile(file);
         return request;
     }
 

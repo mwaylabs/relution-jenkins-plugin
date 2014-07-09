@@ -19,49 +19,59 @@ package org.jenkinsci.plugins.relution_publisher.net;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.apache.http.nio.protocol.BasicAsyncResponseConsumer;
+import org.apache.http.nio.protocol.HttpAsyncResponseConsumer;
 import org.apache.http.util.EntityUtils;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 public class Request<T> {
 
     /**
+     * The maximum amount of time, in milliseconds, to wait for the connection manager to return
+     * a connection from the connection pool.
+     */
+    private final static int                      TIMEOUT_CONNECTION_REQUEST = 5000;
+
+    /**
      * The connection attempt will time out if a connection cannot be established within the
      * specified amount of time, in milliseconds. 
      */
-    private final static int                      TIMEOUT_CONNECTION_MS = 15000;
+    private final static int                      TIMEOUT_CONNECT            = 30000;
 
     /**
-     * The connection will time out if the period of inactivity after receiving a data packet
-     * exceeds the specified value, in milliseconds. 
+     * The connection will time out if the period of inactivity after receiving or sending a data
+     * packet exceeds the specified value, in milliseconds. 
      */
-    private final static int                      TIMEOUT_SOCKET_MS     = 10000;
+    private final static int                      TIMEOUT_SOCKET             = 10000;
 
-    private final static Charset                  CHARSET               = Charset.forName("UTF-8");
+    private final static Charset                  CHARSET                    = Charset.forName("UTF-8");
 
-    private final RequestQueryFields              mQueryFields          = new RequestQueryFields();
+    private final RequestQueryFields              mQueryFields               = new RequestQueryFields();
 
-    private final Map<String, String>             mHeaders              = new HashMap<String, String>();
+    private final Map<String, String>             mHeaders                   = new HashMap<String, String>();
+
     private HttpEntity                            mHttpEntity;
+    private File                                  mFile;
 
     private final int                             mMethod;
     private final String                          mUrl;
@@ -81,50 +91,82 @@ public class Request<T> {
         this.mResponseClass = responseClass;
     }
 
-    private HttpRequestBase createHttpRequest(final int method, final HttpEntity entity) {
-
-        switch (method) {
-            default:
-            case Method.GET:
-                return new HttpGet();
-
-            case Method.POST:
-                final HttpPost post = new HttpPost();
-                if (entity != null) {
-                    post.setEntity(entity);
-                }
-                return post;
-
-            case Method.PUT:
-                final HttpPut put = new HttpPut();
-                if (entity != null) {
-                    put.setEntity(entity);
-                }
-                return put;
-
-            case Method.DELETE:
-                return new HttpDelete();
-        }
-    }
-
-    private HttpRequestBase createHttpRequest() throws URISyntaxException {
-        final HttpRequestBase request = this.createHttpRequest(this.mMethod, this.mHttpEntity);
-
-        for (final String name : this.mHeaders.keySet()) {
-            request.addHeader(name, this.mHeaders.get(name));
-        }
-        final URI uri = new URI(this.getUrl());
-        request.setURI(uri);
-
-        return request;
-    }
-
     private String getUrl() {
 
         if (this.mQueryFields.size() == 0) {
             return this.mUrl;
         }
         return this.mUrl + this.mQueryFields.toString();
+    }
+
+    private HttpUriRequest createHttpRequest(final int method, final String uri, final HttpEntity entity) {
+
+        switch (method) {
+            default:
+            case Method.GET:
+                return new HttpGet(uri);
+
+            case Method.POST:
+                final HttpPost post = new HttpPost(uri);
+                if (entity != null) {
+                    post.setEntity(entity);
+                }
+                return post;
+
+            case Method.PUT:
+                final HttpPut put = new HttpPut(uri);
+                if (entity != null) {
+                    put.setEntity(entity);
+                }
+                return put;
+
+            case Method.DELETE:
+                return new HttpDelete(uri);
+        }
+    }
+
+    private HttpUriRequest createHttpRequest() {
+
+        final HttpUriRequest request = this.createHttpRequest(this.mMethod, this.getUrl(), this.mHttpEntity);
+
+        for (final String name : this.mHeaders.keySet()) {
+            request.addHeader(name, this.mHeaders.get(name));
+        }
+
+        return request;
+    }
+
+    private CloseableHttpAsyncClient createHttpClient() {
+
+        final RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+        requestConfigBuilder.setConnectionRequestTimeout(TIMEOUT_CONNECTION_REQUEST);
+        requestConfigBuilder.setConnectTimeout(TIMEOUT_CONNECT);
+        requestConfigBuilder.setSocketTimeout(TIMEOUT_SOCKET);
+
+        if (this.mProxyHost != null) {
+            requestConfigBuilder.setProxy(this.mProxyHost);
+        }
+
+        final HttpAsyncClientBuilder clientBuilder = HttpAsyncClients.custom();
+        final RequestConfig requestConfig = requestConfigBuilder.build();
+
+        clientBuilder.setDefaultRequestConfig(requestConfig);
+
+        return clientBuilder.build();
+    }
+
+    private Future<HttpResponse> execute(final CloseableHttpAsyncClient client) throws URISyntaxException, FileNotFoundException {
+
+        if (this.mMethod == Method.POST && this.mFile != null) {
+            final FileRequest post = new FileRequest(this.getUrl(), this.mFile);
+            post.addHeaders(this.mHeaders);
+
+            final HttpAsyncResponseConsumer<HttpResponse> consumer = new BasicAsyncResponseConsumer();
+            return client.execute(post, consumer, null);
+        }
+
+        final HttpUriRequest httpRequest = this.createHttpRequest();
+        return client.execute(httpRequest, null);
     }
 
     private ApiResponse<T> getJsonString(final HttpResponse httpResponse) {
@@ -170,7 +212,7 @@ public class Request<T> {
         return this.mQueryFields;
     }
 
-    public HttpEntity entity() {
+    public HttpEntity getEntity() {
         return this.mHttpEntity;
     }
 
@@ -178,28 +220,28 @@ public class Request<T> {
         this.mHttpEntity = entity;
     }
 
-    public ApiResponse<T> execute() throws URISyntaxException, ClientProtocolException, IOException {
+    public void setFile(final File file) {
+        this.mFile = file;
+    }
 
-        final DefaultHttpClient client = new DefaultHttpClient();
+    public File getFile() {
+        return this.mFile;
+    }
+
+    public ApiResponse<T> execute() throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+
+        final CloseableHttpAsyncClient client = this.createHttpClient();
 
         try {
-            final HttpParams params = client.getParams();
+            client.start();
 
-            HttpConnectionParams.setSoTimeout(params, TIMEOUT_SOCKET_MS);
-            HttpConnectionParams.setConnectionTimeout(params, TIMEOUT_CONNECTION_MS);
-            params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-
-            if (this.mProxyHost != null) {
-                params.setParameter(ConnRoutePNames.DEFAULT_PROXY, this.mProxyHost);
-            }
-
-            final HttpRequestBase httpRequest = this.createHttpRequest();
-            final HttpResponse httpResponse = client.execute(httpRequest);
+            final Future<HttpResponse> future = this.execute(client);
+            final HttpResponse httpResponse = future.get();
 
             return this.parseNetworkResponse(httpResponse);
 
         } finally {
-            client.getConnectionManager().shutdown();
+            client.close();
         }
     }
 

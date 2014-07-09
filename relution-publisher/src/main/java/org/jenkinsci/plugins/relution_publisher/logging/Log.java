@@ -17,6 +17,8 @@
 package org.jenkinsci.plugins.relution_publisher.logging;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 
 public class Log {
@@ -25,6 +27,16 @@ public class Log {
 
     public Log(final PrintStream stream) {
         this.stream = stream;
+    }
+
+    private static String valueOf(final Throwable t) {
+
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
+
+        t.printStackTrace(pw);
+
+        return sw.toString();
     }
 
     public void write() {
@@ -43,5 +55,9 @@ public class Log {
 
     public void write(final Object source, final String format, final Object... args) {
         this.write(source.getClass(), format, args);
+    }
+
+    public void write(final Object source, final String format, final Throwable t) {
+        this.write(source.getClass(), format, valueOf(t));
     }
 }

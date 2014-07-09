@@ -25,7 +25,6 @@ import hudson.model.AbstractBuild;
 import hudson.remoting.VirtualChannel;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.jobs.Publication;
@@ -47,6 +46,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -104,19 +104,24 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             }
 
         } catch (final IOException e) {
-            this.log.write(this, "Publication failed with I/O error, %s", e.getMessage());
+            this.log.write(this, "Publication failed.\n\n%s\n", e);
             Builds.set(this.build, Result.UNSTABLE, this.log);
 
         } catch (final URISyntaxException e) {
-            this.log.write(this, "Publication failed with %s", e.toString());
+            this.log.write(this, "Publication failed.\n\n%s\n", e);
             Builds.set(this.build, Result.UNSTABLE, this.log);
+
+        } catch (final ExecutionException e) {
+            this.log.write(this, "Publication failed.\n\n%s\n", e);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
+
         }
 
         return true;
     }
 
     private void uploadVersion(final File basePath, final ApiResponse<Asset> response)
-            throws ClientProtocolException, URISyntaxException, IOException {
+            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
         if (!this.verifyAssetResponse(response)) {
             this.log.write(this, "Upload of build artifacts failed.");
@@ -139,7 +144,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     private void retrieveApplication(final File basePath, final Asset asset)
-            throws ClientProtocolException, URISyntaxException, IOException {
+            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
         this.log.write(this, "Requesting application associated with token {%s}...", asset.getUuid());
         final Request<Application> request = RequestFactory.createAppFromFileRequest(this.store, asset);
@@ -206,7 +211,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return archived;
     }
 
-    private void manageArchivedVersions(final List<Version> archived, final Version version) throws URISyntaxException {
+    private void manageArchivedVersions(final List<Version> archived, final Version version)
+            throws URISyntaxException, InterruptedException, ExecutionException {
 
         final String key = !this.publication.usesDefaultArchiveMode()
                 ? this.publication.getArchiveMode()
@@ -225,7 +231,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         }
     }
 
-    private void deleteVersion(final Version version) throws URISyntaxException {
+    private void deleteVersion(final Version version) throws URISyntaxException, InterruptedException, ExecutionException {
 
         this.log.write(
                 this,
@@ -251,7 +257,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     private void setVersionMetadata(final File basePath, final Version version)
-            throws ClientProtocolException, URISyntaxException, IOException {
+            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
         this.setReleaseStatus(version);
 
@@ -288,7 +294,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     private void setIcon(final File basePath, final Version version)
-            throws ClientProtocolException, URISyntaxException, IOException {
+            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
         if (StringUtils.isBlank(this.publication.getIconPath())) {
             this.log.write(this, "No icon set, default icon will be used.");
@@ -375,7 +381,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     private void persistApplication(final Application app)
-            throws ClientProtocolException, URISyntaxException, IOException {
+            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
         this.log.write(this, "Application is new, persisting application...");
 
@@ -392,7 +398,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     private void persistVersion(final Version version)
-            throws ClientProtocolException, URISyntaxException, IOException {
+            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
         this.log.write(this, "Version is new, persisting version...");
 
@@ -409,7 +415,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     private List<ApiResponse<Asset>> uploadAssets(final File basePath, final String filePath)
-            throws ClientProtocolException, URISyntaxException {
+            throws URISyntaxException, InterruptedException {
 
         if (StringUtils.isBlank(filePath)) {
             this.log.write(this, "No file to upload specified, filter expression is empty, upload failed.");
@@ -438,7 +444,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     private ApiResponse<Asset> uploadAsset(final File directory, final String fileName)
-            throws URISyntaxException, ClientProtocolException {
+            throws URISyntaxException, InterruptedException {
 
         try {
             final Stopwatch sw = new Stopwatch();
@@ -457,8 +463,13 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return response;
 
         } catch (final IOException e) {
-            this.log.write(this, "Upload of file failed (%s)", e.getMessage());
+            this.log.write(this, "Upload of file failed, error during execution:\n\n%s\n", e);
             Builds.set(this.build, Result.UNSTABLE, this.log);
+
+        } catch (final ExecutionException e) {
+            this.log.write(this, "Upload of file failed, error during execution:\n\n%s\n", e);
+            Builds.set(this.build, Result.UNSTABLE, this.log);
+
         }
         return null;
     }
