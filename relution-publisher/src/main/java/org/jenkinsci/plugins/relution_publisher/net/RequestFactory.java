@@ -32,7 +32,6 @@ import org.jenkinsci.plugins.relution_publisher.net.responses.AssetResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.StringResponse;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -136,7 +135,7 @@ public final class RequestFactory {
      * @return A request that can be used to upload a file to the server.
      * @throws IOException The specified file could not be buffered for sending.
      */
-    public static ZeroCopyFileRequest<Asset> createUploadRequest(final Store store, final File file) throws FileNotFoundException {
+    public static ZeroCopyFileRequest<Asset> createUploadRequest(final Store store, final File file) {
 
         final ZeroCopyFileRequest<Asset> request = new ZeroCopyFileRequest<Asset>(
                 getUrl(store, URL_FILES),

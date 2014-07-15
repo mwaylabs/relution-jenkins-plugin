@@ -84,10 +84,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log = log;
 
         this.requestManager = new RequestManager();
-
-        if (!StringUtils.isBlank(store.getProxyHost()) && store.getProxyPort() != 0) {
-            this.requestManager.setProxy(store.getProxyHost(), store.getProxyPort());
-        }
+        this.requestManager.setProxy(store.getProxyHost(), store.getProxyPort());
     }
 
     @Override
@@ -157,7 +154,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         this.log.write(this, "Requesting application associated with token {%s}...", asset.getUuid());
         final ApiRequest<Application> request = RequestFactory.createAppFromFileRequest(this.store, asset);
-        final ApiResponse<Application> response = this.requestManager.execute(request);
+        final ApiResponse<Application> response = this.requestManager.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Retrieval of application failed.");
@@ -251,7 +248,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         try {
             final ApiRequest<String> request = RequestFactory.createDeleteVersionRequest(this.store, version);
-            final ApiResponse<String> response = this.requestManager.execute(request);
+            final ApiResponse<String> response = this.requestManager.execute(request, this.log);
 
             if (!this.verifyDeleteResponse(response)) {
                 this.log.write(this, "Error deleting version");
@@ -395,7 +392,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "Application is new, persisting application...");
 
         final ApiRequest<Application> request = RequestFactory.createPersistApplicationRequest(this.store, app);
-        final ApiResponse<Application> response = this.requestManager.execute(request);
+        final ApiResponse<Application> response = this.requestManager.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting application.");
@@ -412,7 +409,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "Version is new, persisting version...");
 
         final ApiRequest<Application> request = RequestFactory.createPersistVersionRequest(this.store, version);
-        final ApiResponse<Application> response = this.requestManager.execute(request);
+        final ApiResponse<Application> response = this.requestManager.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting version.");
@@ -463,7 +460,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             this.log.write(this, "Uploading \"%s\" (%,d Byte)...", fileName, file.length());
 
             sw.start();
-            final ApiResponse<Asset> response = this.requestManager.execute(request);
+            final ApiResponse<Asset> response = this.requestManager.execute(request, this.log);
             sw.stop();
 
             final String speed = this.getUploadSpeed(sw, file);

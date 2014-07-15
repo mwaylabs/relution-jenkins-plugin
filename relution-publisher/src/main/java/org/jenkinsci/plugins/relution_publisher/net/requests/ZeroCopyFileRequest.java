@@ -33,7 +33,7 @@ public class ZeroCopyFileRequest<T> extends BaseRequest<T> {
 
     private final File mFile;
 
-    public ZeroCopyFileRequest(final String uri, final File file, final Class<? extends ApiResponse<T>> responseClass) throws FileNotFoundException {
+    public ZeroCopyFileRequest(final String uri, final File file, final Class<? extends ApiResponse<T>> responseClass) {
         super(Method.POST, uri, responseClass);
 
         Args.notNull(file, "file");

@@ -16,18 +16,24 @@
 
 package org.jenkinsci.plugins.relution_publisher.net;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.util.EntityUtils;
+import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
+import org.jenkinsci.plugins.relution_publisher.util.ErrorType;
 
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -53,6 +59,11 @@ public class RequestManager {
      */
     private final static int     TIMEOUT_SOCKET             = 10000;
 
+    /**
+     * The maximum number of times a request is retried in case a time out occurs.
+     */
+    private final static int     MAX_REQUEST_RETRIES        = 3;
+
     private final static Charset CHARSET                    = Charset.forName("UTF-8");
 
     private HttpHost             mProxyHost;
@@ -74,6 +85,54 @@ public class RequestManager {
         clientBuilder.setDefaultRequestConfig(requestConfig);
 
         return clientBuilder.build();
+    }
+
+    private HttpResponse send(final ApiRequest<?> request, final Log log) throws IOException, InterruptedException, ExecutionException {
+
+        final CloseableHttpAsyncClient client = this.createHttpClient();
+        int retries = MAX_REQUEST_RETRIES;
+
+        try {
+            client.start();
+
+            while (true) {
+                try {
+                    final Future<HttpResponse> future = request.execute(client);
+                    return future.get();
+
+                } catch (final ExecutionException e) {
+                    retries = this.attemptRetryOnException(e, retries, log);
+                }
+            }
+
+        } finally {
+            client.close();
+        }
+    }
+
+    private int attemptRetryOnException(final ExecutionException e, final int retries, final Log log) throws ExecutionException {
+        final int remainingRetries = retries - 1;
+
+        if (remainingRetries <= 0) {
+            this.log(log, "Maximum number of retries, giving up");
+            throw e;
+        }
+
+        if (ErrorType.is(e, ExecutionException.class, ConnectTimeoutException.class)) {
+            this.log(log, "Timeout while attempting to connect to the server, retrying...");
+            return remainingRetries;
+
+        } else if (ErrorType.is(e, ExecutionException.class, SocketTimeoutException.class)) {
+            this.log(log, "Timeout while sending or receiving data, retrying...");
+            return remainingRetries;
+
+        } else if (ErrorType.is(e, ExecutionException.class, SocketException.class)) {
+            this.log(log, "Error creating network socket, retrying...");
+            return remainingRetries;
+
+        }
+
+        throw e;
     }
 
     private <T> ApiResponse<T> getJsonString(final ApiRequest<T> request, final HttpResponse httpResponse) {
@@ -106,28 +165,32 @@ public class RequestManager {
         return response;
     }
 
+    private void log(final Log log, final String format, final Object... args) {
+
+        if (log == null) {
+            return;
+        }
+        log.write(this, format, args);
+    }
+
     public void setProxy(final String hostname, final int port) {
-        this.mProxyHost = new HttpHost(hostname, port);
+
+        if (!StringUtils.isBlank(hostname) && port != 0) {
+            this.mProxyHost = new HttpHost(hostname, port);
+        }
     }
 
     public HttpHost getProxy() {
         return this.mProxyHost;
     }
 
+    public <T> ApiResponse<T> execute(final ApiRequest<T> request, final Log log) throws IOException, InterruptedException, ExecutionException {
+
+        final HttpResponse httpResponse = this.send(request, log);
+        return this.parseNetworkResponse(request, httpResponse);
+    }
+
     public <T> ApiResponse<T> execute(final ApiRequest<T> request) throws InterruptedException, ExecutionException, IOException {
-
-        final CloseableHttpAsyncClient client = this.createHttpClient();
-
-        try {
-            client.start();
-
-            final Future<HttpResponse> future = request.execute(client);
-            final HttpResponse httpResponse = future.get();
-
-            return this.parseNetworkResponse(request, httpResponse);
-
-        } finally {
-            client.close();
-        }
+        return this.execute(request, null);
     }
 }
