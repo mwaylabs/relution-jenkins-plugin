@@ -32,20 +32,20 @@ import java.util.List;
  */
 public class ApiResponse<T> {
 
-    public final static Gson GSON    = new GsonBuilder().setPrettyPrinting().create();
+    private final static Gson GSON    = new GsonBuilder().setPrettyPrinting().create();
 
-    private int              statusCode;
-    private String           reason;
+    private int               statusCode;
+    private String            reason;
 
-    private final Integer    status;
-    private String           message;
+    private final Integer     status;
+    private String            message;
 
-    private final Error      errors;
+    private final Error       errors;
 
-    private final int        total;
-    private final List<T>    results = new ArrayList<T>();
+    private final int         total;
+    private final List<T>     results = new ArrayList<T>();
 
-    private transient String s;
+    private transient String  s;
 
     /**
      * Converts the specified JSON formatted string to an instance of the specified class. 
@@ -54,8 +54,7 @@ public class ApiResponse<T> {
      * @return An instance of the specified class.
      */
     public static <T> ApiResponse<T> fromJson(final String json, final Class<? extends ApiResponse<T>> clazz) {
-
-        return ApiResponse.GSON.fromJson(json, clazz);
+        return GSON.fromJson(json, clazz);
     }
 
     /**
@@ -143,7 +142,7 @@ public class ApiResponse<T> {
      * Gets a JSON formatted String that represents this instance.
      */
     public String toJson() {
-        return ApiResponse.GSON.toJson(this);
+        return GSON.toJson(this);
     }
 
     @Override

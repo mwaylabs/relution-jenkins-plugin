@@ -33,8 +33,9 @@ import org.apache.http.ParseException;
 import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
 import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
-import org.jenkinsci.plugins.relution_publisher.net.Request;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
+import org.jenkinsci.plugins.relution_publisher.net.RequestManager;
+import org.jenkinsci.plugins.relution_publisher.net.requests.BaseRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -491,8 +492,12 @@ public class Store extends AbstractDescribableImpl<Store> {
 
             try {
                 final Store store = new Store(url, organization, username, password, proxyHost, proxyPort);
-                final Request<?> request = RequestFactory.createAppStoreItemsRequest(store);
-                final ApiResponse<?> response = request.execute();
+                final BaseRequest<?> request = RequestFactory.createAppStoreItemsRequest(store);
+
+                final RequestManager requestManager = new RequestManager();
+                requestManager.setProxy(proxyHost, proxyPort);
+
+                final ApiResponse<?> response = requestManager.execute(request);
 
                 switch (response.getStatusCode()) {
                     case HttpStatus.SC_OK:
@@ -514,9 +519,6 @@ public class Store extends AbstractDescribableImpl<Store> {
 
             } catch (final ParseException e) {
                 return FormValidation.error("Unable to parse server response");
-
-            } catch (final URISyntaxException e) {
-                return FormValidation.error("The specified URL is invalid (syntax error)");
 
             } catch (final Exception e) {
                 return FormValidation.error("Unknown error: %s", e);

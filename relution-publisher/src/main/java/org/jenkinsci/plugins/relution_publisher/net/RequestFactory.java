@@ -17,51 +17,76 @@
 package org.jenkinsci.plugins.relution_publisher.net;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.nio.entity.NStringEntity;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.entities.Application;
 import org.jenkinsci.plugins.relution_publisher.entities.Asset;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
-import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
+import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
+import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest.Method;
+import org.jenkinsci.plugins.relution_publisher.net.requests.BaseRequest;
+import org.jenkinsci.plugins.relution_publisher.net.requests.EntityRequest;
+import org.jenkinsci.plugins.relution_publisher.net.requests.ZeroCopyFileRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApplicationResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.AssetResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.StringResponse;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 
 
 /**
- * Provides static methods that can be used to create {@link Request}s that can be used to
+ * Provides static methods that can be used to create {@link ApiRequest}s that can be used to
  * communicate with the Relution Enterprise Appstore.
  */
 public final class RequestFactory {
 
-    private final static Charset CHARSET            = Charset.forName("UTF-8");
+    private static final String  HEADER_ACCEPT        = "Accept";
+    private static final String  HEADER_AUTHORIZATION = "Authorization";
+    private final static String  HEADER_CONTENT_TYPE  = "Content-Type";
+
+    private static final String  APPLICATION_JSON     = "application/json";
+    private static final String  BASIC                = "Basic ";
+
+    private final static Charset CHARSET              = Charset.forName("UTF-8");
 
     /**
      * The URL used to request or persist {@link Application} objects. 
      */
-    private final static String  URL_APPS           = "apps";
+    private final static String  URL_APPS             = "apps";
 
     /**
      * The URL used to request or persist {@link Version} objects.
      */
-    private final static String  URL_VERSIONS       = "versions";
+    private final static String  URL_VERSIONS         = "versions";
 
     /**
      * The URL used to request or persist {@link Asset} objects.
      */
-    private final static String  URL_FILES          = "files";
+    private final static String  URL_FILES            = "files";
 
     /**
      * The URL used to request the unpersisted {@link Application} object associated with a
      * previously uploaded {@link Asset}. 
      */
-    private final static String  URL_APPS_FROM_FILE = "apps/fromFile";
+    private final static String  URL_APPS_FROM_FILE   = "apps/fromFile";
 
     private RequestFactory() {
+    }
+
+    public static String sanitizePath(final String path) {
+
+        if (StringUtils.isBlank(path)) {
+            return path;
+        }
+
+        if (path.endsWith("/")) {
+            return path.substring(0, path.length() - 1);
+        }
+        return path;
     }
 
     private static String getUrl(final Store store, final String... parts) {
@@ -70,90 +95,78 @@ public final class RequestFactory {
         sb.append(store.getUrl());
 
         for (final String part : parts) {
-            if (sb.charAt(sb.length() - 1) != '/') {
+            if (!part.startsWith("/")) {
                 sb.append("/");
             }
-            sb.append(part);
+            final String path = sanitizePath(part);
+            sb.append(path);
         }
-
         return sb.toString();
     }
 
-    private static <T> Request<T> createBaseRequest(final int method, final Class<? extends ApiResponse<T>> responseClass, final Store store,
-            final String... parts) {
+    private static void addAuthentication(final BaseRequest<?> request, final Store store) {
 
-        final String url = RequestFactory.getUrl(store, parts);
-        final Request<T> request = new Request<T>(method, url, responseClass);
-
-        request.addHeader("Accept", "application/json");
-        request.addHeader("Authorization", "Basic " + store.getAuthorizationToken());
-
-        if (!StringUtils.isBlank(store.getProxyHost()) && store.getProxyPort() != 0) {
-            request.setProxy(store.getProxyHost(), store.getProxyPort());
-        }
-
-        return request;
+        request.setHeader(HEADER_ACCEPT, APPLICATION_JSON);
+        request.setHeader(HEADER_AUTHORIZATION, BASIC + store.getAuthorizationToken());
     }
 
     /**
-     * Creates a {@link Request} that can be used to retrieve all {@link Application} objects
+     * Creates a {@link BaseRequest} that can be used to retrieve all {@link Application} objects
      * stored in the server's database. 
      * @param store The {@link Store} this request should be executed against.
      * @return A request that can be used to query all applications on the server.
+     * @throws URISyntaxException 
      */
-    public static Request<Application> createAppStoreItemsRequest(final Store store) {
+    public static EntityRequest<Application> createAppStoreItemsRequest(final Store store) {
 
-        final Request<Application> request = RequestFactory.createBaseRequest(
-                Request.Method.GET,
-                ApplicationResponse.class,
-                store,
-                URL_APPS);
+        final EntityRequest<Application> request = new EntityRequest<Application>(
+                Method.GET,
+                getUrl(store, URL_APPS),
+                ApplicationResponse.class);
 
         request.queryFields().add("locale", "de");
-
+        addAuthentication(request, store);
         return request;
     }
 
     /**
-     * Creates a {@link Request} that can be used to upload a {@link File} to the server.
+     * Creates a {@link BaseRequest} that can be used to upload a {@link File} to the server.
      * @param store The {@link Store} this request should be executed against.
      * @param file The {@link File} to upload.
      * @return A request that can be used to upload a file to the server.
      * @throws IOException The specified file could not be buffered for sending.
      */
-    public static Request<Asset> createUploadRequest(final Store store, final File file) throws IOException {
+    public static ZeroCopyFileRequest<Asset> createUploadRequest(final Store store, final File file) throws FileNotFoundException {
 
-        final Request<Asset> request = RequestFactory.createBaseRequest(
-                Request.Method.POST,
-                AssetResponse.class,
-                store,
-                URL_FILES);
+        final ZeroCopyFileRequest<Asset> request = new ZeroCopyFileRequest<Asset>(
+                getUrl(store, URL_FILES),
+                file,
+                AssetResponse.class);
 
-        request.setFile(file);
+        addAuthentication(request, store);
         return request;
     }
 
     /**
-     * Creates a {@link Request} that can be used to retrieve the {@link Application} associated
+     * Creates a {@link BaseRequest} that can be used to retrieve the {@link Application} associated
      * with the specified {@link Asset}.
      * @param store The {@link Store} this request should be executed against.
      * @param asset The {@link Asset} for which to retrieve the {@link Application}
      * @return A request that can be used to retrieved the application associated with an asset.
      */
-    public static Request<Application> createAppFromFileRequest(final Store store, final Asset asset) {
+    public static EntityRequest<Application> createAppFromFileRequest(final Store store, final Asset asset) {
 
-        final Request<Application> request = RequestFactory.createBaseRequest(
-                Request.Method.POST,
-                ApplicationResponse.class,
-                store,
-                URL_APPS_FROM_FILE,
-                asset.getUuid());
+        final EntityRequest<Application> request = new EntityRequest<Application>(
+                Method.POST,
+                getUrl(store, URL_APPS_FROM_FILE, asset.getUuid()),
+                ApplicationResponse.class);
 
+        addAuthentication(request, store);
         return request;
     }
 
     /**
-     * Creates a {@link Request} that can be used to persist the specified {@link Application}.
+     * Creates a {@link BaseRequest} that can be used to persist the specified {@link Application}.
      * <p/>
      * This call must not be used to persist an application that has already been persisted. Doing
      * so results in undefined behavior. An application is unpersisted if its
@@ -162,24 +175,23 @@ public final class RequestFactory {
      * @param app The {@link Application} to persist.
      * @return A request that can be used to persist the specified application.
      */
-    public static Request<Application> createPersistApplicationRequest(final Store store, final Application app) {
+    public static EntityRequest<Application> createPersistApplicationRequest(final Store store, final Application app) {
 
-        final Request<Application> request = RequestFactory.createBaseRequest(
-                Request.Method.POST,
-                ApplicationResponse.class,
-                store,
-                URL_APPS);
+        final EntityRequest<Application> request = new EntityRequest<Application>(
+                Method.POST,
+                getUrl(store, URL_APPS),
+                ApplicationResponse.class);
 
-        request.addHeader("Content-Type", "application/json");
-
-        final StringEntity entity = new StringEntity(app.toJson(), CHARSET);
+        final NStringEntity entity = new NStringEntity(app.toJson(), CHARSET);
         request.setEntity(entity);
 
+        request.setHeader(HEADER_CONTENT_TYPE, APPLICATION_JSON);
+        addAuthentication(request, store);
         return request;
     }
 
     /**
-     * Creates a {@link Request} that can be used to persist the specified {@link Version}.
+     * Creates a {@link BaseRequest} that can be used to persist the specified {@link Version}.
      * <p/>
      * This call must not be used to persist a version that has already been persisted. Doing so
      * results in undefined behavior. A version is unpersisted if its
@@ -189,37 +201,29 @@ public final class RequestFactory {
      * @param version The {@link Version} to persist.
      * @return A request that can be used to persist the specified version.
      */
-    public static Request<Application> createPersistVersionRequest(final Store store, final Version version) {
+    public static EntityRequest<Application> createPersistVersionRequest(final Store store, final Version version) {
 
-        final Request<Application> request = RequestFactory.createBaseRequest(
-                Request.Method.POST,
-                ApplicationResponse.class,
-                store,
-                URL_APPS,
-                version.getAppUuid(),
-                URL_VERSIONS);
+        final EntityRequest<Application> request = new EntityRequest<Application>(
+                Method.POST,
+                getUrl(store, URL_APPS, version.getAppUuid(), URL_VERSIONS),
+                ApplicationResponse.class);
 
-        request.addHeader("Content-Type", "application/json");
-
-        final StringEntity entity = new StringEntity(version.toJson(), CHARSET);
+        final NStringEntity entity = new NStringEntity(version.toJson(), CHARSET);
         request.setEntity(entity);
 
+        request.setHeader(HEADER_CONTENT_TYPE, APPLICATION_JSON);
+        addAuthentication(request, store);
         return request;
     }
 
-    public static Request<String> createDeleteVersionRequest(final Store store, final Version version) {
+    public static EntityRequest<String> createDeleteVersionRequest(final Store store, final Version version) {
 
-        final Request<String> request = RequestFactory.createBaseRequest(
-                Request.Method.DELETE,
-                StringResponse.class,
-                store,
-                URL_APPS,
-                version.getAppUuid(),
-                URL_VERSIONS,
-                version.getUuid());
+        final EntityRequest<String> request = new EntityRequest<String>(
+                Method.DELETE,
+                getUrl(store, URL_APPS, version.getAppUuid(), URL_VERSIONS, version.getUuid()),
+                StringResponse.class);
 
-        request.addHeader("Content-Type", "application/json");
-
+        addAuthentication(request, store);
         return request;
     }
 }

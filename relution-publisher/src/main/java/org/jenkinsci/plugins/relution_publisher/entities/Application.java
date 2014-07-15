@@ -16,8 +16,6 @@
 
 package org.jenkinsci.plugins.relution_publisher.entities;
 
-import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,8 +46,6 @@ public class Application extends ApiObject {
     private final Long                      creationDate;
     private final String                    modifiedBy;
     private final Long                      modificationDate;
-
-    private transient String                s;
 
     protected Application() {
 
@@ -116,18 +112,5 @@ public class Application extends ApiObject {
 
     public Long getModificationDate() {
         return this.modificationDate;
-    }
-
-    public String toJson() {
-        return ApiResponse.GSON.toJson(this);
-    }
-
-    @Override
-    public String toString() {
-
-        if (this.s == null) {
-            this.s = this.toJson();
-        }
-        return this.s;
     }
 }

@@ -15,28 +15,54 @@
  */
 
 package org.jenkinsci.plugins.relution_publisher.net;
+
+import org.apache.commons.lang.StringUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 
-
+/**
+ * Represents a collection of URL encoded query parameters to be appended to a URI.
+ */
 public class RequestQueryFields {
 
-    private final static String DEFAULT_CHARSET      = "UTF-8";
-    private final static String UNSUPPORTED_ENCODING = "The configured charset is unsupported on the current platform.";
-    private String              mCharsetName         = DEFAULT_CHARSET;
-    private final List<String>  mFields              = new ArrayList<String>();
-    private String              mQuery;
+    private final static String             DEFAULT_CHARSET      = "UTF-8";
+    private final static String             UNSUPPORTED_ENCODING = "The configured charset is unsupported on the current platform.";
+
+    private String                          mCharsetName         = DEFAULT_CHARSET;
+
+    private final Map<String, List<String>> mFields              = new HashMap<String, List<String>>();
+    private String                          mQuery;
 
     private String encode(final String value) {
+
         try {
             return URLEncoder.encode(value, this.mCharsetName);
         } catch (final UnsupportedEncodingException e) {
             throw new IllegalStateException(UNSUPPORTED_ENCODING, e);
+        }
+    }
+
+    private void append(final StringBuilder sb, final String name, final List<String> values) {
+
+        for (final String value : values) {
+            if (sb.length() == 0) {
+                sb.append('?');
+            } else {
+                sb.append('&');
+            }
+            sb.append(this.encode(name));
+            sb.append('=');
+            sb.append(this.encode(value));
         }
     }
 
@@ -62,73 +88,298 @@ public class RequestQueryFields {
     }
 
     /**
-     * adding key/value pair to an list which will be switched to an Query which could be append to an URL.
-     * @param name key of the parameter.
-     * @param value value of the parameter.
+     * Adds a query parameter with the specified name and value to the query, keeping existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name has already been specified it will <b>not</b> be
+     * replaced, i.e. the query can contain multiple parameters with the same name and any value
+     * previously specified. To replace existing parameters with the same name use {@link #set}.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName
+     * @param value
+     * @see #set
      */
-    public void add(final String name, final String value) {
-        if (name == null) {
-            throw new IllegalArgumentException("The specified argument cannot be null: name");
+    public void add(final String fieldName, final String value) {
+
+        if (fieldName == null) {
+            throw new IllegalArgumentException("The specified argument cannot be null: fieldName");
         }
 
-        if (value == null || value.length() == 0) {
-            this.mFields.remove(name);
+        if (StringUtils.isBlank(value)) {
+            this.mFields.remove(fieldName);
             return;
         }
 
-        this.mFields.add(name);
-        this.mFields.add(value);
+        List<String> values = this.mFields.get(fieldName);
+
+        if (values == null) {
+            values = new ArrayList<String>();
+            this.mFields.put(fieldName, values);
+        }
+
+        values.add(value);
         this.mQuery = null;
     }
 
     /**
-     * @param name value to be removed from the List that could switched to an Query.
+     * Adds a query parameter with the specified name and value to the query, keeping existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name has already been specified it will <b>not</b> be
+     * replaced, i.e. the query can contain multiple parameters with the same name and any value
+     * previously specified. To replace existing parameters with the same name use {@link #set}.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName
+     * @param value
+     * @see #set
      */
-    public void remove(final String name) {
-        final int index = this.mFields.indexOf(name);
-        if (index % 2 == 0) {
-            this.mFields.remove(index); // key
-            this.mFields.remove(index); // value
+    public void add(final String fieldName, final int value) {
+        this.add(fieldName, String.valueOf(value));
+    }
+
+    /**
+     * Adds a query parameter with the specified name and value to the query, keeping existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name has already been specified it will <b>not</b> be
+     * replaced, i.e. the query can contain multiple parameters with the same name and any value
+     * previously specified. To replace existing parameters with the same name use {@link #set}.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName
+     * @param value
+     * @see #set
+     */
+    public void add(final String fieldName, final long value) {
+        this.add(fieldName, String.valueOf(value));
+    }
+
+    /**
+     * Adds a query parameter with the specified name and value to the query, keeping existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name has already been specified it will <b>not</b> be
+     * replaced, i.e. the query can contain multiple parameters with the same name and any value
+     * previously specified. To replace existing parameters with the same name use {@link #set}.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName
+     * @param value
+     * @see #set
+     */
+    public void add(final String fieldName, final double value) {
+        this.add(fieldName, String.format(Locale.ENGLISH, "%1$f", value));
+    }
+
+    /**
+     * Adds a query parameter with the specified name and value to the query, keeping existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name has already been specified it will <b>not</b> be
+     * replaced, i.e. the query can contain multiple parameters with the same name and any value
+     * previously specified. To replace existing parameters with the same name use {@link #set}.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName
+     * @param value
+     * @see #set
+     */
+    public void add(final String fieldName, final boolean value) {
+        this.add(fieldName, value ? "true" : "false");
+    }
+
+    /**
+     * Adds a query parameter with the specified name and value to the query, keeping existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name has already been specified it will <b>not</b> be
+     * replaced, i.e. the query can contain multiple parameters with the same name and any value
+     * previously specified. To replace existing parameters with the same name use {@link #set}.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName
+     * @param value
+     * @see #set
+     */
+    public void add(final String fieldName, final Date date) {
+        this.add(fieldName, date != null ? date.getTime() : null);
+    }
+
+    /**
+     * Adds a query parameter with the specified name and value to the query, replacing existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name already exists it will be replace, i.e. the query
+     * will only contain the specified value. The keep existing parameters with the same name
+     * use {@link #add} instead.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
+     * @see #add
+     */
+    public void set(final String fieldName, final String value) {
+
+        if (fieldName == null) {
+            throw new IllegalArgumentException("The specified argument cannot be null: fieldName");
+        }
+
+        if (StringUtils.isBlank(value)) {
+            this.mFields.remove(fieldName);
+            return;
+        }
+
+        final List<String> values = new ArrayList<String>();
+        values.add(value);
+
+        this.mFields.put(fieldName, values);
+        this.mQuery = null;
+    }
+
+    /**
+     * Adds a query parameter with the specified name and value to the query, replacing existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name already exists it will be replace, i.e. the query
+     * will only contain the specified value. The keep existing parameters with the same name
+     * use {@link #add} instead.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
+     * @see #add
+     */
+    public void set(final String fieldName, final int value) {
+        this.set(fieldName, String.valueOf(value));
+    }
+
+    /**
+     * Adds a query parameter with the specified name and value to the query, replacing existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name already exists it will be replace, i.e. the query
+     * will only contain the specified value. The keep existing parameters with the same name
+     * use {@link #add} instead.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
+     * @see #add
+     */
+    public void set(final String fieldName, final long value) {
+        this.set(fieldName, String.valueOf(value));
+    }
+
+    /**
+     * Adds a query parameter with the specified name and value to the query, replacing existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name already exists it will be replace, i.e. the query
+     * will only contain the specified value. The keep existing parameters with the same name
+     * use {@link #add} instead.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
+     * @see #add
+     */
+    public void set(final String fieldName, final double value) {
+        this.set(fieldName, String.format(Locale.ENGLISH, "%1$f", value));
+    }
+
+    /**
+     * Adds a query parameter with the specified name and value to the query, replacing existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name already exists it will be replace, i.e. the query
+     * will only contain the specified value. The keep existing parameters with the same name
+     * use {@link #add} instead.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
+     * @see #add
+     */
+    public void set(final String fieldName, final boolean value) {
+        this.set(fieldName, value ? "true" : "false");
+    }
+
+    /**
+     * Adds a query parameter with the specified name and value to the query, replacing existing
+     * values with the same name.
+     * <p/>
+     * If another parameter with the same name already exists it will be replace, i.e. the query
+     * will only contain the specified value. The keep existing parameters with the same name
+     * use {@link #add} instead.
+     * <p/>
+     * If the specified value is {@code null} or an empty string the query parameter is removed.
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
+     * @see #add
+     */
+    public void set(final String fieldName, final Date date) {
+        this.set(fieldName, date != null ? date.getTime() : null);
+    }
+
+    /**
+     * Removes all query parameters with the specified name from the query.
+     * @param fieldName The name of the query parameter to remove.
+     */
+    public void remove(final String fieldName) {
+
+        this.mFields.remove(fieldName);
+        this.mQuery = null;
+    }
+
+    /**
+     * Removes the query parameter with the specified name and value from the query.
+     * @param fieldName The name of the query parameter to remove.
+     * @param value The value of the query parameter to remove.
+     */
+    public void remove(final String fieldName, final String value) {
+
+        final List<String> values = this.mFields.get(fieldName);
+        if (values != null) {
+            values.remove(value);
         }
         this.mQuery = null;
     }
 
     /**
-     * clear all instance variables.
+     * Removes all parameters from this query, leaving it empty.
      */
     public void clear() {
+
         this.mFields.clear();
         this.mQuery = null;
     }
 
     /**
-     * @return size of the list divided by 2.
+     * Returns the number of parameters added to this query.
+     * @return The number of parameters added to this query.
      */
     public int size() {
-        return this.mFields.size() / 2;
+        return this.mFields.size();
     }
 
     /**
-     * Switch the key/value Parameter of and list to an Query which could append to an URL.
+     * Returns a string representation of the query parameters represented by this instance. The
+     * string is formatted so that it can be appended to a URI. Keys and values URL encoded.
+     * <p/><b>Example</b>:
+     * <pre>{@code ?key=value&key=value}.</pre>
+     * @return The URL encoded string representation of this query that can be appended to a URI.
      */
     @Override
     public String toString() {
+
         if (this.mQuery == null) {
             final StringBuilder sb = new StringBuilder();
-            final int len = this.size();
 
-            for (int n = 0; n < len; n++) {
-                final String name = this.mFields.get(n * 2);
-                final String value = this.mFields.get(n * 2 + 1);
-
-                if (sb.length() == 0) {
-                    sb.append('?');
-                } else {
-                    sb.append('&');
-                }
-                sb.append(this.encode(name));
-                sb.append('=');
-                sb.append(this.encode(value));
+            for (final String name : this.mFields.keySet()) {
+                final List<String> values = this.mFields.get(name);
+                this.append(sb, name, values);
             }
             this.mQuery = sb.toString();
         }
