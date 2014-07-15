@@ -28,6 +28,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.http.HttpException;
 import org.apache.http.HttpStatus;
 import org.apache.http.ParseException;
 import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
@@ -37,6 +38,7 @@ import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
 import org.jenkinsci.plugins.relution_publisher.net.RequestManager;
 import org.jenkinsci.plugins.relution_publisher.net.requests.BaseRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
+import org.jenkinsci.plugins.relution_publisher.util.ErrorType;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -45,6 +47,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 import javax.servlet.ServletException;
 
@@ -514,16 +517,28 @@ public class Store extends AbstractDescribableImpl<Store> {
                                 response.getStatusCode());
                 }
 
-            } catch (final UnknownHostException e) {
-                return FormValidation.error("Connection attempt failed, the specified host name is unreachable");
-
-            } catch (final ParseException e) {
-                return FormValidation.error("Unable to parse server response");
-
             } catch (final Exception e) {
-                return FormValidation.error("Unknown error: %s", e);
+                return this.parseError(e);
 
             }
+        }
+
+        private FormValidation parseError(final Throwable error) {
+
+            if (ErrorType.is(error, ExecutionException.class, UnknownHostException.class)) {
+                return FormValidation.error("Connection attempt failed, the specified host name is unreachable");
+
+            } else if (ErrorType.is(error, ExecutionException.class, HttpException.class)) {
+                return FormValidation.error("Connection attempt failed, the specified protocol is unsupported");
+
+            } else if (ErrorType.is(error, IllegalArgumentException.class)) {
+                return FormValidation.error("Connection attempt failed, the specified API URL is invalid");
+
+            } else if (ErrorType.is(error, ParseException.class)) {
+                return FormValidation.error("Unable to parse server response");
+
+            }
+            return FormValidation.error("Unknown error: %s", error);
         }
 
         public ListBoxModel doFillReleaseStatusItems() {
