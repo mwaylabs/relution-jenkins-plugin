@@ -121,6 +121,9 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             this.log.write(this, "Publication failed.\n\n%s\n", e);
             Builds.set(this.build, Result.UNSTABLE, this.log);
 
+        } finally {
+            this.requestManager.shutdown();
+
         }
 
         return true;

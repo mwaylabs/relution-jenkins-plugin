@@ -45,28 +45,29 @@ public class RequestManager {
      * The maximum amount of time, in milliseconds, to wait for the connection manager to return
      * a connection from the connection pool.
      */
-    private final static int     TIMEOUT_CONNECTION_REQUEST = 5000;
+    private final static int         TIMEOUT_CONNECTION_REQUEST = 5000;
 
     /**
      * The connection attempt will time out if a connection cannot be established within the
      * specified amount of time, in milliseconds. 
      */
-    private final static int     TIMEOUT_CONNECT            = 30000;
+    private final static int         TIMEOUT_CONNECT            = 30000;
 
     /**
      * The connection will time out if the period of inactivity after receiving or sending a data
      * packet exceeds the specified value, in milliseconds. 
      */
-    private final static int     TIMEOUT_SOCKET             = 10000;
+    private final static int         TIMEOUT_SOCKET             = 10000;
 
     /**
      * The maximum number of times a request is retried in case a time out occurs.
      */
-    private final static int     MAX_REQUEST_RETRIES        = 3;
+    private final static int         MAX_REQUEST_RETRIES        = 3;
 
-    private final static Charset CHARSET                    = Charset.forName("UTF-8");
+    private final static Charset     CHARSET                    = Charset.forName("UTF-8");
 
-    private HttpHost             mProxyHost;
+    private CloseableHttpAsyncClient mHttpClient;
+    private HttpHost                 mProxyHost;
 
     private CloseableHttpAsyncClient createHttpClient() {
 
@@ -87,26 +88,31 @@ public class RequestManager {
         return clientBuilder.build();
     }
 
+    private CloseableHttpAsyncClient getHttpClient() {
+
+        if (this.mHttpClient == null) {
+            this.mHttpClient = this.createHttpClient();
+        }
+        return this.mHttpClient;
+    }
+
     private HttpResponse send(final ApiRequest<?> request, final Log log) throws IOException, InterruptedException, ExecutionException {
 
-        final CloseableHttpAsyncClient client = this.createHttpClient();
+        final CloseableHttpAsyncClient client = this.getHttpClient();
         int retries = MAX_REQUEST_RETRIES;
 
-        try {
+        if (!client.isRunning()) {
             client.start();
+        }
 
-            while (true) {
-                try {
-                    final Future<HttpResponse> future = request.execute(client);
-                    return future.get();
+        while (true) {
+            try {
+                final Future<HttpResponse> future = request.execute(client);
+                return future.get();
 
-                } catch (final ExecutionException e) {
-                    retries = this.attemptRetryOnException(e, retries, log);
-                }
+            } catch (final ExecutionException e) {
+                retries = this.attemptRetryOnException(e, retries, log);
             }
-
-        } finally {
-            client.close();
         }
     }
 
@@ -192,5 +198,12 @@ public class RequestManager {
 
     public <T> ApiResponse<T> execute(final ApiRequest<T> request) throws InterruptedException, ExecutionException, IOException {
         return this.execute(request, null);
+    }
+
+    public void shutdown() throws IOException {
+
+        if (this.mHttpClient != null) {
+            this.mHttpClient.close();
+        }
     }
 }
