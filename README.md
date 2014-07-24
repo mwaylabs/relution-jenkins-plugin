@@ -38,3 +38,17 @@ By default the plugin uploads applications in the state Development, which is ty
 If developers already test builds on their local machines, you might want to skip the first step. In this case you can set the application's upload status to Review state in the post-build step's advanced settings. Or, instead of doing this separately for every project, you can also configure the default value in Jenkins' system configuration. This means the binary is now directly uploaded to Review state.
 
 It is also possible to skip the review process altogether by uploading applications directly to Release state. Usually not recommended unless you want all of your users to become beta testers. Or you're just that confident in your own abilities.
+
+License
+-------
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
