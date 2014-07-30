@@ -91,7 +91,7 @@ public final class RequestFactory {
     private static String getUrl(final Store store, final String... parts) {
 
         final StringBuilder sb = new StringBuilder();
-        sb.append(store.getUrl());
+        sb.append(sanitizePath(store.getUrl()));
 
         for (final String part : parts) {
             if (!part.startsWith("/")) {
