@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,6 +33,7 @@ public class Version extends ApiObject {
     private String                    versionName;
     private final int                 versionCode;
 
+    private final List<String>        platforms   = new ArrayList<String>();
     private String                    releaseStatus;
 
     private final Integer             downloadCount;
@@ -101,6 +102,10 @@ public class Version extends ApiObject {
 
     public Integer getDownloadCount() {
         return this.downloadCount;
+    }
+
+    public List<String> getPlatforms() {
+        return this.platforms;
     }
 
     public String getReleaseStatus() {
