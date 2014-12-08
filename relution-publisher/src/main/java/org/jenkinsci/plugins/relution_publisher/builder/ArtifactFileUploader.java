@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,6 +38,7 @@ import org.jenkinsci.plugins.relution_publisher.net.RequestManager;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.jenkinsci.plugins.relution_publisher.util.Builds;
+import org.jenkinsci.remoting.RoleChecker;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -53,7 +54,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Uploads build artifacts to a {@link Store} that has been specified in a Jenkins project's
- * post-build action, in the form of a {@link Publication}. 
+ * post-build action, in the form of a {@link Publication}.
  */
 public class ArtifactFileUploader implements FileCallable<Boolean> {
 
@@ -641,5 +642,9 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
     private boolean isEmpty(final List<?> list) {
         return (list == null || list.size() == 0);
+    }
+
+    @Override
+    public void checkRoles(final RoleChecker roleChecker) throws SecurityException {
     }
 }
