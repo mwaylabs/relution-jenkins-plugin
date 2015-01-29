@@ -14,7 +14,7 @@
 	<groupId>org.jenkins-ci.plugins</groupId>
 	<artifactId>relution-publisher</artifactId>
 	<name>Relution Enterprise Appstore Publisher plugin</name>
-	<version>1.17</version>
+	<version>1.18-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 
 	<scm>
