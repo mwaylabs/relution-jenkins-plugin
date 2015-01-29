@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,19 +45,19 @@ public class RequestManager {
      * The maximum amount of time, in milliseconds, to wait for the connection manager to return
      * a connection from the connection pool.
      */
-    private final static int         TIMEOUT_CONNECTION_REQUEST = 5000;
+    private final static int         TIMEOUT_CONNECTION_REQUEST = 10000;
 
     /**
      * The connection attempt will time out if a connection cannot be established within the
-     * specified amount of time, in milliseconds. 
+     * specified amount of time, in milliseconds.
      */
-    private final static int         TIMEOUT_CONNECT            = 30000;
+    private final static int         TIMEOUT_CONNECT            = 60000;
 
     /**
      * The connection will time out if the period of inactivity after receiving or sending a data
-     * packet exceeds the specified value, in milliseconds. 
+     * packet exceeds the specified value, in milliseconds.
      */
-    private final static int         TIMEOUT_SOCKET             = 10000;
+    private final static int         TIMEOUT_SOCKET             = 60000;
 
     /**
      * The maximum number of times a request is retried in case a time out occurs.
