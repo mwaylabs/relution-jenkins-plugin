@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,6 +43,7 @@ import javax.inject.Inject;
 public class Publication extends AbstractDescribableImpl<Publication> {
 
     private String artifactPath;
+    private String artifactExcludePath;
     private String storeId;
 
     private String releaseStatus;
@@ -58,6 +59,7 @@ public class Publication extends AbstractDescribableImpl<Publication> {
     @DataBoundConstructor
     public Publication(
             final String artifactPath,
+            final String artifactExcludePath,
             final String storeId,
             final String releaseStatus,
             final String archiveMode,
@@ -69,6 +71,7 @@ public class Publication extends AbstractDescribableImpl<Publication> {
             final String versionName) {
 
         this.setArtifactPath(artifactPath);
+        this.setArtifactExcludePath(artifactExcludePath);
         this.setStoreId(storeId);
         this.setReleaseStatus(releaseStatus);
         this.setArchiveMode(archiveMode);
@@ -89,14 +92,31 @@ public class Publication extends AbstractDescribableImpl<Publication> {
 
     /**
      * Sets the path of the artifact to be published, relative to the workspace directory.
-     * @param filePath The path of the artifact to be published.
+     * @param includes The pattern that defines which artifacts to include.
      */
-    public void setArtifactPath(final String filePath) {
-        this.artifactPath = filePath;
+    public void setArtifactPath(final String includes) {
+        this.artifactPath = includes;
     }
 
     /**
-     * Gets the identifier of the {@link Store} to which the artifact should be published. 
+     * Gets the exclude pattern for the artifact to be published, relative to the workspace
+     * directory.
+     */
+    public String getArtifactExcludePath() {
+        return this.artifactExcludePath;
+    }
+
+    /**
+     * Sets the exclude pattern for the artifact to be published, relative to the workspace
+     * directory.
+     * @param excludes The pattern that defines which artifacts to exclude.
+     */
+    public void setArtifactExcludePath(final String excludes) {
+        this.artifactExcludePath = excludes;
+    }
+
+    /**
+     * Gets the identifier of the {@link Store} to which the artifact should be published.
      */
     public String getStoreId() {
         return this.storeId;

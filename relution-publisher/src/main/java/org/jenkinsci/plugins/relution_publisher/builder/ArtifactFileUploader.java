@@ -94,7 +94,10 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         try {
             this.log.write(this, "Uploading build artifacts...");
-            final List<ApiResponse<Asset>> responses = this.uploadAssets(basePath, this.publication.getArtifactPath());
+            final List<ApiResponse<Asset>> responses = this.uploadAssets(
+                    basePath,
+                    this.publication.getArtifactPath(),
+                    this.publication.getArtifactExcludePath());
 
             if (this.isEmpty(responses) && this.build.getResult() == Result.UNSTABLE) {
                 this.log.write(this, "Upload of build artifacts failed.");
@@ -313,7 +316,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         this.log.write(this, "Uploading application icon...");
         final String filePath = this.publication.getIconPath();
-        final List<ApiResponse<Asset>> responses = this.uploadAssets(basePath, filePath);
+        final List<ApiResponse<Asset>> responses = this.uploadAssets(basePath, filePath, null);
 
         if (this.isEmpty(responses)) {
             this.log.write(this, "Failed to upload application icon.");
@@ -424,19 +427,23 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "Version persisted successfully.");
     }
 
-    private List<ApiResponse<Asset>> uploadAssets(final File basePath, final String filePath)
+    private List<ApiResponse<Asset>> uploadAssets(final File basePath, final String includes, final String excludes)
             throws URISyntaxException, InterruptedException {
 
-        if (StringUtils.isBlank(filePath)) {
+        if (StringUtils.isBlank(includes)) {
             this.log.write(this, "No file to upload specified, filter expression is empty, upload failed.");
             return null;
         }
 
-        final FileSet fileSet = Util.createFileSet(basePath, filePath);
+        if (!StringUtils.isBlank(excludes)) {
+            this.log.write(this, "Excluding files that match \"%s\"", excludes);
+        }
+
+        final FileSet fileSet = Util.createFileSet(basePath, includes, excludes);
         final File directory = fileSet.getDirectoryScanner().getBasedir();
 
         if (fileSet.getDirectoryScanner().getIncludedFilesCount() < 1) {
-            this.log.write(this, "The file specified by \"%s\" does not exist, upload failed.", filePath);
+            this.log.write(this, "The file specified by \"%s\" does not exist, upload failed.", includes);
             return null;
         }
 

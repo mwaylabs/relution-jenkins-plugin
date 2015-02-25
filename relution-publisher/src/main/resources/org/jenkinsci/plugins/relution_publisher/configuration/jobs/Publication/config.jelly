@@ -12,8 +12,13 @@
 
 	<f:section title="${%Publication}">
 		<f:entry
-			title="${%File to deploy}"
+			title="${%Files to deploy}"
 			field="artifactPath">
+			<f:textbox />
+		</f:entry>
+		<f:entry
+			title="${%Files to exclude}"
+			field="artifactExcludePath">
 			<f:textbox />
 		</f:entry>
 		<f:entry
