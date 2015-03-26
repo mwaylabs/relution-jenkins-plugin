@@ -75,12 +75,12 @@ public class ArtifactPublisher extends Recorder {
     @Override
     public boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
 
-        final Log log = new Log(listener.getLogger());
+        final Log log = new Log(listener);
         log.write();
 
         if (this.publications == null) {
             log.write(this, "Skipped, no publications configured");
-            Builds.set(build, Result.UNSTABLE, log);
+            Builds.setResult(build, Result.UNSTABLE, log);
             return true;
         }
 
@@ -105,7 +105,7 @@ public class ArtifactPublisher extends Recorder {
                     "The store configured for '%s' no longer exists, please verify your configuration.",
                     publication.getArtifactPath());
 
-            Builds.set(build, Result.UNSTABLE, log);
+            Builds.setResult(build, Result.UNSTABLE, log);
             return;
         }
 
@@ -114,7 +114,8 @@ public class ArtifactPublisher extends Recorder {
             return;
         }
 
-        final ArtifactFileUploader publisher = new ArtifactFileUploader(build, publication, store, log);
+        final Result result = build.getResult();
+        final ArtifactFileUploader publisher = new ArtifactFileUploader(result, publication, store, log);
 
         log.write(this, "Publishing '%s' to '%s'", publication.getArtifactPath(), store.toString());
         final FilePath workspace = build.getWorkspace();
@@ -125,6 +126,9 @@ public class ArtifactPublisher extends Recorder {
         }
 
         workspace.act(publisher);
+
+        final Result newResult = publisher.getResult();
+        Builds.setResult(build, newResult, log);
     }
 
     private boolean shouldPublish(final AbstractBuild<?, ?> build, final Publication publication, final Store store, final Log log) {

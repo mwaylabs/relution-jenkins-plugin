@@ -31,6 +31,7 @@ import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -40,21 +41,35 @@ import javax.inject.Inject;
  * Represents a publication configured in a Jenkins project. A publication determines which
  * Relution Enterprise Appstore an artifact should be uploaded to.
  */
-public class Publication extends AbstractDescribableImpl<Publication> {
+public class Publication extends AbstractDescribableImpl<Publication> implements Serializable {
 
-    private String artifactPath;
-    private String artifactExcludePath;
-    private String storeId;
+    /**
+     * The serial version number of this class.
+     * <p>
+     * This version number is used to determine whether a serialized representation of this class
+     * is compatible with the current implementation of the class.
+     * <p>
+     * <b>Note</b> Maintainers must change this value <b>if and only if</b> the new version of this
+     * class is not compatible with old versions.
+     * @see
+     * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
+     * Versioning of Serializable Objects</a>.
+     */
+    private static final long serialVersionUID = 1L;
 
-    private String releaseStatus;
-    private String archiveMode;
-    private String uploadMode;
+    private String            artifactPath;
+    private String            artifactExcludePath;
+    private String            storeId;
 
-    private String name;
-    private String iconPath;
-    private String changeLogPath;
-    private String descriptionPath;
-    private String versionName;
+    private String            releaseStatus;
+    private String            archiveMode;
+    private String            uploadMode;
+
+    private String            name;
+    private String            iconPath;
+    private String            changeLogPath;
+    private String            descriptionPath;
+    private String            versionName;
 
     @DataBoundConstructor
     public Publication(

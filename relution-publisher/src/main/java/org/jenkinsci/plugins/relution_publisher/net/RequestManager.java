@@ -32,6 +32,7 @@ import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.jenkinsci.plugins.relution_publisher.util.ErrorType;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
@@ -39,35 +40,49 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
-public class RequestManager {
+public class RequestManager implements Serializable {
+
+    /**
+     * The serial version number of this class.
+     * <p>
+     * This version number is used to determine whether a serialized representation of this class
+     * is compatible with the current implementation of the class.
+     * <p>
+     * <b>Note</b> Maintainers must change this value <b>if and only if</b> the new version of this
+     * class is not compatible with old versions.
+     * @see
+     * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
+     * Versioning of Serializable Objects</a>.
+     */
+    private static final long                  serialVersionUID           = 1L;
 
     /**
      * The maximum amount of time, in milliseconds, to wait for the connection manager to return
      * a connection from the connection pool.
      */
-    private final static int         TIMEOUT_CONNECTION_REQUEST = 10000;
+    private final static int                   TIMEOUT_CONNECTION_REQUEST = 10000;
 
     /**
      * The connection attempt will time out if a connection cannot be established within the
      * specified amount of time, in milliseconds.
      */
-    private final static int         TIMEOUT_CONNECT            = 60000;
+    private final static int                   TIMEOUT_CONNECT            = 60000;
 
     /**
      * The connection will time out if the period of inactivity after receiving or sending a data
      * packet exceeds the specified value, in milliseconds.
      */
-    private final static int         TIMEOUT_SOCKET             = 60000;
+    private final static int                   TIMEOUT_SOCKET             = 60000;
 
     /**
      * The maximum number of times a request is retried in case a time out occurs.
      */
-    private final static int         MAX_REQUEST_RETRIES        = 3;
+    private final static int                   MAX_REQUEST_RETRIES        = 3;
 
-    private final static Charset     CHARSET                    = Charset.forName("UTF-8");
+    private final static Charset               CHARSET                    = Charset.forName("UTF-8");
 
-    private CloseableHttpAsyncClient mHttpClient;
-    private HttpHost                 mProxyHost;
+    private transient CloseableHttpAsyncClient mHttpClient;
+    private HttpHost                           mProxyHost;
 
     private CloseableHttpAsyncClient createHttpClient() {
 

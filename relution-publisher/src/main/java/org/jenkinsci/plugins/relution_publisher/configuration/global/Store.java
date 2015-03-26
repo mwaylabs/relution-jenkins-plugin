@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,6 +43,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -61,7 +62,21 @@ import javax.servlet.ServletException;
  * a version to this store. The default release status can be overridden on a per Jenkins project
  * basis.
  */
-public class Store extends AbstractDescribableImpl<Store> {
+public class Store extends AbstractDescribableImpl<Store> implements Serializable {
+
+    /**
+     * The serial version number of this class.
+     * <p>
+     * This version number is used to determine whether a serialized representation of this class
+     * is compatible with the current implementation of the class.
+     * <p>
+     * <b>Note</b> Maintainers must change this value <b>if and only if</b> the new version of this
+     * class is not compatible with old versions.
+     * @see
+     * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
+     * Versioning of Serializable Objects</a>.
+     */
+    private static final long     serialVersionUID   = 1L;
 
     public final static String    KEY_URL            = "url";
     public final static String    KEY_ORGANIZATION   = "organization";
@@ -327,7 +342,7 @@ public class Store extends AbstractDescribableImpl<Store> {
     }
 
     /**
-     * Gets an authorization token that can be used to authenticate with the store. 
+     * Gets an authorization token that can be used to authenticate with the store.
      */
     public String getAuthorizationToken() {
 
