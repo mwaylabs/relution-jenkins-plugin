@@ -15,5 +15,12 @@
 				field="stores"
 				add="${%Add store}" />
 		</f:entry>
+		<f:advanced title="${%Advanced}">
+			<f:entry
+				title="${%Show debug log messages}"
+				field="debugEnabled">
+				<f:checkbox />
+			</f:entry>
+		</f:advanced>
 	</f:section>
 </j:jelly>

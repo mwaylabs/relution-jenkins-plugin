@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +15,6 @@
  */
 
 package org.jenkinsci.plugins.relution_publisher.configuration.global;
-
-import hudson.Extension;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -27,6 +25,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.util.ArrayList;
 import java.util.List;
 
+import hudson.Extension;
 import jenkins.model.GlobalConfiguration;
 
 
@@ -36,9 +35,12 @@ import jenkins.model.GlobalConfiguration;
 @Extension
 public class StoreConfiguration extends GlobalConfiguration {
 
-    public final static String KEY_STORES = "stores";
+    public final static String KEY_STORES        = "stores";
+    public final static String KEY_DEBUG_ENABLED = "debugEnabled";
 
-    private final List<Store>  stores     = new ArrayList<Store>();
+    private final List<Store> stores = new ArrayList<Store>();
+
+    private boolean isDebugEnabled;
 
     /**
      * Initializes a new instance of the {@link StoreConfiguration} class.
@@ -49,7 +51,6 @@ public class StoreConfiguration extends GlobalConfiguration {
     }
 
     private void addStores(final JSONArray storesJsonArray) {
-
         for (int n = 0; n < storesJsonArray.size(); n++) {
             final JSONObject store = storesJsonArray.getJSONObject(n);
             this.addStore(store);
@@ -57,7 +58,6 @@ public class StoreConfiguration extends GlobalConfiguration {
     }
 
     private void addStore(final JSONObject storeJsonObject) {
-
         final Store store = new Store(storeJsonObject);
         this.stores.add(store);
     }
@@ -85,6 +85,8 @@ public class StoreConfiguration extends GlobalConfiguration {
             final JSONObject store = (JSONObject) jsonEntity;
             this.addStore(store);
         }
+
+        this.isDebugEnabled = json.getBoolean(KEY_DEBUG_ENABLED);
 
         this.save();
         return false;
@@ -115,5 +117,21 @@ public class StoreConfiguration extends GlobalConfiguration {
             }
         }
         return null;
+    }
+
+    /**
+     * Gets a value indicating whether debug output should be enabled.
+     * @return {@code true} if debug output should be enabled; otherwise, {@code false}.
+     */
+    public boolean isDebugEnabled() {
+        return this.isDebugEnabled;
+    }
+
+    /**
+     * Sets a value indicating whether debug output should be enabled.
+     * @param enabled {@code true} to enable debug output; {@code false} to disable debug output.
+     */
+    public void setDebugEnabled(final boolean enabled) {
+        this.isDebugEnabled = enabled;
     }
 }

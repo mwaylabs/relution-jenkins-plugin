@@ -16,18 +16,6 @@
 
 package org.jenkinsci.plugins.relution_publisher.configuration.jobs;
 
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.Result;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.BuildStepMonitor;
-import hudson.tasks.Publisher;
-import hudson.tasks.Recorder;
-
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.relution_publisher.builder.ArtifactFileUploader;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
@@ -39,9 +27,25 @@ import org.jenkinsci.plugins.relution_publisher.util.Builds;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
+import java.security.Security;
 import java.util.List;
 
+import javax.crypto.Cipher;
 import javax.inject.Inject;
+
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Result;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Publisher;
+import hudson.tasks.Recorder;
 
 
 /**
@@ -86,14 +90,55 @@ public class ArtifactPublisher extends Recorder {
 
         final StoreConfiguration configuration = this.getDescriptor().getGlobalConfiguration();
 
-        for (final Publication publication : this.publications) {
+        if (configuration.isDebugEnabled()) {
+            this.logRuntimeInformation(log);
+            this.logProviderInformation(log);
+            this.logKeyLengthInformation(log);
+        }
 
+        for (final Publication publication : this.publications) {
             final Store store = configuration.getStore(publication.getStoreId());
             this.publish(build, publication, store, log);
             log.write();
         }
 
         return true;
+    }
+
+    private void logRuntimeInformation(final Log log) {
+        log.write(this, "Java VM     : %s, %s", System.getProperty("java.vm.name"), System.getProperty("java.version"));
+        log.write(this, "Java home   : %s", System.getProperty("java.home"));
+        log.write(this, "Java vendor : %s (Specification: %s)", System.getProperty("java.vendor"), System.getProperty("java.specification.vendor"));
+        log.write();
+    }
+
+    private void logProviderInformation(final Log log) {
+        log.write(this, "Available security providers:");
+
+        final Provider[] providers = Security.getProviders();
+        for (final Provider provider : providers) {
+            log.write(
+                    this,
+                    "%s %s",
+                    provider.getName(),
+                    String.valueOf(provider.getVersion()));
+        }
+        log.write();
+    }
+
+    private void logKeyLengthInformation(final Log log) {
+        try {
+            final int maxKeyLength = Cipher.getMaxAllowedKeyLength("AES");
+            final String value = (maxKeyLength < Integer.MAX_VALUE)
+                    ? String.valueOf(maxKeyLength)
+                    : "Unrestricted";
+
+            log.write(this, "Max. allowed key length: %s", value);
+
+        } catch (final NoSuchAlgorithmException e) {
+            log.write(this, "Max. allowed key length: <error>");
+        }
+        log.write();
     }
 
     private void publish(final AbstractBuild<?, ?> build, final Publication publication, final Store store, final Log log)
@@ -155,7 +200,7 @@ public class ArtifactPublisher extends Recorder {
         @Inject
         private StoreConfiguration globalConfiguration;
 
-        private List<Publication>  publications;
+        private List<Publication> publications;
 
         public ArtifactPublisherDescriptor() {
             this.load();
@@ -174,6 +219,7 @@ public class ArtifactPublisher extends Recorder {
         }
 
         @Override
+        @SuppressWarnings("rawtypes")
         public boolean isApplicable(final Class<? extends AbstractProject> clazz) {
             return true;
         }

@@ -16,12 +16,6 @@
 
 package org.jenkinsci.plugins.relution_publisher.configuration.global;
 
-import hudson.Extension;
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
-import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
-
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
@@ -52,6 +46,12 @@ import java.util.concurrent.ExecutionException;
 
 import javax.servlet.ServletException;
 
+import hudson.Extension;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
+import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
+
 
 /**
  * Represents a Relution Enterprise Appstore that is used as a communication endpoint by the
@@ -62,7 +62,7 @@ import javax.servlet.ServletException;
  * a version to this store. The default release status can be overridden on a per Jenkins project
  * basis.
  */
-public class Store extends AbstractDescribableImpl<Store> implements Serializable {
+public class Store extends AbstractDescribableImpl<Store>implements Serializable {
 
     /**
      * The serial version number of this class.
@@ -76,36 +76,36 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
      * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
      * Versioning of Serializable Objects</a>.
      */
-    private static final long     serialVersionUID   = 1L;
+    private static final long serialVersionUID = 1L;
 
-    public final static String    KEY_URL            = "url";
-    public final static String    KEY_ORGANIZATION   = "organization";
+    public final static String KEY_URL          = "url";
+    public final static String KEY_ORGANIZATION = "organization";
 
-    public final static String    KEY_USERNAME       = "username";
-    public final static String    KEY_PASSWORD       = "password";
+    public final static String KEY_USERNAME = "username";
+    public final static String KEY_PASSWORD = "password";
 
-    public final static String    KEY_RELEASE_STATUS = "releaseStatus";
-    public final static String    KEY_ARCHIVE_MODE   = "archiveMode";
-    public final static String    KEY_UPLOAD_MODE    = "uploadMode";
+    public final static String KEY_RELEASE_STATUS = "releaseStatus";
+    public final static String KEY_ARCHIVE_MODE   = "archiveMode";
+    public final static String KEY_UPLOAD_MODE    = "uploadMode";
 
-    public final static String    KEY_PROXY_HOST     = "proxyHost";
-    public final static String    KEY_PROXY_PORT     = "proxyPort";
+    public final static String KEY_PROXY_HOST = "proxyHost";
+    public final static String KEY_PROXY_PORT = "proxyPort";
 
-    private final static String[] URL_SCHEMES        = {"http", "https"};
+    private final static String[] URL_SCHEMES = {"http", "https"};
 
-    private String                mUrl;
+    private String mUrl;
 
-    private String                mOrganization;
+    private String mOrganization;
 
-    private String                mUsername;
-    private String                mPassword;
+    private String mUsername;
+    private String mPassword;
 
-    private String                mReleaseStatus;
-    private String                mArchiveMode;
-    private String                mUploadMode;
+    private String mReleaseStatus;
+    private String mArchiveMode;
+    private String mUploadMode;
 
-    private String                mProxyHost;
-    private int                   mProxyPort;
+    private String mProxyHost;
+    private int    mProxyPort;
 
     /**
      * Creates a new instance of the {@link Store} class initialized with the values in
@@ -498,7 +498,7 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
                 @QueryParameter(Store.KEY_PASSWORD) final String password,
                 @QueryParameter(Store.KEY_PROXY_HOST) final String proxyHost,
                 @QueryParameter(Store.KEY_PROXY_PORT) final int proxyPort)
-                throws IOException, ServletException {
+                        throws IOException, ServletException {
 
             if (StringUtils.isEmpty(url)) {
                 return FormValidation.warning("Unable to validate, the specified URL is empty.");
