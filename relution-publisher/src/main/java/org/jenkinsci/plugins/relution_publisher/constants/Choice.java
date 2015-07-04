@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,12 +32,12 @@ public abstract class Choice {
      */
     public final String name;
 
-    private Option      option;
+    private Option option;
 
     /**
      * Initializes a new instance of the {@link Choice} class.
      * @param key The key to use for the choice.
-     * @param name The display name for the choice. 
+     * @param name The display name for the choice.
      */
     protected Choice(final String key, final String name) {
 
@@ -46,11 +46,22 @@ public abstract class Choice {
     }
 
     /**
+     * Creates a drop down item for a {@link ListBoxModel} based on the specified {@link Choice}.
+     * @param choice The choice the option is based on.
+     * @param format A format string that is used as the option's name.
+     * @param args Arguments referenced by the format specifiers in the format string.
+     * @return An {@link Option}.
+     */
+    static Option newOption(final Choice choice, final String format, final Object... args) {
+        final String name = String.format(format, args);
+        return new Option(name, choice.key);
+    }
+
+    /**
      * Converts the {@link Choice} to a a drop down item for a {@link ListBoxModel}.
      * @return An {@link Option}.
      */
     public Option asOption() {
-
         if (this.option == null) {
             this.option = new Option(this.name, this.key);
         }

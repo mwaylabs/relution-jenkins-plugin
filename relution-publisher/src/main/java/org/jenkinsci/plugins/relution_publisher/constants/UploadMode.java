@@ -16,10 +16,12 @@
 
 package org.jenkinsci.plugins.relution_publisher.constants;
 
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 
 import hudson.model.Result;
 import hudson.util.ListBoxModel;
+import hudson.util.ListBoxModel.Option;
 
 
 /**
@@ -52,12 +54,36 @@ public final class UploadMode extends Choice {
         super(key, name);
     }
 
+    private static Option optionOrDefault(final Store store) {
+        if (store == null) {
+            return DEFAULT.asOption();
+        }
+        final UploadMode mode = getByKey(store.getUploadMode());
+        return newOption(DEFAULT, "%s* (default)", mode.name);
+    }
+
+    /**
+     * Returns the upload mode associated with the specified key.
+     * @param key The key for which to get the upload mode.
+     * @return The {@link UploadMode} with the specified key, or {@link UploadMode#DEFAULT}
+     * if the specified key matches no upload mode.
+     */
+    public static UploadMode getByKey(final String key) {
+        if (StringUtils.equals(key, DEFAULT.key)) {
+            return DEFAULT;
+        } else if (StringUtils.equals(key, SUCCESS.key)) {
+            return SUCCESS;
+        } else if (StringUtils.equals(key, UNSTABLE.key)) {
+            return UNSTABLE;
+        }
+        return DEFAULT;
+    }
+
     /**
      * Adds all available {@link UploadMode} items to the specified list box as drop down items.
      * @param list The {@link UploadMode} to which the items should be added.
      */
     public static void fillListBox(final ListBoxModel list) {
-
         list.add(0, SUCCESS.asOption());
         list.add(1, UNSTABLE.asOption());
     }
@@ -67,10 +93,10 @@ public final class UploadMode extends Choice {
      * including the special status {@link #DEFAULT}. If <i>Default</i> is selected, the upload
      * mode defined in the build's {@link Store} configuration is used.
      * @param list The {@link ListBoxModel} to which the items should be added.
+     * @param store
      */
-    public static void fillListBoxWithDefault(final ListBoxModel list) {
-
-        list.add(0, DEFAULT.asOption());
+    public static void fillListBox(final ListBoxModel list, final Store store) {
+        list.add(0, optionOrDefault(store));
         list.add(1, SUCCESS.asOption());
         list.add(2, UNSTABLE.asOption());
     }

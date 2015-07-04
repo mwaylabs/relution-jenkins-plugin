@@ -16,12 +16,6 @@
 
 package org.jenkinsci.plugins.relution_publisher.configuration.jobs;
 
-import hudson.Extension;
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
-import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
-
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
@@ -36,12 +30,18 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import hudson.Extension;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Descriptor;
+import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
+
 
 /**
  * Represents a publication configured in a Jenkins project. A publication determines which
  * Relution Enterprise Appstore an artifact should be uploaded to.
  */
-public class Publication extends AbstractDescribableImpl<Publication> implements Serializable {
+public class Publication extends AbstractDescribableImpl<Publication>implements Serializable {
 
     /**
      * The serial version number of this class.
@@ -57,19 +57,19 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
      */
     private static final long serialVersionUID = 1L;
 
-    private String            artifactPath;
-    private String            artifactExcludePath;
-    private String            storeId;
+    private String artifactPath;
+    private String artifactExcludePath;
+    private String storeId;
 
-    private String            releaseStatus;
-    private String            archiveMode;
-    private String            uploadMode;
+    private String releaseStatus;
+    private String archiveMode;
+    private String uploadMode;
 
-    private String            name;
-    private String            iconPath;
-    private String            changeLogPath;
-    private String            descriptionPath;
-    private String            versionName;
+    private String name;
+    private String iconPath;
+    private String changeLogPath;
+    private String descriptionPath;
+    private String versionName;
 
     @DataBoundConstructor
     public Publication(
@@ -328,16 +328,11 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
             return FormValidation.ok();
         }
 
-        public ListBoxModel doFillStoreIdItems() {
-
-            final List<Store> stores = this.globalConfiguration.getStores();
-            final ListBoxModel items = new ListBoxModel();
-
-            for (final Store store : stores) {
-                items.add(store.toString(), store.getIdentifier());
+        public FormValidation doCheckStoreId(@QueryParameter final String value) {
+            if (StringUtils.isBlank(value)) {
+                return FormValidation.error("Please select a store from the list");
             }
-
-            return items;
+            return FormValidation.ok();
         }
 
         public FormValidation doCheckReleaseStatus(@QueryParameter final String value) {
@@ -353,22 +348,40 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
             return FormValidation.ok();
         }
 
-        public ListBoxModel doFillReleaseStatusItems() {
+        public ListBoxModel doFillStoreIdItems() {
 
+            final List<Store> stores = this.globalConfiguration.getStores();
             final ListBoxModel items = new ListBoxModel();
-            ReleaseStatus.fillListBoxWithDefault(items);
+            items.add("", null);
+
+            for (final Store store : stores) {
+                items.add(store.toString(), store.getIdentifier());
+            }
+
             return items;
         }
 
-        public ListBoxModel doFillArchiveModeItems() {
+        public ListBoxModel doFillReleaseStatusItems(@QueryParameter final String storeId) {
+            final Store store = this.globalConfiguration.getStore(storeId);
+
             final ListBoxModel items = new ListBoxModel();
-            ArchiveMode.fillListBoxWithDefault(items);
+            ReleaseStatus.fillList(items, store);
             return items;
         }
 
-        public ListBoxModel doFillUploadModeItems() {
+        public ListBoxModel doFillArchiveModeItems(@QueryParameter final String storeId) {
+            final Store store = this.globalConfiguration.getStore(storeId);
+
             final ListBoxModel items = new ListBoxModel();
-            UploadMode.fillListBoxWithDefault(items);
+            ArchiveMode.fillListBox(items, store);
+            return items;
+        }
+
+        public ListBoxModel doFillUploadModeItems(@QueryParameter final String storeId) {
+            final Store store = this.globalConfiguration.getStore(storeId);
+
+            final ListBoxModel items = new ListBoxModel();
+            UploadMode.fillListBox(items, store);
             return items;
         }
     }
