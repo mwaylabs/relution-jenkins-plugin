@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,10 +16,10 @@
 
 package org.jenkinsci.plugins.relution_publisher.constants;
 
+import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
+
 import hudson.model.Result;
 import hudson.util.ListBoxModel;
-
-import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 
 
 /**
@@ -34,19 +34,19 @@ public final class UploadMode extends Choice {
      * Versions produced by the build process should use the upload mode defined in the associated
      * {@link Store}.
      */
-    public final static UploadMode DEFAULT  = new UploadMode("DEFAULT", "(default)");
+    public final static UploadMode DEFAULT = new UploadMode("DEFAULT", "(default)");
 
     /**
      * Versions produced by the build process should only be uploaded if they completed with
      * {@link Result#SUCCESS} (default).
      */
-    public final static UploadMode SUCCESS  = new UploadMode("SUCCESS", "Upload successful builds only");
+    public final static UploadMode SUCCESS = new UploadMode("SUCCESS", "build is successful");
 
     /**
      * Versions produces by the build process should also be uploaded if they complete with
      * {@link Result#UNSTABLE}.
      */
-    public final static UploadMode UNSTABLE = new UploadMode("UNSTABLE", "Upload even if the build is unstable");
+    public final static UploadMode UNSTABLE = new UploadMode("UNSTABLE", "build is successful or unstable");
 
     private UploadMode(final String key, final String name) {
         super(key, name);

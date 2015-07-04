@@ -519,7 +519,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
                 switch (response.getStatusCode()) {
                     case HttpStatus.SC_OK:
-                        return FormValidation.ok("Connection attempt completed successfully");
+                        return FormValidation.ok("Connection attempt successful");
 
                     case HttpStatus.SC_FORBIDDEN:
                         return FormValidation.error(

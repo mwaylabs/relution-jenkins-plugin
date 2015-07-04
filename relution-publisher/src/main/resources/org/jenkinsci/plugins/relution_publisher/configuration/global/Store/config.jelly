@@ -11,7 +11,7 @@
 		to find them. -->
 	<f:section title="${%Relution Enterprise App Store configuration}">
 		<f:entry
-			title="${%App Store API URL}"
+			title="${%App store API URL}"
 			field="url">
 			<f:textbox />
 		</f:entry>
@@ -52,17 +52,17 @@
 		with="url,username,organization,password,proxyHost,proxyPort" />
 	<f:section title="${%Upload settings}">
 		<f:entry
-			title="${%Upload versions to}"
+			title="${%Upload version to}"
 			field="releaseStatus">
 			<f:select />
 		</f:entry>
 		<f:entry
-			title="${%Upload versions if}"
+			title="${%Upload version if}"
 			field="uploadMode">
 			<f:select />
 		</f:entry>
 		<f:entry
-			title="${%Archivation mode}"
+			title="${%Upload of a version will}"
 			field="archiveMode">
 			<f:select />
 		</f:entry>
