@@ -26,47 +26,57 @@
 			field="storeId">
 			<f:select />
 		</f:entry>
+		<f:advanced title="${%Additional files}">
+			<f:section title="${%Additional files}">
+				<f:entry
+					title="${%Description path (optional)}"
+					field="descriptionPath">
+					<f:textbox />
+				</f:entry>
+				<f:entry
+					title="${%Change log path (optional)}"
+					field="changeLogPath">
+					<f:textbox />
+				</f:entry>
+			</f:section>
+		</f:advanced>
+		<f:advanced title="${%Upload settings}">
+			<f:section title="${%Upload settings}">
+				<f:entry
+					title="${%Upload versions to}"
+					field="releaseStatus">
+					<f:select />
+				</f:entry>
+				<f:entry
+					title="${%Upload versions if}"
+					field="uploadMode">
+					<f:select />
+				</f:entry>
+				<f:entry
+					title="${%Archivation mode}"
+					field="archiveMode">
+					<f:select />
+				</f:entry>
+			</f:section>
+		</f:advanced>
 		<f:advanced>
-			<f:entry
-				title="${%Upload versions to}"
-				field="releaseStatus">
-				<f:select />
-			</f:entry>
-			<f:entry
-				title="${%Upload versions if}"
-				field="uploadMode">
-				<f:select />
-			</f:entry>
-			<f:entry
-				title="${%Archivation mode}"
-				field="archiveMode">
-				<f:select />
-			</f:entry>
-			<f:entry
-				title="${%Application name (optional)}"
-				field="name">
-				<f:textbox />
-			</f:entry>
-			<f:entry
-				title="${%Application icon (optional)}"
-				field="iconPath">
-				<f:textbox />
-			</f:entry>
-			<f:entry
-				title="${%Change log path (optional)}"
-				field="changeLogPath">
-				<f:textbox />
-			</f:entry>
-			<f:entry
-				title="${%Description path (optional)}"
-				field="descriptionPath">
-				<f:textbox />
-			</f:entry>
-			<f:entry
-				title="${%Version name (optional)}"
-				field="versionName">
-				<f:textbox />
-			</f:entry>
+			<f:section title="${%Advanced settings}">
+				<f:entry
+					title="${%Application icon (optional)}"
+					field="iconPath">
+					<f:textbox />
+				</f:entry>
+				<f:entry
+					title="${%Application name (optional)}"
+					field="name">
+					<f:textbox />
+				</f:entry>
+				<f:entry
+					title="${%Version name (optional)}"
+					field="versionName">
+					<f:textbox />
+				</f:entry>
+			</f:section>
 		</f:advanced>
 		<f:entry title="">
 			<div align="right">
@@ -74,5 +84,4 @@
 			</div>
 		</f:entry>
 	</f:section>
-
 </j:jelly>

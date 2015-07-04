@@ -17,7 +17,7 @@
 		</f:entry>
 		<f:advanced title="${%Advanced}">
 			<f:entry
-				title="${%Show debug log messages}"
+				title="${%Log debug messages}"
 				field="debugEnabled">
 				<f:checkbox />
 			</f:entry>

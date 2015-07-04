@@ -11,23 +11,10 @@
 		to find them. -->
 	<f:section title="${%Relution Enterprise App Store configuration}">
 		<f:entry
-			title="${%Store API URL}"
+			title="${%App Store API URL}"
 			field="url">
 			<f:textbox />
 		</f:entry>
-		<f:advanced title="${%Proxy settings}">
-			<f:entry
-				title="${%Proxy host}"
-				field="proxyHost">
-				<f:textbox />
-			</f:entry>
-
-			<f:entry
-				title="${%Proxy port}"
-				field="proxyPort">
-				<f:textbox />
-			</f:entry>
-		</f:advanced>
 		<f:entry
 			title="${%User name}"
 			field="username">
@@ -43,11 +30,27 @@
 			field="password">
 			<f:password />
 		</f:entry>
-		<f:validateButton
-			title="${%Test connection}"
-			progress="${%Connecting...}"
-			method="testConnection"
-			with="url,username,organization,password,proxyHost,proxyPort" />
+	</f:section>
+	<f:advanced title="${%Proxy settings}">
+		<f:section title="${%Proxy settings}">
+			<f:entry
+				title="${%Proxy host}"
+				field="proxyHost">
+				<f:textbox />
+			</f:entry>
+			<f:entry
+				title="${%Proxy port}"
+				field="proxyPort">
+				<f:textbox />
+			</f:entry>
+		</f:section>
+	</f:advanced>
+	<f:validateButton
+		title="${%Test connection}"
+		progress="${%Connecting...}"
+		method="testConnection"
+		with="url,username,organization,password,proxyHost,proxyPort" />
+	<f:section title="${%Upload settings}">
 		<f:entry
 			title="${%Upload versions to}"
 			field="releaseStatus">
@@ -63,10 +66,10 @@
 			field="archiveMode">
 			<f:select />
 		</f:entry>
-		<f:entry title="">
-			<div align="right">
-				<f:repeatableDeleteButton value="${%Delete store}" />
-			</div>
-		</f:entry>
 	</f:section>
+	<f:entry title="">
+		<div align="right">
+			<f:repeatableDeleteButton value="${%Delete store}" />
+		</div>
+	</f:entry>
 </j:jelly>
