@@ -19,6 +19,7 @@ package org.jenkinsci.plugins.relution_publisher.configuration.global;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -101,18 +102,20 @@ public class StoreConfiguration extends GlobalConfiguration {
 
     /**
      * Gets the store with the specified identifier.
-     * @param storeId A store's {@link Store#getIdentifier() identifier}.
+     * @param storeId A store's {@link Store#getId() identifier}.
      * @return The {@link Store} with the specified id, or <code>null</code> if no such store
      * exists.
      */
+    @SuppressWarnings("deprecation")
     public Store getStore(final String storeId) {
-
         if (this.stores == null) {
             return null;
         }
 
         for (final Store store : this.stores) {
-            if (store.getIdentifier().equals(storeId)) {
+            if (StringUtils.equals(storeId, store.getId())) {
+                return store;
+            } else if (store.getIdentifier().equals(storeId)) {
                 return store;
             }
         }

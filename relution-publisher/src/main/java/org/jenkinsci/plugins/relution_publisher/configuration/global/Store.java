@@ -42,6 +42,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import javax.servlet.ServletException;
@@ -78,6 +79,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
      */
     private static final long serialVersionUID = 1L;
 
+    public final static String KEY_ID           = "id";
     public final static String KEY_URL          = "url";
     public final static String KEY_ORGANIZATION = "organization";
 
@@ -93,6 +95,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
     private final static String[] URL_SCHEMES = {"http", "https"};
 
+    private String mId;
     private String mUrl;
 
     private String mOrganization;
@@ -115,7 +118,6 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
      * @exception JSONException The specified string could not be converted to a {@link JSONObject}.
      */
     public static Store fromJson(final String storeJsonString) {
-
         final JSONObject storeJsonObject = JSONObject.fromObject(storeJsonString);
         return new Store(storeJsonObject);
     }
@@ -131,6 +133,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
      */
     @DataBoundConstructor
     public Store(
+            final String id,
             final String url,
             final String organization,
             final String username,
@@ -141,6 +144,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
             final String proxyHost,
             final int proxyPort) {
 
+        this.setId(id);
         this.setUrl(url);
         this.setOrganization(organization);
 
@@ -162,7 +166,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
             final String password,
             final String proxyHost,
             final int proxyPort) {
-        this(url, organization, username, password, null, null, null, proxyHost, proxyPort);
+        this(null, url, organization, username, password, null, null, null, proxyHost, proxyPort);
     }
 
     /**
@@ -170,7 +174,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
      * @param storeJsonObject A {@link JSONObject} used to initialize internal fields
      */
     public Store(final JSONObject storeJsonObject) {
-
+        this.setId(storeJsonObject.optString(KEY_ID));
         this.setUrl(storeJsonObject.getString(KEY_URL));
         this.setOrganization(storeJsonObject.getString(KEY_ORGANIZATION));
 
@@ -183,6 +187,28 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
         this.setProxyHost(storeJsonObject.getString(KEY_PROXY_HOST));
         this.setProxyPort(storeJsonObject.optInt(KEY_PROXY_PORT, 0));
+    }
+
+    private String getId(final String id) {
+        if (StringUtils.isBlank(id)) {
+            return UUID.randomUUID().toString();
+        }
+        return id;
+    }
+
+    /**
+     * Gets the unique identifier for the store.
+     */
+    public String getId() {
+        return this.getId(this.mId);
+    }
+
+    /**
+     * Sets the unique identifier for the store.
+     * @param id The identifier to set.
+     */
+    public void setId(final String id) {
+        this.mId = this.getId(id);
     }
 
     /**
@@ -355,9 +381,9 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
      * @return A {@link JSONObject} that represents this {@link Store}.
      */
     public JSONObject toJson() {
-
         final JSONObject json = new JSONObject();
 
+        json.put(KEY_ID, this.getId(this.mId));
         json.put(KEY_URL, this.mUrl);
         json.put(KEY_ORGANIZATION, this.mOrganization);
 
@@ -376,9 +402,10 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
     /**
      * Gets the unique identifier for the {@link Store}.
+     * @deprecated Use {@link #getId()}
      */
+    @Deprecated
     public String getIdentifier() {
-
         return String.format(
                 "%s:%s:%s",
                 this.mUsername,
@@ -388,12 +415,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
     @Override
     public int hashCode() {
-
-        final int a = (this.mUrl != null) ? this.mUrl.hashCode() : 0;
-        final int b = (this.mOrganization != null) ? this.mOrganization.hashCode() : 0;
-        final int c = (this.mUsername != null) ? this.mUsername.hashCode() : 0;
-
-        return a ^ b ^ c;
+        return this.mId.hashCode();
     }
 
     @Override
@@ -409,9 +431,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
         if (obj instanceof Store) {
             final Store other = (Store) obj;
-            return StringUtils.equals(this.mUrl, other.mUrl)
-                    && StringUtils.equals(this.mOrganization, other.mOrganization)
-                    && StringUtils.equals(this.mUsername, other.mUsername);
+            return StringUtils.equals(this.mId, other.mId);
         }
 
         return false;

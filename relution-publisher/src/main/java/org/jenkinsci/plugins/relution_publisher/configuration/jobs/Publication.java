@@ -139,7 +139,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
 
     /**
      * Sets the identifier of the {@link Store} to which the artifact should be publishes.
-     * @param storeId The {@link Store#getIdentifier() identifier} of a store.
+     * @param storeId The {@link Store#getId() identifier} of a store.
      */
     public void setStoreId(final String storeId) {
         this.storeId = storeId;
@@ -352,10 +352,10 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
 
             final List<Store> stores = this.globalConfiguration.getStores();
             final ListBoxModel items = new ListBoxModel();
-            items.add("", null);
+            items.add("", "");
 
             for (final Store store : stores) {
-                items.add(store.toString(), store.getIdentifier());
+                items.add(store.toString(), store.getId());
             }
 
             return items;

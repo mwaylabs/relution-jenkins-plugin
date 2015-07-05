@@ -67,6 +67,9 @@
 			<f:select />
 		</f:entry>
 	</f:section>
+	<f:entry field="id">
+		<f:readOnlyTextbox />
+	</f:entry>
 	<f:entry title="">
 		<div align="right">
 			<f:repeatableDeleteButton value="${%Delete store}" />
