@@ -27,6 +27,7 @@ import org.jenkinsci.plugins.relution_publisher.util.Builds;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
+import java.security.AlgorithmParameterGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.Security;
@@ -137,8 +138,22 @@ public class ArtifactPublisher extends Recorder {
 
         } catch (final NoSuchAlgorithmException e) {
             log.write(this, "Max. allowed key length: <error>");
+
         }
+        this.testDHKeypairSize(log, 1024);
+        this.testDHKeypairSize(log, 2048);
+        this.testDHKeypairSize(log, 4096);
         log.write();
+    }
+
+    private void testDHKeypairSize(final Log log, final int sizeBits) {
+        try {
+            final AlgorithmParameterGenerator apg = AlgorithmParameterGenerator.getInstance("DiffieHellman");
+            apg.init(sizeBits);
+            log.write(this, "DH keypair with %,d bits is supported", sizeBits);
+        } catch (final Exception e) {
+            log.write(this, "DH keypair with %,d bits is UNSUPPORTED", sizeBits);
+        }
     }
 
     private void publish(final AbstractBuild<?, ?> build, final Publication publication, final Store store, final Log log)
