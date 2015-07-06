@@ -43,13 +43,23 @@
 				field="proxyPort">
 				<f:textbox />
 			</f:entry>
+			<f:entry
+				title="${%Proxy username}"
+				field="proxyUsername">
+				<f:textbox />
+			</f:entry>
+			<f:entry
+				title="${%Proxy password}"
+				field="proxyPassword">
+				<f:password />
+			</f:entry>
 		</f:section>
 	</f:advanced>
 	<f:validateButton
 		title="${%Test connection}"
 		progress="${%Connecting...}"
 		method="testConnection"
-		with="url,username,organization,password,proxyHost,proxyPort" />
+		with="url,username,organization,password,proxyHost,proxyPort,proxyUsername,proxyPassword" />
 	<f:section title="${%Upload settings}">
 		<f:entry
 			title="${%Upload version to}"

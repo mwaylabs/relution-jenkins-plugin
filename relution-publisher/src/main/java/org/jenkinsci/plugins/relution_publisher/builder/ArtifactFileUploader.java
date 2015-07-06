@@ -107,6 +107,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         this.requestManager = new RequestManager();
         this.requestManager.setProxy(store.getProxyHost(), store.getProxyPort());
+        this.requestManager.setProxyCredentials(store.getProxyUsername(), store.getProxyPassword());
     }
 
     @Override

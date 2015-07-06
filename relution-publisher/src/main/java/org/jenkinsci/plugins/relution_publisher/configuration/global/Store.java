@@ -93,6 +93,9 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     public final static String KEY_PROXY_HOST = "proxyHost";
     public final static String KEY_PROXY_PORT = "proxyPort";
 
+    public final static String KEY_PROXY_USERNAME = "proxyUsername";
+    public final static String KEY_PROXY_PASSWORD = "proxyPassword";
+
     private final static String[] URL_SCHEMES = {"http", "https"};
 
     private String mId;
@@ -109,6 +112,9 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
     private String mProxyHost;
     private int    mProxyPort;
+
+    private String mProxyUsername;
+    private String mProxyPassword;
 
     /**
      * Creates a new instance of the {@link Store} class initialized with the values in
@@ -142,7 +148,9 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
             final String archiveMode,
             final String uploadMode,
             final String proxyHost,
-            final int proxyPort) {
+            final int proxyPort,
+            final String proxyUsername,
+            final String proxyPassword) {
 
         this.setId(id);
         this.setUrl(url);
@@ -157,6 +165,9 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
         this.setProxyHost(proxyHost);
         this.setProxyPort(proxyPort);
+
+        this.setProxyUsername(proxyUsername);
+        this.setProxyPassword(proxyPassword);
     }
 
     public Store(
@@ -165,8 +176,10 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
             final String username,
             final String password,
             final String proxyHost,
-            final int proxyPort) {
-        this(null, url, organization, username, password, null, null, null, proxyHost, proxyPort);
+            final int proxyPort,
+            final String proxyUsername,
+            final String proxyPassword) {
+        this(null, url, organization, username, password, null, null, null, proxyHost, proxyPort, proxyUsername, proxyPassword);
     }
 
     /**
@@ -187,6 +200,9 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
         this.setProxyHost(storeJsonObject.getString(KEY_PROXY_HOST));
         this.setProxyPort(storeJsonObject.optInt(KEY_PROXY_PORT, 0));
+
+        this.setProxyUsername(storeJsonObject.getString(KEY_PROXY_USERNAME));
+        this.setProxyPassword(storeJsonObject.getString(KEY_PROXY_PASSWORD));
     }
 
     private String getId(final String id) {
@@ -353,6 +369,36 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
+     * Gets the username to use for proxy authentication.
+     */
+    public String getProxyUsername() {
+        return this.mProxyUsername;
+    }
+
+    /**
+     * Sets the username to use for proxy authentication.
+     * @param proxyUsername The username to use.
+     */
+    public void setProxyUsername(final String proxyUsername) {
+        this.mProxyUsername = proxyUsername;
+    }
+
+    /**
+     * Gets the password to use for proxy authentication.
+     */
+    public String getProxyPassword() {
+        return this.mProxyPassword;
+    }
+
+    /**
+     * Sets the password to use for proxy authentication.
+     * @param proxyPassword The password to use.
+     */
+    public void setProxyPassword(final String proxyPassword) {
+        this.mProxyPassword = proxyPassword;
+    }
+
+    /**
      * Gets the host component of the store's {@link #getUrl() URL}.
      */
     public String getHostName() {
@@ -396,6 +442,9 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
         json.put(KEY_PROXY_HOST, this.mProxyHost);
         json.put(KEY_PROXY_PORT, this.mProxyPort);
+
+        json.put(KEY_PROXY_USERNAME, this.mProxyUsername);
+        json.put(KEY_PROXY_PASSWORD, this.mProxyPassword);
 
         return json;
     }
@@ -517,7 +566,9 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
                 @QueryParameter(Store.KEY_ORGANIZATION) final String organization,
                 @QueryParameter(Store.KEY_PASSWORD) final String password,
                 @QueryParameter(Store.KEY_PROXY_HOST) final String proxyHost,
-                @QueryParameter(Store.KEY_PROXY_PORT) final int proxyPort)
+                @QueryParameter(Store.KEY_PROXY_PORT) final int proxyPort,
+                @QueryParameter(Store.KEY_PROXY_USERNAME) final String proxyUsername,
+                @QueryParameter(Store.KEY_PROXY_PASSWORD) final String proxyPassword)
                         throws IOException, ServletException {
 
             if (StringUtils.isEmpty(url)) {
@@ -529,11 +580,12 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
             }
 
             try {
-                final Store store = new Store(url, organization, username, password, proxyHost, proxyPort);
+                final Store store = new Store(url, organization, username, password, proxyHost, proxyPort, proxyUsername, proxyPassword);
                 final BaseRequest<?> request = RequestFactory.createAppStoreItemsRequest(store);
 
                 final RequestManager requestManager = new RequestManager();
                 requestManager.setProxy(proxyHost, proxyPort);
+                requestManager.setProxyCredentials(proxyUsername, proxyPassword);
 
                 final ApiResponse<?> response = requestManager.execute(request);
 
@@ -544,6 +596,11 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
                     case HttpStatus.SC_FORBIDDEN:
                         return FormValidation.error(
                                 "Connection attempt failed, authentication error, please verify credentials (%d)",
+                                response.getStatusCode());
+
+                    case HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED:
+                        return FormValidation.error(
+                                "Connection attempt failed, proxy authentication error, please verify proxy credentials (%d)",
                                 response.getStatusCode());
 
                     default:

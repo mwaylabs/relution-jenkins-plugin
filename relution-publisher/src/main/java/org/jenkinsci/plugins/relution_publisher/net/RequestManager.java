@@ -20,8 +20,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
@@ -54,35 +59,37 @@ public class RequestManager implements Serializable {
      * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
      * Versioning of Serializable Objects</a>.
      */
-    private static final long                  serialVersionUID           = 1L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * The maximum amount of time, in milliseconds, to wait for the connection manager to return
      * a connection from the connection pool.
      */
-    private final static int                   TIMEOUT_CONNECTION_REQUEST = 10000;
+    private final static int TIMEOUT_CONNECTION_REQUEST = 10000;
 
     /**
      * The connection attempt will time out if a connection cannot be established within the
      * specified amount of time, in milliseconds.
      */
-    private final static int                   TIMEOUT_CONNECT            = 60000;
+    private final static int TIMEOUT_CONNECT = 60000;
 
     /**
      * The connection will time out if the period of inactivity after receiving or sending a data
      * packet exceeds the specified value, in milliseconds.
      */
-    private final static int                   TIMEOUT_SOCKET             = 60000;
+    private final static int TIMEOUT_SOCKET = 60000;
 
     /**
      * The maximum number of times a request is retried in case a time out occurs.
      */
-    private final static int                   MAX_REQUEST_RETRIES        = 3;
+    private final static int MAX_REQUEST_RETRIES = 3;
 
-    private final static Charset               CHARSET                    = Charset.forName("UTF-8");
+    private final static Charset CHARSET = Charset.forName("UTF-8");
 
     private transient CloseableHttpAsyncClient mHttpClient;
-    private HttpHost                           mProxyHost;
+
+    private HttpHost    mProxyHost;
+    private Credentials mCredentials;
 
     private CloseableHttpAsyncClient createHttpClient() {
 
@@ -96,9 +103,16 @@ public class RequestManager implements Serializable {
         }
 
         final HttpAsyncClientBuilder clientBuilder = HttpAsyncClients.custom();
-        final RequestConfig requestConfig = requestConfigBuilder.build();
 
+        final RequestConfig requestConfig = requestConfigBuilder.build();
         clientBuilder.setDefaultRequestConfig(requestConfig);
+
+        if (this.mProxyHost != null && this.mCredentials != null) {
+            final AuthScope authScope = new AuthScope(this.mProxyHost);
+            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(authScope, this.mCredentials);
+            clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+        }
 
         return clientBuilder.build();
     }
@@ -186,6 +200,14 @@ public class RequestManager implements Serializable {
         return response;
     }
 
+    private void silentShutdown() {
+        try {
+            this.shutdown();
+        } catch (final IOException e) {
+            // Do nothing
+        }
+    }
+
     private void log(final Log log, final String format, final Object... args) {
 
         if (log == null) {
@@ -195,14 +217,25 @@ public class RequestManager implements Serializable {
     }
 
     public void setProxy(final String hostname, final int port) {
-
         if (!StringUtils.isBlank(hostname) && port != 0) {
+            this.silentShutdown();
             this.mProxyHost = new HttpHost(hostname, port);
+        }
+    }
+
+    public void setProxyCredentials(final String username, final String password) {
+        if (!StringUtils.isBlank(username)) {
+            this.silentShutdown();
+            this.mCredentials = new UsernamePasswordCredentials(username, password);
         }
     }
 
     public HttpHost getProxy() {
         return this.mProxyHost;
+    }
+
+    public boolean hasCredentials() {
+        return this.mCredentials != null;
     }
 
     public <T> ApiResponse<T> execute(final ApiRequest<T> request, final Log log) throws IOException, InterruptedException, ExecutionException {
@@ -216,9 +249,9 @@ public class RequestManager implements Serializable {
     }
 
     public void shutdown() throws IOException {
-
         if (this.mHttpClient != null) {
             this.mHttpClient.close();
+            this.mHttpClient = null;
         }
     }
 }

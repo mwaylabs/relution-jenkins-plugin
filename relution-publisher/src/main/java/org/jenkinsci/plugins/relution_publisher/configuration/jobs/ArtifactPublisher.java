@@ -178,6 +178,12 @@ public class ArtifactPublisher extends Recorder {
         final ArtifactFileUploader publisher = new ArtifactFileUploader(result, publication, store, log);
 
         log.write(this, "Publishing '%s' to '%s'", publication.getArtifactPath(), store.toString());
+        if (!StringUtils.isEmpty(store.getProxyHost()) && store.getProxyPort() > 0) {
+            log.write(this, "…via proxy %s:%d", store.getProxyHost(), store.getProxyPort());
+        }
+        if (!StringUtils.isEmpty(store.getProxyUsername())) {
+            log.write(this, "…using proxy authentication");
+        }
         final FilePath workspace = build.getWorkspace();
 
         if (workspace == null) {
