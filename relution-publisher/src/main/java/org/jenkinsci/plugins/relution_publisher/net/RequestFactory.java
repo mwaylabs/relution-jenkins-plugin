@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,7 @@ import org.apache.http.nio.entity.NStringEntity;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.entities.Application;
 import org.jenkinsci.plugins.relution_publisher.entities.Asset;
+import org.jenkinsci.plugins.relution_publisher.entities.Language;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest.Method;
@@ -29,6 +30,7 @@ import org.jenkinsci.plugins.relution_publisher.net.requests.EntityRequest;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ZeroCopyFileRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApplicationResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.AssetResponse;
+import org.jenkinsci.plugins.relution_publisher.net.responses.LanguageResponse;
 import org.jenkinsci.plugins.relution_publisher.net.responses.StringResponse;
 
 import java.io.File;
@@ -43,35 +45,40 @@ import java.nio.charset.Charset;
  */
 public final class RequestFactory {
 
-    private static final String  HEADER_ACCEPT        = "Accept";
-    private static final String  HEADER_AUTHORIZATION = "Authorization";
-    private final static String  HEADER_CONTENT_TYPE  = "Content-Type";
+    private static final String HEADER_ACCEPT        = "Accept";
+    private static final String HEADER_AUTHORIZATION = "Authorization";
+    private final static String HEADER_CONTENT_TYPE  = "Content-Type";
 
-    private static final String  APPLICATION_JSON     = "application/json";
-    private static final String  BASIC                = "Basic ";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String BASIC            = "Basic ";
 
-    private final static Charset CHARSET              = Charset.forName("UTF-8");
+    private final static Charset CHARSET = Charset.forName("UTF-8");
 
     /**
-     * The URL used to request or persist {@link Application} objects. 
+     * The URL used to request the languages configured on the server.
      */
-    private final static String  URL_APPS             = "apps";
+    private final static String URL_LANGUAGES = "languages";
+
+    /**
+     * The URL used to request or persist {@link Application} objects.
+     */
+    private final static String URL_APPS = "apps";
 
     /**
      * The URL used to request or persist {@link Version} objects.
      */
-    private final static String  URL_VERSIONS         = "versions";
+    private final static String URL_VERSIONS = "versions";
 
     /**
      * The URL used to request or persist {@link Asset} objects.
      */
-    private final static String  URL_FILES            = "files";
+    private final static String URL_FILES = "files";
 
     /**
      * The URL used to request the unpersisted {@link Application} object associated with a
-     * previously uploaded {@link Asset}. 
+     * previously uploaded {@link Asset}.
      */
-    private final static String  URL_APPS_FROM_FILE   = "apps/fromFile";
+    private final static String URL_APPS_FROM_FILE = "apps/fromFile";
 
     private RequestFactory() {
     }
@@ -110,11 +117,28 @@ public final class RequestFactory {
     }
 
     /**
+     * Creates a {@link BaseRequest} that can be used to retrieve all {@link Language} objects
+     * stored in the server's settings.
+     * @param store The {@link Store} this request should be executed against.
+     * @return A request that can be used to query all languages on the server.
+     */
+    public static EntityRequest<Language> createLanguageRequest(final Store store) {
+
+        final EntityRequest<Language> request = new EntityRequest<Language>(
+                Method.GET,
+                getUrl(store, URL_LANGUAGES),
+                LanguageResponse.class);
+
+        addAuthentication(request, store);
+        return request;
+    }
+
+    /**
      * Creates a {@link BaseRequest} that can be used to retrieve all {@link Application} objects
-     * stored in the server's database. 
+     * stored in the server's database.
      * @param store The {@link Store} this request should be executed against.
      * @return A request that can be used to query all applications on the server.
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     public static EntityRequest<Application> createAppStoreItemsRequest(final Store store) {
 

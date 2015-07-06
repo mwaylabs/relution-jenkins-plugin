@@ -18,11 +18,6 @@ package org.jenkinsci.plugins.relution_publisher.builder;
 
 import com.google.common.base.Stopwatch;
 
-import hudson.FilePath.FileCallable;
-import hudson.Util;
-import hudson.model.Result;
-import hudson.remoting.VirtualChannel;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
@@ -30,6 +25,7 @@ import org.jenkinsci.plugins.relution_publisher.configuration.jobs.Publication;
 import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
 import org.jenkinsci.plugins.relution_publisher.entities.Application;
 import org.jenkinsci.plugins.relution_publisher.entities.Asset;
+import org.jenkinsci.plugins.relution_publisher.entities.Language;
 import org.jenkinsci.plugins.relution_publisher.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
@@ -46,9 +42,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import hudson.FilePath.FileCallable;
+import hudson.Util;
+import hudson.model.Result;
+import hudson.remoting.VirtualChannel;
 
 
 /**
@@ -69,18 +73,20 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
      * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
      * Versioning of Serializable Objects</a>.
      */
-    private static final long    serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Maximum length of text to upload.
      */
-    private static final int     MAX_TEXT_LENGTH  = 49152;
+    private static final int MAX_TEXT_LENGTH = 49152;
 
-    private Result               result;
+    private Result result;
 
-    private final Publication    publication;
-    private final Store          store;
-    private final Log            log;
+    private final Publication publication;
+    private final Store       store;
+    private final Log         log;
+
+    private Set<String> locales;
 
     private final RequestManager requestManager;
 
@@ -358,44 +364,72 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         version.setIcon(assets.get(0));
     }
 
-    private void setChangeLog(final File basePath, final Version version) {
+    private void setChangeLog(final File basePath, final Version version)
+            throws IOException, InterruptedException, ExecutionException {
 
         if (StringUtils.isBlank(this.publication.getChangeLogPath())) {
-            this.log.write(this, "No change log set.");
+            this.log.write(this, "The change log path is empty, nothing to set.");
             return;
         }
 
         final String filePath = this.publication.getChangeLogPath();
-        final String changeLog = this.readFile(basePath, filePath);
-
-        if (!StringUtils.isBlank(changeLog)) {
-            final String text = this.getEllipsizedText(changeLog.replace("\n", "<br/>"), 50);
-            this.log.write(this, "Set change log to: \"%s\" (%d characters)", text, changeLog.length());
-
-            for (final String key : version.getChangelog().keySet()) {
-                version.getChangelog().put(key, changeLog);
-            }
-        }
+        final String changeLogText = this.readFile(basePath, filePath);
+        this.setText("change log", version.getChangelog(), changeLogText);
     }
 
-    private void setDescription(final File basePath, final Version version) {
+    private void setDescription(final File basePath, final Version version)
+            throws IOException, InterruptedException, ExecutionException {
 
         if (StringUtils.isBlank(this.publication.getDescriptionPath())) {
-            this.log.write(this, "No description set.");
+            this.log.write(this, "The description path is empty, nothing to set.");
             return;
         }
 
         final String filePath = this.publication.getDescriptionPath();
-        final String description = this.readFile(basePath, filePath);
+        final String descriptionText = this.readFile(basePath, filePath);
+        this.setText("description", version.getDescription(), descriptionText);
+    }
 
-        if (!StringUtils.isBlank(description)) {
-            final String text = this.getEllipsizedText(description.replace("\n", "<br/>"), 50);
-            this.log.write(this, "Set change log to: \"%s\" (%d characters)", text, description.length());
+    private void setText(final String item, final Map<String, String> map, final String text)
+            throws IOException, InterruptedException, ExecutionException {
 
-            for (final String key : version.getDescription().keySet()) {
-                version.getDescription().put(key, description);
-            }
+        if (StringUtils.isBlank(text)) {
+            this.log.write(this, "The %s is empty, nothing to set.", item);
+            return;
         }
+
+        final String ellipsized = this.getEllipsizedText(text.replace("\n", "<br/>"), 50);
+        this.log.write(this, "Set %s to: \"%s\" (%d characters)", item, ellipsized, text.length());
+
+        // Add the text for each locale
+        final Set<String> locales = this.getLocales();
+        for (final String locale : locales) {
+            this.log.write(this, "Set %s for locale %s.", item, locale);
+            map.put(locale, text);
+        }
+    }
+
+    private Set<String> getLocales()
+            throws IOException, InterruptedException, ExecutionException {
+
+        if (this.locales != null) {
+            return this.locales;
+        }
+
+        this.log.write(this, "Requesting configured languages...");
+
+        final ApiRequest<Language> request = RequestFactory.createLanguageRequest(this.store);
+        final ApiResponse<Language> response = this.requestManager.execute(request, this.log);
+
+        final List<Language> languages = response.getResults();
+        this.locales = new HashSet<String>(languages.size());
+
+        for (final Language language : languages) {
+            this.log.write(this, "%s: %s", language.getName(), language.getLocale());
+            this.locales.add(language.getLocale());
+        }
+
+        return this.locales;
     }
 
     private void setVersionName(final Version version) {
