@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>1.626</version><!-- which version of Jenkins is this plugin built against? -->
+		<version>1.599</version><!-- which version of Jenkins is this plugin built against? -->
 	</parent>
 
 	<url>https://wiki.jenkins-ci.org/display/JENKINS/Relution-Publisher</url>
@@ -14,7 +14,7 @@
 	<groupId>org.jenkins-ci.plugins</groupId>
 	<artifactId>relution-publisher</artifactId>
 	<name>Relution Enterprise Appstore Publisher plugin</name>
-	<version>1.21-SNAPSHOT</version>
+	<version>1.20-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 
 	<scm>
@@ -63,35 +63,35 @@
 		<dependency>
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
-			<version>1.4.1</version>
+			<version>1.4.0</version>
 		</dependency>
 
 		<!-- apache-httpcomponents: HTTP core -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.4.1</version>
+			<version>4.3.3</version>
 		</dependency>
 
 		<!-- apache-httpcomponents: HTTP async client -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpasyncclient</artifactId>
-			<version>4.1</version>
+			<version>4.0.2</version>
 		</dependency>
 
 		<!-- apache-httpcomponents: Tika -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
-			<version>1.10</version>
+			<version>1.6</version>
 		</dependency>
 
 		<!-- apache-httpcomponents: HTTP mime -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.5</version>
+			<version>4.3.6</version>
 		</dependency>
 
 		<!-- Gson: JSON to Java converter (and vice-versa) -->
