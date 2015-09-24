@@ -23,9 +23,13 @@ import com.google.gson.JsonObject;
 
 public class Json {
 
+    public static boolean isNull(final JsonElement element) {
+        return element == null || element.isJsonNull();
+    }
+
     public static boolean isNull(final JsonObject object, final String memberName) {
         final JsonElement element = object.get(memberName);
-        return element == null || element.isJsonNull();
+        return isNull(element);
     }
 
     public static JsonObject getObject(final JsonObject object, final String memberName) {
@@ -76,6 +80,10 @@ public class Json {
         }
 
         return element.getAsInt();
+    }
+
+    public static boolean isEmpty(final JsonArray array) {
+        return (array == null || array.size() == 0);
     }
 
     public static JsonObject getObject(final JsonArray array, final int index) {
