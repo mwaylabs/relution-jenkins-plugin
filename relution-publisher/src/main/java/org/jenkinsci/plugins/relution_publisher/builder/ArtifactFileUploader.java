@@ -227,8 +227,9 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             this.persistApplication(app);
 
         } else {
-            this.persistVersion(app, version);
-            this.manageArchivedVersions(app, version);
+            if (this.persistVersion(app, version)) {
+                this.manageArchivedVersions(app, version);
+            }
         }
 
         this.log.write(
@@ -453,7 +454,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         version.addProperty("versionName", this.publication.getVersionName());
     }
 
-    private void persistApplication(final JsonObject app) throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+    private boolean persistApplication(final JsonObject app) throws URISyntaxException, IOException, InterruptedException, ExecutionException {
         this.log.write(this, "Application is new, persisting application…");
 
         final ApiRequest request = RequestFactory.createPersistApplicationRequest(this.store, app);
@@ -462,13 +463,14 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting application.");
             Builds.setResult(this, Result.UNSTABLE, this.log);
-            return;
+            return false;
         }
 
         this.log.write(this, "Application persisted successfully.");
+        return true;
     }
 
-    private void persistVersion(final JsonObject app, final JsonObject version)
+    private boolean persistVersion(final JsonObject app, final JsonObject version)
             throws URISyntaxException, IOException, InterruptedException, ExecutionException {
         this.log.write(this, "Version is new, persisting version…");
 
@@ -478,10 +480,11 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting version.");
             Builds.setResult(this, Result.UNSTABLE, this.log);
-            return;
+            return false;
         }
 
         this.log.write(this, "Version persisted successfully.");
+        return true;
     }
 
     private List<ApiResponse> uploadAssets(final File basePath, final String includes, final String excludes)
