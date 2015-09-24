@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ * Copyright (c) 2013-2015 M-Way Solutions GmbH
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,29 +46,29 @@ import java.util.UUID;
 
 public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
 
-    private final static String          CHARSET_NAME                     = "UTF-8";
-    private final static Charset         CHARSET                          = Charset.forName(CHARSET_NAME);
+    private final static String  CHARSET_NAME = "UTF-8";
+    private final static Charset CHARSET      = Charset.forName(CHARSET_NAME);
 
-    private final static String          CONTENT_TYPE_MULTIPART_FORM_DATA = "multipart/form-data; boundary=%s";
-    private final static String          CRLF                             = "\r\n";
+    private final static String CONTENT_TYPE_MULTIPART_FORM_DATA = "multipart/form-data; boundary=%s";
+    private final static String CRLF                             = "\r\n";
 
-    private final String                 mMultipartBoundary               = UUID.randomUUID().toString();
+    private final String mMultipartBoundary = UUID.randomUUID().toString();
 
-    private byte[]                       mMultipartHeader;
-    private int                          mMultipartHeaderIndex;
+    private byte[] mMultipartHeader;
+    private int    mMultipartHeaderIndex;
 
-    private byte[]                       mMultipartFooter;
-    private int                          mMultipartFooterIndex;
+    private byte[] mMultipartFooter;
+    private int    mMultipartFooterIndex;
 
-    private final ZeroCopyFileRequest<?> mRequest;
+    private final ZeroCopyFileRequest mRequest;
 
-    private final File                   mFile;
-    private final RandomAccessFile       mAccessfile;
+    private final File             mFile;
+    private final RandomAccessFile mAccessfile;
 
-    private FileChannel                  mFileChannel;
-    private long                         mIndexFile                       = -1;
+    private FileChannel mFileChannel;
+    private long        mIndexFile = -1;
 
-    public ZeroCopyFileRequestProducer(final ZeroCopyFileRequest<?> request) throws FileNotFoundException {
+    public ZeroCopyFileRequestProducer(final ZeroCopyFileRequest request) throws FileNotFoundException {
 
         this.mRequest = request;
 

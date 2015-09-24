@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 M-Way Solutions GmbH
+ * Copyright (c) 2013-2015 M-Way Solutions GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ import hudson.util.ListBoxModel;
 
 
 /**
- * Represents a Relution Enterprise Appstore that is used as a communication endpoint by the
+ * Represents a Relution Enterprise App Store that is used as a communication endpoint by the
  * plugin. A store is uniquely identified by its URL and the credentials required
  * to connect to the store.
  * <p/>
@@ -581,13 +581,13 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
             try {
                 final Store store = new Store(url, organization, username, password, proxyHost, proxyPort, proxyUsername, proxyPassword);
-                final BaseRequest<?> request = RequestFactory.createAppStoreItemsRequest(store);
+                final BaseRequest request = RequestFactory.createAppStoreItemsRequest(store);
 
                 final RequestManager requestManager = new RequestManager();
                 requestManager.setProxy(proxyHost, proxyPort);
                 requestManager.setProxyCredentials(proxyUsername, proxyPassword);
 
-                final ApiResponse<?> response = requestManager.execute(request);
+                final ApiResponse response = requestManager.execute(request);
 
                 switch (response.getStatusCode()) {
                     case HttpStatus.SC_OK:

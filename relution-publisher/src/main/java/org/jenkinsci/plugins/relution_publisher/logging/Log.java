@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 M-Way Solutions GmbH
+ * Copyright (c) 2013-2015 M-Way Solutions GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package org.jenkinsci.plugins.relution_publisher.logging;
 
-import hudson.model.BuildListener;
-
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+
+import hudson.model.BuildListener;
 
 
 public class Log implements Serializable {
@@ -37,7 +37,7 @@ public class Log implements Serializable {
      * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
      * Versioning of Serializable Objects</a>.
      */
-    private static final long   serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private final BuildListener listener;
 

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ * Copyright (c) 2013-2015 M-Way Solutions GmbH
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,6 @@ package org.jenkinsci.plugins.relution_publisher.net.requests;
 import org.apache.http.HttpRequest;
 import org.apache.http.util.Args;
 import org.jenkinsci.plugins.relution_publisher.net.RequestQueryFields;
-import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,14 +28,13 @@ import java.util.Map;
  * Basic implementation of an {@link ApiRequest}.
  * @param <T> The type of response entity returned by the request.
  */
-public abstract class BaseRequest<T> implements ApiRequest<T> {
+public abstract class BaseRequest implements ApiRequest {
 
-    private final Method                          mMethod;
-    private final String                          mUri;
-    private final Class<? extends ApiResponse<T>> mResponseClass;
+    private final Method mMethod;
+    private final String mUri;
 
-    private final Map<String, String>             mHeaders     = new HashMap<String, String>();
-    private final RequestQueryFields              mQueryFields = new RequestQueryFields();
+    private final Map<String, String> mHeaders     = new HashMap<String, String>();
+    private final RequestQueryFields  mQueryFields = new RequestQueryFields();
 
     /**
      * Creates a new instance of the {@link BaseRequest} class.
@@ -45,15 +43,12 @@ public abstract class BaseRequest<T> implements ApiRequest<T> {
      * @param responseClass A class that identifies the type of entity that is expected to be
      * returned as a response of the request.
      */
-    protected BaseRequest(final Method method, final String uri, final Class<? extends ApiResponse<T>> responseClass) {
-
+    protected BaseRequest(final Method method, final String uri) {
         Args.notNull(method, "method");
         Args.notNull(uri, "uri");
-        Args.notNull(responseClass, "responseClass");
 
         this.mMethod = method;
         this.mUri = uri;
-        this.mResponseClass = responseClass;
     }
 
     protected void addHeaders(final HttpRequest request) {
@@ -92,16 +87,6 @@ public abstract class BaseRequest<T> implements ApiRequest<T> {
      */
     public RequestQueryFields queryFields() {
         return this.mQueryFields;
-    }
-
-    /**
-     * Gets the class that identifies the type of entity that is expected to be returned as a
-     * response of the request.
-     * @return The {@link Class} that identifies the expected response entity.
-     */
-    @Override
-    public Class<? extends ApiResponse<T>> getResponseType() {
-        return this.mResponseClass;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 M-Way Solutions GmbH
+ * Copyright (c) 2013-2015 M-Way Solutions GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,19 @@
 
 package org.jenkinsci.plugins.relution_publisher.net;
 
+import com.google.gson.JsonObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.nio.entity.NStringEntity;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
-import org.jenkinsci.plugins.relution_publisher.entities.Application;
-import org.jenkinsci.plugins.relution_publisher.entities.Asset;
-import org.jenkinsci.plugins.relution_publisher.entities.Language;
-import org.jenkinsci.plugins.relution_publisher.entities.Version;
+import org.jenkinsci.plugins.relution_publisher.constants.ApiObject;
+import org.jenkinsci.plugins.relution_publisher.constants.Version;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest.Method;
 import org.jenkinsci.plugins.relution_publisher.net.requests.BaseRequest;
 import org.jenkinsci.plugins.relution_publisher.net.requests.EntityRequest;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ZeroCopyFileRequest;
-import org.jenkinsci.plugins.relution_publisher.net.responses.ApplicationResponse;
-import org.jenkinsci.plugins.relution_publisher.net.responses.AssetResponse;
-import org.jenkinsci.plugins.relution_publisher.net.responses.LanguageResponse;
-import org.jenkinsci.plugins.relution_publisher.net.responses.StringResponse;
+import org.jenkinsci.plugins.relution_publisher.util.Json;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,17 +57,17 @@ public final class RequestFactory {
     private final static String URL_LANGUAGES = "languages";
 
     /**
-     * The URL used to request or persist {@link Application} objects.
+     * The URL used to request or persist application objects.
      */
     private final static String URL_APPS = "apps";
 
     /**
-     * The URL used to request or persist {@link Version} objects.
+     * The URL used to request or persist application version objects.
      */
     private final static String URL_VERSIONS = "versions";
 
     /**
-     * The URL used to request or persist {@link Asset} objects.
+     * The URL used to request or persist asset objects.
      */
     private final static String URL_FILES = "files";
 
@@ -110,24 +107,23 @@ public final class RequestFactory {
         return sb.toString();
     }
 
-    private static void addAuthentication(final BaseRequest<?> request, final Store store) {
+    private static void addAuthentication(final BaseRequest request, final Store store) {
 
         request.setHeader(HEADER_ACCEPT, APPLICATION_JSON);
         request.setHeader(HEADER_AUTHORIZATION, BASIC + store.getAuthorizationToken());
     }
 
     /**
-     * Creates a {@link BaseRequest} that can be used to retrieve all {@link Language} objects
+     * Creates a {@link BaseRequest} that can be used to retrieve all language objects
      * stored in the server's settings.
      * @param store The {@link Store} this request should be executed against.
      * @return A request that can be used to query all languages on the server.
      */
-    public static EntityRequest<Language> createLanguageRequest(final Store store) {
+    public static EntityRequest createLanguageRequest(final Store store) {
 
-        final EntityRequest<Language> request = new EntityRequest<Language>(
+        final EntityRequest request = new EntityRequest(
                 Method.GET,
-                getUrl(store, URL_LANGUAGES),
-                LanguageResponse.class);
+                getUrl(store, URL_LANGUAGES));
 
         addAuthentication(request, store);
         return request;
@@ -140,12 +136,11 @@ public final class RequestFactory {
      * @return A request that can be used to query all applications on the server.
      * @throws URISyntaxException
      */
-    public static EntityRequest<Application> createAppStoreItemsRequest(final Store store) {
+    public static EntityRequest createAppStoreItemsRequest(final Store store) {
 
-        final EntityRequest<Application> request = new EntityRequest<Application>(
+        final EntityRequest request = new EntityRequest(
                 Method.GET,
-                getUrl(store, URL_APPS),
-                ApplicationResponse.class);
+                getUrl(store, URL_APPS));
 
         request.queryFields().add("locale", "de");
         addAuthentication(request, store);
@@ -159,12 +154,10 @@ public final class RequestFactory {
      * @return A request that can be used to upload a file to the server.
      * @throws IOException The specified file could not be buffered for sending.
      */
-    public static ZeroCopyFileRequest<Asset> createUploadRequest(final Store store, final File file) {
-
-        final ZeroCopyFileRequest<Asset> request = new ZeroCopyFileRequest<Asset>(
+    public static ZeroCopyFileRequest createUploadRequest(final Store store, final File file) {
+        final ZeroCopyFileRequest request = new ZeroCopyFileRequest(
                 getUrl(store, URL_FILES),
-                file,
-                AssetResponse.class);
+                file);
 
         addAuthentication(request, store);
         return request;
@@ -177,12 +170,12 @@ public final class RequestFactory {
      * @param asset The {@link Asset} for which to retrieve the {@link Application}
      * @return A request that can be used to retrieved the application associated with an asset.
      */
-    public static EntityRequest<Application> createAppFromFileRequest(final Store store, final Asset asset) {
+    public static EntityRequest createAppFromFileRequest(final Store store, final JsonObject asset) {
+        final String uuid = Json.getString(asset, ApiObject.UUID);
 
-        final EntityRequest<Application> request = new EntityRequest<Application>(
+        final EntityRequest request = new EntityRequest(
                 Method.POST,
-                getUrl(store, URL_APPS_FROM_FILE, asset.getUuid()),
-                ApplicationResponse.class);
+                getUrl(store, URL_APPS_FROM_FILE, uuid));
 
         addAuthentication(request, store);
         return request;
@@ -198,14 +191,12 @@ public final class RequestFactory {
      * @param app The {@link Application} to persist.
      * @return A request that can be used to persist the specified application.
      */
-    public static EntityRequest<Application> createPersistApplicationRequest(final Store store, final Application app) {
-
-        final EntityRequest<Application> request = new EntityRequest<Application>(
+    public static EntityRequest createPersistApplicationRequest(final Store store, final JsonObject app) {
+        final EntityRequest request = new EntityRequest(
                 Method.POST,
-                getUrl(store, URL_APPS),
-                ApplicationResponse.class);
+                getUrl(store, URL_APPS));
 
-        final NStringEntity entity = new NStringEntity(app.toJson(), CHARSET);
+        final NStringEntity entity = new NStringEntity(app.toString(), CHARSET);
         request.setEntity(entity);
 
         request.setHeader(HEADER_CONTENT_TYPE, APPLICATION_JSON);
@@ -214,24 +205,25 @@ public final class RequestFactory {
     }
 
     /**
-     * Creates a {@link BaseRequest} that can be used to persist the specified {@link Version}.
+     * Creates a {@link BaseRequest} that can be used to persist the specified application version.
      * <p/>
      * This call must not be used to persist a version that has already been persisted. Doing so
      * results in undefined behavior. A version is unpersisted if its
-     * {@link Version#getUuid() identifier} is <code>null</code>. The {@link Application}
+     * {@link ApiObject#UUID identifier} is <code>null</code>. The {@link Application}
      * associated with the version must already be persisted.
      * @param store The {@link Store} this request should be executed against.
-     * @param version The {@link Version} to persist.
+     * @param version The application version to persist.
+     * @param version2
      * @return A request that can be used to persist the specified version.
      */
-    public static EntityRequest<Application> createPersistVersionRequest(final Store store, final Version version) {
+    public static EntityRequest createPersistVersionRequest(final Store store, final JsonObject app, final JsonObject version) {
+        final String appUuid = Json.getString(app, ApiObject.UUID);
 
-        final EntityRequest<Application> request = new EntityRequest<Application>(
+        final EntityRequest request = new EntityRequest(
                 Method.POST,
-                getUrl(store, URL_APPS, version.getAppUuid(), URL_VERSIONS),
-                ApplicationResponse.class);
+                getUrl(store, URL_APPS, appUuid, URL_VERSIONS));
 
-        final NStringEntity entity = new NStringEntity(version.toJson(), CHARSET);
+        final NStringEntity entity = new NStringEntity(version.toString(), CHARSET);
         request.setEntity(entity);
 
         request.setHeader(HEADER_CONTENT_TYPE, APPLICATION_JSON);
@@ -239,12 +231,13 @@ public final class RequestFactory {
         return request;
     }
 
-    public static EntityRequest<String> createDeleteVersionRequest(final Store store, final Version version) {
+    public static EntityRequest createDeleteVersionRequest(final Store store, final JsonObject version) {
+        final String appUuid = Json.getString(version, Version.APP_UUID);
+        final String uuid = Json.getString(version, ApiObject.UUID);
 
-        final EntityRequest<String> request = new EntityRequest<String>(
+        final EntityRequest request = new EntityRequest(
                 Method.DELETE,
-                getUrl(store, URL_APPS, version.getAppUuid(), URL_VERSIONS, version.getUuid()),
-                StringResponse.class);
+                getUrl(store, URL_APPS, appUuid, URL_VERSIONS, uuid));
 
         addAuthentication(request, store);
         return request;

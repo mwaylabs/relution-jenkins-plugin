@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ * Copyright (c) 2013-2015 M-Way Solutions GmbH
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,56 +18,68 @@ package org.jenkinsci.plugins.relution_publisher.net.responses;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
-import org.jenkinsci.plugins.relution_publisher.entities.Error;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
  * Represents a response returned by the Relution server.
  */
-public class ApiResponse<T> {
+public class ApiResponse {
 
-    private final static Gson GSON    = new GsonBuilder().setPrettyPrinting().create();
+    private final static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private int               statusCode;
-    private String            reason;
+    private int    statusCode;
+    private String reason;
 
-    private final Integer     status;
-    private String            message;
+    private final Integer status;
+    private String        message;
 
-    private final Error       errors;
+    private final JsonObject errors;
 
-    private final int         total;
-    private final List<T>     results = new ArrayList<T>();
+    private final int       total;
+    private final JsonArray results;
 
-    private transient String  s;
+    private transient String s;
 
     /**
-     * Converts the specified JSON formatted string to an instance of the specified class. 
+     * Converts the specified JSON formatted string to an instance of the specified class.
      * @param json A JSON formatted string.
      * @param clazz A {@link Class} that extends {@link ApiResponse}.
      * @return An instance of the specified class.
      */
-    public static <T> ApiResponse<T> fromJson(final String json, final Class<? extends ApiResponse<T>> clazz) {
-        return GSON.fromJson(json, clazz);
+    public static ApiResponse fromJson(final String json) {
+        final JsonParser parser = new JsonParser();
+        final JsonElement element = parser.parse(json);
+        return new ApiResponse(element.getAsJsonObject());
     }
 
     /**
      * Initializes a new instance of the {@link ApiResponse} class.
      */
     public ApiResponse() {
-
         this.status = null;
 
         this.message = null;
-        this.errors = null;
+        this.errors = new JsonObject();
 
         this.total = 0;
+        this.results = new JsonArray();
+    }
+
+    private ApiResponse(final JsonObject object) {
+        this.status = object.get("status").getAsInt();
+
+        this.message = object.get("message").getAsString();
+        this.errors = object.get("errors").getAsJsonObject();
+
+        this.total = object.get("total").getAsInt();
+        this.results = object.get("results").getAsJsonArray();
     }
 
     /**
@@ -75,7 +87,6 @@ public class ApiResponse<T> {
      * @param httpResponse A {@link HttpResponse} used to initialize internal fields.
      */
     public void init(final HttpResponse httpResponse) {
-
         this.statusCode = httpResponse.getStatusLine().getStatusCode();
         this.reason = httpResponse.getStatusLine().getReasonPhrase();
     }
@@ -120,7 +131,7 @@ public class ApiResponse<T> {
     /**
      * Gets the {@link Error} returned by the server, or <code>null</null> if no error occurred.
      */
-    public Error getError() {
+    public JsonObject getError() {
         return this.errors;
     }
 
@@ -134,7 +145,7 @@ public class ApiResponse<T> {
     /**
      * Gets the results returned by the server.
      */
-    public List<T> getResults() {
+    public JsonArray getResults() {
         return this.results;
     }
 

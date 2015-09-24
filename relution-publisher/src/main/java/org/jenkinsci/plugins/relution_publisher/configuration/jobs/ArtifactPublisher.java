@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 M-Way Solutions GmbH
+ * Copyright (c) 2013-2015 M-Way Solutions GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.jenkinsci.plugins.relution_publisher.builder.ArtifactFileUploader;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
 import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
-import org.jenkinsci.plugins.relution_publisher.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.jenkinsci.plugins.relution_publisher.util.Builds;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -50,7 +49,7 @@ import hudson.tasks.Recorder;
 
 
 /**
- * Publishes a {@link Version} to the Relution Enterprise Appstore using the
+ * Publishes an application version to the Relution Enterprise App Store using the
  * {@link ArtifactFileUploader} to perform the actual upload of the file.
  */
 public class ArtifactPublisher extends Recorder {

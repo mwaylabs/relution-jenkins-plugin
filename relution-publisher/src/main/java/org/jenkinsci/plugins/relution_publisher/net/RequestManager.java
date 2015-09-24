@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 M-Way Solutions GmbH
+ * Copyright (c) 2013-2015 M-Way Solutions GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,7 +125,7 @@ public class RequestManager implements Serializable {
         return this.mHttpClient;
     }
 
-    private HttpResponse send(final ApiRequest<?> request, final Log log) throws IOException, InterruptedException, ExecutionException {
+    private HttpResponse send(final ApiRequest request, final Log log) throws IOException, InterruptedException, ExecutionException {
 
         final CloseableHttpAsyncClient client = this.getHttpClient();
         int retries = MAX_REQUEST_RETRIES;
@@ -170,20 +170,18 @@ public class RequestManager implements Serializable {
         throw e;
     }
 
-    private <T> ApiResponse<T> getJsonString(final ApiRequest<T> request, final HttpResponse httpResponse) {
-
+    private ApiResponse getJsonString(final ApiRequest request, final HttpResponse httpResponse) {
         String payload = null;
 
         try {
             final HttpEntity entity = httpResponse.getEntity();
             payload = EntityUtils.toString(entity, CHARSET);
-
-            return ApiResponse.fromJson(payload, request.getResponseType());
+            return ApiResponse.fromJson(payload);
 
         } catch (final Exception e) {
             e.printStackTrace();
         }
-        final ApiResponse<T> response = new ApiResponse<T>();
+        final ApiResponse response = new ApiResponse();
         response.setMessage(payload);
         return response;
     }
@@ -193,9 +191,8 @@ public class RequestManager implements Serializable {
      * @param httpResponse The {@link HttpResponse} to parse.
      * @return An {@link ApiResponse} constructed from the contents of the specified response.
      */
-    private <T> ApiResponse<T> parseNetworkResponse(final ApiRequest<T> request, final HttpResponse httpResponse) {
-
-        final ApiResponse<T> response = this.getJsonString(request, httpResponse);
+    private ApiResponse parseNetworkResponse(final ApiRequest request, final HttpResponse httpResponse) {
+        final ApiResponse response = this.getJsonString(request, httpResponse);
         response.init(httpResponse);
         return response;
     }
@@ -238,13 +235,12 @@ public class RequestManager implements Serializable {
         return this.mCredentials != null;
     }
 
-    public <T> ApiResponse<T> execute(final ApiRequest<T> request, final Log log) throws IOException, InterruptedException, ExecutionException {
-
+    public ApiResponse execute(final ApiRequest request, final Log log) throws IOException, InterruptedException, ExecutionException {
         final HttpResponse httpResponse = this.send(request, log);
         return this.parseNetworkResponse(request, httpResponse);
     }
 
-    public <T> ApiResponse<T> execute(final ApiRequest<T> request) throws InterruptedException, ExecutionException, IOException {
+    public ApiResponse execute(final ApiRequest request) throws InterruptedException, ExecutionException, IOException {
         return this.execute(request, null);
     }
 

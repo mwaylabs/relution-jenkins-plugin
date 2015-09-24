@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 M-Way Solutions GmbH
+ * Copyright (c) 2013-2015 M-Way Solutions GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,26 @@
 package org.jenkinsci.plugins.relution_publisher.builder;
 
 import com.google.common.base.Stopwatch;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.jobs.Publication;
+import org.jenkinsci.plugins.relution_publisher.constants.ApiObject;
+import org.jenkinsci.plugins.relution_publisher.constants.App;
 import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
-import org.jenkinsci.plugins.relution_publisher.entities.Application;
-import org.jenkinsci.plugins.relution_publisher.entities.Asset;
-import org.jenkinsci.plugins.relution_publisher.entities.Language;
-import org.jenkinsci.plugins.relution_publisher.entities.Version;
+import org.jenkinsci.plugins.relution_publisher.constants.Language;
+import org.jenkinsci.plugins.relution_publisher.constants.Version;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
 import org.jenkinsci.plugins.relution_publisher.net.RequestManager;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.jenkinsci.plugins.relution_publisher.util.Builds;
+import org.jenkinsci.plugins.relution_publisher.util.Json;
 import org.jenkinsci.remoting.RoleChecker;
 
 import java.io.BufferedReader;
@@ -42,9 +46,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -115,8 +119,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             throws IOException, InterruptedException {
 
         try {
-            this.log.write(this, "Uploading build artifacts...");
-            final List<ApiResponse<Asset>> responses = this.uploadAssets(
+            this.log.write(this, "Uploading build artifacts…");
+            final List<ApiResponse> responses = this.uploadAssets(
                     basePath,
                     this.publication.getArtifactPath(),
                     this.publication.getArtifactExcludePath());
@@ -131,7 +135,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
                 return true;
             }
 
-            for (final ApiResponse<Asset> response : responses) {
+            for (final ApiResponse response : responses) {
                 this.uploadVersion(basePath, response);
             }
 
@@ -155,7 +159,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return true;
     }
 
-    private void uploadVersion(final File basePath, final ApiResponse<Asset> response)
+    private void uploadVersion(final File basePath, final ApiResponse response)
             throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
         if (!this.verifyAssetResponse(response)) {
@@ -164,7 +168,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        final List<Asset> assets = response.getResults();
+        final JsonArray assets = response.getResults();
 
         if (assets.size() != 1) {
             this.log.write(this, "More than one unpersisted asset returned by server.");
@@ -172,18 +176,24 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        final Asset asset = assets.get(0);
-        this.log.write(this, "Upload completed, received token {%s}", asset.getUuid());
+        final JsonObject asset = Json.getObject(assets, 0);
 
+        if (asset == null) {
+            this.log.write(this, "Asset is null.");
+            Builds.setResult(this, Result.UNSTABLE, this.log);
+            return;
+        }
+
+        this.log.write(this, "Upload completed, received token {%s}", Json.getString(asset, ApiObject.UUID));
         this.retrieveApplication(basePath, asset);
     }
 
-    private void retrieveApplication(final File basePath, final Asset asset)
+    private void retrieveApplication(final File basePath, final JsonObject asset)
             throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
-        this.log.write(this, "Requesting application associated with token {%s}...", asset.getUuid());
-        final ApiRequest<Application> request = RequestFactory.createAppFromFileRequest(this.store, asset);
-        final ApiResponse<Application> response = this.requestManager.execute(request, this.log);
+        this.log.write(this, "Requesting application associated with token {%s}…", Json.getString(asset, ApiObject.UUID));
+        final ApiRequest request = RequestFactory.createAppFromFileRequest(this.store, asset);
+        final ApiResponse response = this.requestManager.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Retrieval of application failed.");
@@ -191,8 +201,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        final List<Application> applications = response.getResults();
-        final Application app = this.getApplication(applications, asset);
+        final JsonArray applications = response.getResults();
+        final JsonObject app = this.getApplication(applications, asset);
 
         if (app == null) {
             Builds.setResult(this, Result.UNSTABLE, this.log);
@@ -200,9 +210,9 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        this.log.write(this, "Application \"%s\" was retrieved.", app.getInternalName());
-        this.log.write(this, "Searching version associated with uploaded file...");
-        final Version version = this.getVersion(app, asset);
+        this.log.write(this, "Application \"%s\" was retrieved.", Json.getString(app, App.INTERNAL_NAME));
+        this.log.write(this, "Searching version associated with uploaded file…");
+        final JsonObject version = this.getVersion(app, asset);
 
         if (version == null) {
             this.log.write(this, "Could not find version associated with uploaded file.");
@@ -210,53 +220,58 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        this.log.write(this, "Found version \"%s\".", version.getVersionName());
+        this.log.write(this, "Found version \"%s\".", Json.getString(version, Version.VERSION_NAME));
         this.setVersionMetadata(basePath, version);
 
-        if (app.getUuid() == null) {
+        if (Json.isNull(app, ApiObject.UUID)) {
             this.persistApplication(app);
 
         } else {
-            final List<Version> archived = this.getArchivedVersions(app, version);
-
-            version.setAppUuid(app.getUuid());
-            this.persistVersion(version);
-
-            this.manageArchivedVersions(archived, version);
+            this.persistVersion(app, version);
+            this.manageArchivedVersions(app, version);
         }
 
         this.log.write(
                 this,
                 "Uploaded version \"%s\" (%d) to \"%s\"",
-                version.getVersionName(),
-                version.getVersionCode(),
-                version.getReleaseStatus());
+                Json.getString(version, Version.VERSION_NAME),
+                Json.getInt(version, Version.VERSION_CODE),
+                Json.getString(version, Version.RELEASE_STATUS));
     }
 
-    private List<Version> getArchivedVersions(final Application app, final Version version) {
+    private List<JsonObject> getArchivedVersions(final JsonObject app, final JsonObject newVersion) {
+        final String newReleaseStatus = Json.getString(newVersion, Version.RELEASE_STATUS);
+        final int newVersionCode = Json.getInt(newVersion, Version.VERSION_CODE);
 
-        final List<Version> archived = new ArrayList<Version>();
+        final List<JsonObject> archived = new ArrayList<JsonObject>();
+        final JsonArray versions = Json.getArray(app, App.VERSIONS);
 
-        for (final Version current : app.getVersions()) {
-            if (StringUtils.equals(current.getReleaseStatus(), version.getReleaseStatus()) && current.getVersionCode() != version.getVersionCode()) {
-                archived.add(current);
+        for (final JsonElement element : versions) {
+            final JsonObject oldVersion = element.getAsJsonObject();
+
+            final String oldReleaseStatus = Json.getString(oldVersion, Version.RELEASE_STATUS);
+            final int oldVersionCode = Json.getInt(oldVersion, Version.VERSION_CODE);
+
+            if (StringUtils.equals(oldReleaseStatus, newReleaseStatus) && oldVersionCode != newVersionCode) {
+                archived.add(oldVersion);
             }
         }
 
         return archived;
     }
 
-    private void manageArchivedVersions(final List<Version> archived, final Version version)
+    private void manageArchivedVersions(final JsonObject app, final JsonObject version)
             throws URISyntaxException, InterruptedException, ExecutionException {
 
-        final String key = !this.publication.usesDefaultArchiveMode()
+        final String archiveMode = !this.publication.usesDefaultArchiveMode()
                 ? this.publication.getArchiveMode()
                 : this.store.getArchiveMode();
 
-        if (StringUtils.equals(key, ArchiveMode.OVERWRITE.key)) {
-            this.log.write(this, "Delete previous application version from \"%s\"", version.getReleaseStatus());
+        if (StringUtils.equals(archiveMode, ArchiveMode.OVERWRITE.key)) {
+            this.log.write(this, "Delete previous application version from \"%s\"", Json.getString(version, Version.RELEASE_STATUS));
+            final List<JsonObject> archived = this.getArchivedVersions(app, version);
 
-            for (final Version current : archived) {
+            for (final JsonObject current : archived) {
                 this.deleteVersion(current);
             }
 
@@ -266,18 +281,17 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         }
     }
 
-    private void deleteVersion(final Version version) throws URISyntaxException, InterruptedException, ExecutionException {
-
+    private void deleteVersion(final JsonObject version) throws URISyntaxException, InterruptedException, ExecutionException {
         this.log.write(
                 this,
-                "Deleting version \"%s\" (%d) from \"%s\"...",
-                version.getVersionName(),
-                version.getVersionCode(),
-                version.getReleaseStatus());
+                "Deleting version \"%s\" (%d) from \"%s\"…",
+                Json.getString(version, Version.VERSION_NAME),
+                Json.getInt(version, Version.VERSION_CODE),
+                Json.getString(version, Version.RELEASE_STATUS));
 
         try {
-            final ApiRequest<String> request = RequestFactory.createDeleteVersionRequest(this.store, version);
-            final ApiResponse<String> response = this.requestManager.execute(request, this.log);
+            final ApiRequest request = RequestFactory.createDeleteVersionRequest(this.store, version);
+            final ApiResponse response = this.requestManager.execute(request, this.log);
 
             if (!this.verifyDeleteResponse(response)) {
                 this.log.write(this, "Error deleting version");
@@ -291,7 +305,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         }
     }
 
-    private void setVersionMetadata(final File basePath, final Version version)
+    private void setVersionMetadata(final File basePath, final JsonObject version)
             throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
         this.setReleaseStatus(version);
@@ -305,30 +319,26 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.setVersionName(version);
     }
 
-    private void setReleaseStatus(final Version version) {
-
-        final String key = !this.publication.usesDefaultReleaseStatus()
+    private void setReleaseStatus(final JsonObject version) {
+        final String releaseStatus = !this.publication.usesDefaultReleaseStatus()
                 ? this.publication.getReleaseStatus()
                 : this.store.getReleaseStatus();
 
-        if (!StringUtils.isBlank(key)) {
-            version.setReleaseStatus(key);
+        if (!StringUtils.isBlank(releaseStatus)) {
+            version.addProperty("releaseStatus", releaseStatus);
         }
     }
 
-    private void setName(final Version version) {
-
+    private void setName(final JsonObject version) throws IOException, InterruptedException, ExecutionException {
         if (StringUtils.isBlank(this.publication.getName())) {
             this.log.write(this, "No name set, default name will be used.");
             return;
         }
 
-        for (final String key : version.getName().keySet()) {
-            version.getName().put(key, this.publication.getName());
-        }
+        this.setText("name", version.get(Version.NAME), this.publication.getName());
     }
 
-    private void setIcon(final File basePath, final Version version)
+    private void setIcon(final File basePath, final JsonObject version)
             throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
         if (StringUtils.isBlank(this.publication.getIconPath())) {
@@ -336,9 +346,9 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        this.log.write(this, "Uploading application icon...");
+        this.log.write(this, "Uploading application icon…");
         final String filePath = this.publication.getIconPath();
-        final List<ApiResponse<Asset>> responses = this.uploadAssets(basePath, filePath, null);
+        final List<ApiResponse> responses = this.uploadAssets(basePath, filePath, null);
 
         if (this.isEmpty(responses)) {
             this.log.write(this, "Failed to upload application icon.");
@@ -346,7 +356,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        final ApiResponse<Asset> response = responses.get(0);
+        final ApiResponse response = responses.get(0);
 
         if (!this.verifyAssetResponse(response)) {
             this.log.write(this, "Failed to upload application icon.");
@@ -354,7 +364,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        final List<Asset> assets = response.getResults();
+        final JsonArray assets = response.getResults();
 
         if (assets.size() != 1) {
             this.log.write(this, "More than one unpersisted asset object returned by server.");
@@ -362,10 +372,10 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return;
         }
 
-        version.setIcon(assets.get(0));
+        version.add("icon", assets.get(0));
     }
 
-    private void setChangeLog(final File basePath, final Version version)
+    private void setChangeLog(final File basePath, final JsonObject version)
             throws IOException, InterruptedException, ExecutionException {
 
         if (StringUtils.isBlank(this.publication.getChangeLogPath())) {
@@ -375,10 +385,10 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         final String filePath = this.publication.getChangeLogPath();
         final String changeLogText = this.readFile(basePath, filePath);
-        this.setText("change log", version.getChangelog(), changeLogText);
+        this.setText("change log", version.get(Version.CHANGE_LOG), changeLogText);
     }
 
-    private void setDescription(final File basePath, final Version version)
+    private void setDescription(final File basePath, final JsonObject version)
             throws IOException, InterruptedException, ExecutionException {
 
         if (StringUtils.isBlank(this.publication.getDescriptionPath())) {
@@ -388,12 +398,10 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         final String filePath = this.publication.getDescriptionPath();
         final String descriptionText = this.readFile(basePath, filePath);
-        this.setText("description", version.getDescription(), descriptionText);
+        this.setText("description", version.get(Version.DESCRIPTION), descriptionText);
     }
 
-    private void setText(final String item, final Map<String, String> map, final String text)
-            throws IOException, InterruptedException, ExecutionException {
-
+    private void setText(final String item, final JsonElement element, final String text) throws IOException, InterruptedException, ExecutionException {
         if (StringUtils.isBlank(text)) {
             this.log.write(this, "The %s is empty, nothing to set.", item);
             return;
@@ -403,53 +411,53 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "Set %s to: \"%s\" (%d characters)", item, ellipsized, text.length());
 
         // Add the text for each locale
+        final JsonObject localizedString = element.getAsJsonObject();
         final Set<String> locales = this.getLocales();
+
         for (final String locale : locales) {
             this.log.write(this, "Set %s for locale %s.", item, locale);
-            map.put(locale, text);
+            localizedString.addProperty(locale, text);
         }
     }
 
-    private Set<String> getLocales()
-            throws IOException, InterruptedException, ExecutionException {
-
+    private Set<String> getLocales() throws IOException, InterruptedException, ExecutionException {
         if (this.locales != null) {
             return this.locales;
         }
 
-        this.log.write(this, "Requesting configured languages...");
+        this.log.write(this, "Requesting configured languages…");
 
-        final ApiRequest<Language> request = RequestFactory.createLanguageRequest(this.store);
-        final ApiResponse<Language> response = this.requestManager.execute(request, this.log);
+        final ApiRequest request = RequestFactory.createLanguageRequest(this.store);
+        final ApiResponse response = this.requestManager.execute(request, this.log);
 
-        final List<Language> languages = response.getResults();
+        final JsonArray languages = response.getResults();
         this.locales = new HashSet<String>(languages.size());
 
-        for (final Language language : languages) {
-            this.log.write(this, "%s: %s", language.getName(), language.getLocale());
-            this.locales.add(language.getLocale());
+        for (final JsonElement element : languages) {
+            final JsonObject language = element.getAsJsonObject();
+            final String name = Json.getString(language, Language.NAME);
+            final String locale = Json.getString(language, Language.LOCALE);
+
+            this.log.write(this, "%s: %s", name, locale);
+            this.locales.add(locale);
         }
 
         return this.locales;
     }
 
-    private void setVersionName(final Version version) {
-
+    private void setVersionName(final JsonObject version) {
         if (StringUtils.isBlank(this.publication.getVersionName())) {
             this.log.write(this, "No version name set, default name will be used.");
             return;
         }
-
-        version.setVersionName(this.publication.getVersionName());
+        version.addProperty("versionName", this.publication.getVersionName());
     }
 
-    private void persistApplication(final Application app)
-            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+    private void persistApplication(final JsonObject app) throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+        this.log.write(this, "Application is new, persisting application…");
 
-        this.log.write(this, "Application is new, persisting application...");
-
-        final ApiRequest<Application> request = RequestFactory.createPersistApplicationRequest(this.store, app);
-        final ApiResponse<Application> response = this.requestManager.execute(request, this.log);
+        final ApiRequest request = RequestFactory.createPersistApplicationRequest(this.store, app);
+        final ApiResponse response = this.requestManager.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting application.");
@@ -460,13 +468,12 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "Application persisted successfully.");
     }
 
-    private void persistVersion(final Version version)
+    private void persistVersion(final JsonObject app, final JsonObject version)
             throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+        this.log.write(this, "Version is new, persisting version…");
 
-        this.log.write(this, "Version is new, persisting version...");
-
-        final ApiRequest<Application> request = RequestFactory.createPersistVersionRequest(this.store, version);
-        final ApiResponse<Application> response = this.requestManager.execute(request, this.log);
+        final ApiRequest request = RequestFactory.createPersistVersionRequest(this.store, app, version);
+        final ApiResponse response = this.requestManager.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting version.");
@@ -477,7 +484,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "Version persisted successfully.");
     }
 
-    private List<ApiResponse<Asset>> uploadAssets(final File basePath, final String includes, final String excludes)
+    private List<ApiResponse> uploadAssets(final File basePath, final String includes, final String excludes)
             throws URISyntaxException, InterruptedException {
 
         if (StringUtils.isBlank(includes)) {
@@ -497,10 +504,10 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             return null;
         }
 
-        final List<ApiResponse<Asset>> responses = new ArrayList<ApiResponse<Asset>>();
+        final List<ApiResponse> responses = new ArrayList<ApiResponse>();
 
         for (final String fileName : fileSet.getDirectoryScanner().getIncludedFiles()) {
-            final ApiResponse<Asset> response = this.uploadAsset(directory, fileName);
+            final ApiResponse response = this.uploadAsset(directory, fileName);
 
             if (response != null) {
                 responses.add(response);
@@ -510,18 +517,18 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return responses;
     }
 
-    private ApiResponse<Asset> uploadAsset(final File directory, final String fileName)
+    private ApiResponse uploadAsset(final File directory, final String fileName)
             throws URISyntaxException, InterruptedException {
 
         try {
             final Stopwatch sw = new Stopwatch();
             final File file = new File(directory, fileName);
-            final ApiRequest<Asset> request = RequestFactory.createUploadRequest(this.store, file);
+            final ApiRequest request = RequestFactory.createUploadRequest(this.store, file);
 
-            this.log.write(this, "Uploading \"%s\" (%,d Byte)...", fileName, file.length());
+            this.log.write(this, "Uploading \"%s\" (%,d Byte)…", fileName, file.length());
 
             sw.start();
-            final ApiResponse<Asset> response = this.requestManager.execute(request, this.log);
+            final ApiResponse response = this.requestManager.execute(request, this.log);
             sw.stop();
 
             final String speed = this.getUploadSpeed(sw, file);
@@ -562,18 +569,6 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return String.format("%,.0f %sB/s", speed, units[index]);
     }
 
-    private Application getApplication(final List<Application> applications, final Asset asset) {
-
-        for (final Application app : applications) {
-            for (final Version version : app.getVersions()) {
-                if (version.getFile() != null && StringUtils.equals(asset.getUuid(), version.getFile().getUuid())) {
-                    return app;
-                }
-            }
-        }
-        return null;
-    }
-
     private String readFile(final File basePath, final String filePath) {
 
         final FileSet fileSet = Util.createFileSet(basePath, filePath);
@@ -585,7 +580,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         }
 
         for (final String fileName : fileSet.getDirectoryScanner().getIncludedFiles()) {
-            this.log.write(this, "Reading file \"%s\"...", fileName);
+            this.log.write(this, "Reading file \"%s\"…", fileName);
             final File file = new File(directory, fileName);
             this.readFile(file, sb);
         }
@@ -616,19 +611,39 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         }
     }
 
-    private Version getVersion(final Application app, final Asset asset) {
+    private JsonObject getApplication(final JsonArray applications, final JsonObject asset) {
+        for (final JsonElement element : applications) {
+            final JsonObject app = element.getAsJsonObject();
+            final JsonObject version = this.getVersion(app, asset);
 
-        for (final Version version : app.getVersions()) {
-            if (version.getFile() != null && StringUtils.equals(asset.getUuid(), version.getFile().getUuid())) {
-                return version;
+            if (version != null) {
+                return app;
             }
         }
         return null;
     }
 
-    private boolean verifyAssetResponse(final ApiResponse<Asset> response) {
+    private JsonObject getVersion(final JsonObject app, final JsonObject asset) {
+        final String uuid = Json.getString(asset, ApiObject.UUID);
+        final JsonArray versions = Json.getArray(app, App.VERSIONS);
 
-        final List<Asset> assets = response.getResults();
+        for (final JsonElement element : versions) {
+            final JsonObject version = element.getAsJsonObject();
+            final JsonObject file = Json.getObject(version, Version.FILE);
+
+            if (file != null) {
+                final String fileUuid = Json.getString(file, ApiObject.UUID);
+
+                if (StringUtils.equals(fileUuid, uuid)) {
+                    return version;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean verifyAssetResponse(final ApiResponse response) {
+        final JsonArray assets = response.getResults();
 
         if (response.getStatus() != 0) {
             this.log.write(
@@ -648,9 +663,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return true;
     }
 
-    private boolean verifyApplicationResponse(final ApiResponse<Application> response) {
-
-        final List<Application> applications = response.getResults();
+    private boolean verifyApplicationResponse(final ApiResponse response) {
+        final JsonArray applications = response.getResults();
 
         if (response.getStatus() != 0) {
             this.log.write(
@@ -670,8 +684,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         return true;
     }
 
-    private boolean verifyDeleteResponse(final ApiResponse<String> response) {
-
+    private boolean verifyDeleteResponse(final ApiResponse response) {
         this.log.write(this, "Status: %d", response.getStatus());
 
         if (response.getStatus() != 0) {
@@ -688,17 +701,18 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     private String getEllipsizedText(final String input, final int maxLen) {
-
-        if (input.length() <= maxLen) {
+        if (StringUtils.isEmpty(input) || input.length() <= maxLen) {
             return input;
         }
-
-        final String output = input.substring(0, maxLen - 3) + "...";
-        return output;
+        return input.substring(0, maxLen - 1) + "…";
     }
 
-    private boolean isEmpty(final List<?> list) {
-        return (list == null || list.size() == 0);
+    private boolean isEmpty(final Collection<?> collection) {
+        return (collection == null || collection.size() == 0);
+    }
+
+    private boolean isEmpty(final JsonArray array) {
+        return (array == null || array.size() == 0);
     }
 
     public Result getResult() {
