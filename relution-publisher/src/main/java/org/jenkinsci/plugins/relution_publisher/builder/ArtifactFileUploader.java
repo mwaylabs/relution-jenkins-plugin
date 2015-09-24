@@ -540,8 +540,8 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     private String getUploadSpeed(final Stopwatch sw, final File file) {
-
-        final float seconds = sw.elapsedTime(TimeUnit.SECONDS);
+        final float milliseconds = sw.elapsedTime(TimeUnit.MILLISECONDS);
+        final float seconds = milliseconds / 1000f;
 
         if (file.length() == 0 || seconds == 0) {
             return "Unknown";
