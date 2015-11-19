@@ -77,7 +77,7 @@ public class RequestManager implements Serializable {
      * The connection will time out if the period of inactivity after receiving or sending a data
      * packet exceeds the specified value, in milliseconds.
      */
-    private final static int TIMEOUT_SOCKET = 60000;
+    private final static int TIMEOUT_SOCKET = 600000;
 
     /**
      * The maximum number of times a request is retried in case a time out occurs.
