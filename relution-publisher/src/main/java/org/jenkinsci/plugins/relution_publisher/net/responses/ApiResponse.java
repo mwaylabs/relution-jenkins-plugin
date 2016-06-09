@@ -19,9 +19,9 @@ package org.jenkinsci.plugins.relution_publisher.net.responses;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -38,15 +38,27 @@ public class ApiResponse {
     private int               statusCode;
     private String            reason;
 
-    private final Integer status;
-    private String        message;
+    @Expose
+    @SerializedName("status")
+    private final Integer     status;
 
-    private final JsonObject errors;
+    @Expose
+    @SerializedName("message")
+    private String            message;
 
-    private final int       total;
-    private final JsonArray results;
+    @Expose
+    @SerializedName("errors")
+    private final JsonObject  errors;
 
-    private transient String s;
+    @Expose
+    @SerializedName("total")
+    private final int         total;
+
+    @Expose
+    @SerializedName("results")
+    private final JsonArray   results;
+
+    private transient String  s;
 
     /**
      * Converts the specified JSON formatted string to an instance of the specified class.
@@ -54,9 +66,11 @@ public class ApiResponse {
      * @return An instance of the specified class.
      */
     public static ApiResponse fromJson(final String json) {
-        final JsonParser parser = new JsonParser();
-        final JsonElement element = parser.parse(json);
-        return new ApiResponse(element.getAsJsonObject());
+        final Gson gson = new GsonBuilder()
+                .excludeFieldsWithoutExposeAnnotation()
+                .create();
+
+        return gson.fromJson(json, ApiResponse.class);
     }
 
     /**
@@ -72,14 +86,6 @@ public class ApiResponse {
         this.results = new JsonArray();
     }
 
-    private ApiResponse(final JsonObject object) {
-        this.status = object.get("status").getAsInt();
-
-        this.message = object.get("message").getAsString();
-        this.errors = object.get("errors").getAsJsonObject();
-
-        this.total = object.get("total").getAsInt();
-        this.results = object.get("results").getAsJsonArray();
     /**
      * Returns the underlying HTTP response.
      * @return The {@link HttpResponse} from which this API response was parsed.
