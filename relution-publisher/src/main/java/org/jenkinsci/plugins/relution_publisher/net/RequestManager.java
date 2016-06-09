@@ -176,7 +176,10 @@ public class RequestManager implements Serializable {
         try {
             final HttpEntity entity = httpResponse.getEntity();
             payload = EntityUtils.toString(entity, CHARSET);
-            return ApiResponse.fromJson(payload);
+
+            if (!StringUtils.isBlank(payload)) {
+                return ApiResponse.fromJson(payload);
+            }
 
         } catch (final Exception e) {
             e.printStackTrace();
