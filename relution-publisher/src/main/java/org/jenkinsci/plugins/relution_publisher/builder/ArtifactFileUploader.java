@@ -323,6 +323,12 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         final String filePath = this.publication.getIconPath();
         final List<JsonObject> assets = this.uploadAssets(basePath, filePath, null);
 
+        if (assets == null) {
+            this.log.write(this, "Could not upload app icon.");
+            Builds.setResult(this, Result.UNSTABLE, this.log);
+            return;
+        }
+
         if (assets.size() != 1) {
             this.log.write(this, "More than one unpersisted asset returned by server.");
             Builds.setResult(this, Result.UNSTABLE, this.log);
