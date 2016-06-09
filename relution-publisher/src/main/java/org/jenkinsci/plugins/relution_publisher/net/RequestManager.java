@@ -196,7 +196,7 @@ public class RequestManager implements Serializable {
      */
     private ApiResponse parseNetworkResponse(final ApiRequest request, final HttpResponse httpResponse) {
         final ApiResponse response = this.getJsonString(request, httpResponse);
-        response.init(httpResponse);
+        response.setHttpResponse(httpResponse);
         return response;
     }
 

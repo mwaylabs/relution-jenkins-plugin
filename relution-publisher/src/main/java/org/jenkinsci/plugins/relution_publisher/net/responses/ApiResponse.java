@@ -34,8 +34,9 @@ public class ApiResponse {
 
     private final static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private int    statusCode;
-    private String reason;
+    private HttpResponse      httpResponse;
+    private int               statusCode;
+    private String            reason;
 
     private final Integer status;
     private String        message;
@@ -79,13 +80,20 @@ public class ApiResponse {
 
         this.total = object.get("total").getAsInt();
         this.results = object.get("results").getAsJsonArray();
+    /**
+     * Returns the underlying HTTP response.
+     * @return The {@link HttpResponse} from which this API response was parsed.
+     */
+    public HttpResponse getHttpResponse() {
+        return this.httpResponse;
     }
 
     /**
      * Initializes the response from the specified {@link HttpResponse}.
      * @param httpResponse A {@link HttpResponse} used to initialize internal fields.
      */
-    public void init(final HttpResponse httpResponse) {
+    public void setHttpResponse(final HttpResponse httpResponse) {
+        this.httpResponse = httpResponse;
         this.statusCode = httpResponse.getStatusLine().getStatusCode();
         this.reason = httpResponse.getStatusLine().getReasonPhrase();
     }
