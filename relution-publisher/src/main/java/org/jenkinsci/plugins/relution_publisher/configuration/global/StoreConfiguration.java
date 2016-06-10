@@ -41,7 +41,7 @@ public class StoreConfiguration extends GlobalConfiguration {
 
     private final List<Store>  stores            = new ArrayList<Store>();
 
-    private boolean            isDebugEnabled;
+    private Boolean            isDebugEnabled;
 
     /**
      * Initializes a new instance of the {@link StoreConfiguration} class.
@@ -126,7 +126,7 @@ public class StoreConfiguration extends GlobalConfiguration {
      * Gets a value indicating whether debug output should be enabled.
      * @return {@code true} if debug output should be enabled; otherwise, {@code false}.
      */
-    public boolean isDebugEnabled() {
+    public Boolean isDebugEnabled() {
         return this.isDebugEnabled;
     }
 
