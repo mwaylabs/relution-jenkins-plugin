@@ -114,4 +114,10 @@ public class SessionManager extends RequestManager {
     public ServerVersion getServerVersion() {
         return this.serverVersion;
     }
+
+    @Override
+    public void close() throws IOException {
+        this.logOut();
+        super.close();
+    }
 }
