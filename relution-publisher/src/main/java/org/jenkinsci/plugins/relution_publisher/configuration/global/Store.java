@@ -29,8 +29,9 @@ import org.apache.http.ParseException;
 import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
 import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
+import org.jenkinsci.plugins.relution_publisher.model.ServerVersion;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
-import org.jenkinsci.plugins.relution_publisher.net.RequestManager;
+import org.jenkinsci.plugins.relution_publisher.net.SessionManager;
 import org.jenkinsci.plugins.relution_publisher.net.requests.BaseRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.jenkinsci.plugins.relution_publisher.util.ErrorType;
@@ -588,20 +589,22 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
                 return FormValidation.warning("Host name for proxy set, but invalid port configured.");
             }
 
-            RequestManager requestManager = null;
+            SessionManager sessionManager = null;
             try {
                 final Store store = new Store(url, organization, username, password, proxyHost, proxyPort, proxyUsername, proxyPassword);
                 final BaseRequest request = RequestFactory.createAppStoreItemsRequest(store);
 
-                requestManager = new RequestManager();
-                requestManager.setProxy(proxyHost, proxyPort);
-                requestManager.setProxyCredentials(proxyUsername, proxyPassword);
+                sessionManager = new SessionManager();
+                sessionManager.setProxy(proxyHost, proxyPort);
+                sessionManager.setProxyCredentials(proxyUsername, proxyPassword);
 
-                final ApiResponse response = requestManager.execute(request);
+                sessionManager.logIn(store);
+                final ApiResponse response = sessionManager.execute(request);
 
                 switch (response.getStatusCode()) {
                     case HttpStatus.SC_OK:
-                        return FormValidation.ok("Connection attempt successful");
+                        final ServerVersion serverVersion = sessionManager.getServerVersion();
+                        return FormValidation.ok("Connection attempt successful (Relution %s)", serverVersion);
 
                     case HttpStatus.SC_FORBIDDEN:
                         return FormValidation.error(
@@ -623,7 +626,7 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
                 return this.parseError(e);
 
             } finally {
-                IOUtils.closeQuietly(requestManager);
+                IOUtils.closeQuietly(sessionManager);
 
             }
         }
