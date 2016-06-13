@@ -4,3 +4,9 @@ jdk:
  - openjdk7
  - oraclejdk7
  - oraclejdk8
+
+install:
+ - mvn -f relution-publisher/pom.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+
+script:
+ - mvn -f relution-publisher/pom.xml clean compile package -B
