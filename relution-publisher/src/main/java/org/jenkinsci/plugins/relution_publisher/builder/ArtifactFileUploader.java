@@ -77,20 +77,20 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
      * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
      * Versioning of Serializable Objects</a>.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long    serialVersionUID = 1L;
 
     /**
      * Maximum length of text to upload.
      */
-    private static final int MAX_TEXT_LENGTH = 49152;
+    private static final int     MAX_TEXT_LENGTH  = 49152;
 
-    private Result result;
+    private Result               result;
 
-    private final Publication publication;
-    private final Store       store;
-    private final Log         log;
+    private final Publication    publication;
+    private final Store          store;
+    private final Log            log;
 
-    private Set<String> locales;
+    private Set<String>          locales;
 
     private final RequestManager requestManager;
 
@@ -153,7 +153,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             Builds.setResult(this, Result.UNSTABLE, this.log);
 
         } finally {
-            this.requestManager.shutdown();
+            this.requestManager.close();
 
         }
 

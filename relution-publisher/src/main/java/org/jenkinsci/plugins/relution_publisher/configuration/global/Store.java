@@ -20,6 +20,7 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpException;
@@ -63,7 +64,7 @@ import hudson.util.ListBoxModel;
  * a version to this store. The default release status can be overridden on a per Jenkins project
  * basis.
  */
-public class Store extends AbstractDescribableImpl<Store>implements Serializable {
+public class Store extends AbstractDescribableImpl<Store> implements Serializable {
 
     /**
      * The serial version number of this class.
@@ -77,44 +78,44 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
      * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
      * Versioning of Serializable Objects</a>.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long     serialVersionUID   = 1L;
 
-    public final static String KEY_ID           = "id";
-    public final static String KEY_URL          = "url";
-    public final static String KEY_ORGANIZATION = "organization";
+    public final static String    KEY_ID             = "id";
+    public final static String    KEY_URL            = "url";
+    public final static String    KEY_ORGANIZATION   = "organization";
 
-    public final static String KEY_USERNAME = "username";
-    public final static String KEY_PASSWORD = "password";
+    public final static String    KEY_USERNAME       = "username";
+    public final static String    KEY_PASSWORD       = "password";
 
-    public final static String KEY_RELEASE_STATUS = "releaseStatus";
-    public final static String KEY_ARCHIVE_MODE   = "archiveMode";
-    public final static String KEY_UPLOAD_MODE    = "uploadMode";
+    public final static String    KEY_RELEASE_STATUS = "releaseStatus";
+    public final static String    KEY_ARCHIVE_MODE   = "archiveMode";
+    public final static String    KEY_UPLOAD_MODE    = "uploadMode";
 
-    public final static String KEY_PROXY_HOST = "proxyHost";
-    public final static String KEY_PROXY_PORT = "proxyPort";
+    public final static String    KEY_PROXY_HOST     = "proxyHost";
+    public final static String    KEY_PROXY_PORT     = "proxyPort";
 
-    public final static String KEY_PROXY_USERNAME = "proxyUsername";
-    public final static String KEY_PROXY_PASSWORD = "proxyPassword";
+    public final static String    KEY_PROXY_USERNAME = "proxyUsername";
+    public final static String    KEY_PROXY_PASSWORD = "proxyPassword";
 
-    private final static String[] URL_SCHEMES = {"http", "https"};
+    private final static String[] URL_SCHEMES        = {"http", "https"};
 
-    private String mId;
-    private String mUrl;
+    private String                mId;
+    private String                mUrl;
 
-    private String mOrganization;
+    private String                mOrganization;
 
-    private String mUsername;
-    private String mPassword;
+    private String                mUsername;
+    private String                mPassword;
 
-    private String mReleaseStatus;
-    private String mArchiveMode;
-    private String mUploadMode;
+    private String                mReleaseStatus;
+    private String                mArchiveMode;
+    private String                mUploadMode;
 
-    private String mProxyHost;
-    private int    mProxyPort;
+    private String                mProxyHost;
+    private int                   mProxyPort;
 
-    private String mProxyUsername;
-    private String mProxyPassword;
+    private String                mProxyUsername;
+    private String                mProxyPassword;
 
     /**
      * Creates a new instance of the {@link Store} class initialized with the values in
@@ -577,7 +578,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
                 @QueryParameter(Store.KEY_PROXY_PORT) final int proxyPort,
                 @QueryParameter(Store.KEY_PROXY_USERNAME) final String proxyUsername,
                 @QueryParameter(Store.KEY_PROXY_PASSWORD) final String proxyPassword)
-                        throws IOException, ServletException {
+                throws IOException, ServletException {
 
             if (StringUtils.isEmpty(url)) {
                 return FormValidation.warning("Unable to validate, the specified URL is empty.");
@@ -587,11 +588,12 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
                 return FormValidation.warning("Host name for proxy set, but invalid port configured.");
             }
 
+            RequestManager requestManager = null;
             try {
                 final Store store = new Store(url, organization, username, password, proxyHost, proxyPort, proxyUsername, proxyPassword);
                 final BaseRequest request = RequestFactory.createAppStoreItemsRequest(store);
 
-                final RequestManager requestManager = new RequestManager();
+                requestManager = new RequestManager();
                 requestManager.setProxy(proxyHost, proxyPort);
                 requestManager.setProxyCredentials(proxyUsername, proxyPassword);
 
@@ -619,6 +621,9 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
             } catch (final Exception e) {
                 return this.parseError(e);
+
+            } finally {
+                IOUtils.closeQuietly(requestManager);
 
             }
         }
