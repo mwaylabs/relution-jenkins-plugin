@@ -25,17 +25,17 @@ import hudson.util.ListBoxModel.Option;
 
 /**
  * Indicates the release status of a build artifact.
- * <p/>
+ * <p>
  * The release status of an application defines who will be able to access the application. A
- * version with status <code>Development<code> will be shown as a development version and is
- * usually only available to developers. A version uploaded to <code>Review</code> is available
- * to reviewers, while a version uploaded as <code>Release</code> is available to end users.
- * <p/>
- * By default applications are be uploaded to <code>Development</code> and must be manually
- * moved to <code>Review</code> by a developer, to make this version available for review. The
- * version is then manually moved to <code>Release</code> by a reviewer if the version has passed
+ * version with status {@code Development} will be shown as a development version and is
+ * usually only available to developers. A version uploaded to {@code Review} is available
+ * to reviewers, while a version uploaded as {@code Release} is available to end users.
+ * <p>
+ * By default applications are be uploaded to {@code Development} and must be manually
+ * moved to {@code Review} by a developer, to make this version available for review. The
+ * version is then manually moved to {@code Release} by a reviewer if the version has passed
  * review and should replace the currently released version.
- * <p/>
+ * <p>
  * Changing the release status for an application allows to skip parts of this manual process,
  * i.e. if the application is not reviewed/tested by a human.
  */
@@ -45,22 +45,22 @@ public final class ReleaseStatus extends Choice {
      * Versions produced by the build process should use the release status defined in the
      * associated {@link Store}.
      */
-    public final static ReleaseStatus DEFAULT = new ReleaseStatus("DEFAULT", "(default)");
+    public final static ReleaseStatus DEFAULT     = new ReleaseStatus("DEFAULT", "(default)");
 
     /**
-     * Versions produced by the build process should be uploaded to <code>Development</code>.
+     * Versions produced by the build process should be uploaded to {@code Development}.
      */
     public final static ReleaseStatus DEVELOPMENT = new ReleaseStatus("DEVELOPMENT", "Development");
 
     /**
-     * Versions produces by the build process should be uploaded to <code>Review</code>
+     * Versions produces by the build process should be uploaded to {@code Review}
      */
-    public final static ReleaseStatus REVIEW = new ReleaseStatus("REVIEW", "Review");
+    public final static ReleaseStatus REVIEW      = new ReleaseStatus("REVIEW", "Review");
 
     /**
-     * Versions produced by the build process should be uploaded to <code>Release</code>
+     * Versions produced by the build process should be uploaded to {@code Release}
      */
-    public final static ReleaseStatus RELEASE = new ReleaseStatus("RELEASE", "Release");
+    public final static ReleaseStatus RELEASE     = new ReleaseStatus("RELEASE", "Release");
 
     /**
      * Initializes a new instance of the {@link ReleaseStatus} class.
@@ -113,7 +113,7 @@ public final class ReleaseStatus extends Choice {
      * including the special status {@link #DEFAULT}. If <i>Default</i> is selected, the release
      * status defined in the build's {@link Store} configuration is used.
      * @param list The {@link ListBoxModel} to which the items should be added.
-     * @param store
+     * @param store The {@link Store} that defines the default option.
      */
     public static void fillList(final ListBoxModel list, final Store store) {
         list.add(0, optionOrDefault(store));

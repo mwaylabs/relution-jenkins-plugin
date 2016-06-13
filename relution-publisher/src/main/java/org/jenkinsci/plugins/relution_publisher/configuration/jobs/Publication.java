@@ -41,7 +41,7 @@ import hudson.util.ListBoxModel;
  * Represents a publication configured in a Jenkins project. A publication determines which
  * Relution Enterprise Appstore an artifact should be uploaded to.
  */
-public class Publication extends AbstractDescribableImpl<Publication>implements Serializable {
+public class Publication extends AbstractDescribableImpl<Publication> implements Serializable {
 
     /**
      * The serial version number of this class.
@@ -57,19 +57,19 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
      */
     private static final long serialVersionUID = 1L;
 
-    private String artifactPath;
-    private String artifactExcludePath;
-    private String storeId;
+    private String            artifactPath;
+    private String            artifactExcludePath;
+    private String            storeId;
 
-    private String releaseStatus;
-    private String archiveMode;
-    private String uploadMode;
+    private String            releaseStatus;
+    private String            archiveMode;
+    private String            uploadMode;
 
-    private String name;
-    private String iconPath;
-    private String changeLogPath;
-    private String descriptionPath;
-    private String versionName;
+    private String            name;
+    private String            iconPath;
+    private String            changeLogPath;
+    private String            descriptionPath;
+    private String            versionName;
 
     @DataBoundConstructor
     public Publication(
@@ -99,7 +99,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     }
 
     /**
-     * Gets the path of the artifact to be published, relative to the workspace directory.
+     * @return The path of the artifact to be published, relative to the workspace directory.
      */
     public String getArtifactPath() {
         return this.artifactPath;
@@ -114,7 +114,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     }
 
     /**
-     * Gets the exclude pattern for the artifact to be published, relative to the workspace
+     * @return The exclude pattern for the artifact to be published, relative to the workspace
      * directory.
      */
     public String getArtifactExcludePath() {
@@ -131,7 +131,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     }
 
     /**
-     * Gets the identifier of the {@link Store} to which the artifact should be published.
+     * @return The identifier of the {@link Store} to which the artifact should be published.
      */
     public String getStoreId() {
         return this.storeId;
@@ -146,7 +146,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     }
 
     /**
-     * Gets the key of the {@link ReleaseStatus} to use when uploading an artifact to the store.
+     * @return The key of the {@link ReleaseStatus} to use when uploading an artifact to the store.
      */
     public String getReleaseStatus() {
         return this.releaseStatus;
@@ -155,8 +155,8 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     /**
      * Gets a value indicating whether the {@link ReleaseStatus} of the publication equals the
      * default value.
-     * @return <code>true</code> if the release status is equal to {@link ReleaseStatus#DEFAULT};
-     * otherwise, <code>false</code>.
+     * @return {@code true} if the release status is equal to {@link ReleaseStatus#DEFAULT};
+     * otherwise, {@code false}.
      */
     public boolean usesDefaultReleaseStatus() {
         return StringUtils.isBlank(this.releaseStatus) || this.releaseStatus.equals(ReleaseStatus.DEFAULT.key);
@@ -171,7 +171,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     }
 
     /**
-     * Gets the key of the {@link ArchiveMode} to use when uploading an artifact to the store.
+     * @return The key of the {@link ArchiveMode} to use when uploading an artifact to the store.
      */
     public String getArchiveMode() {
         return this.archiveMode;
@@ -180,8 +180,8 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     /**
      * Gets a value indicating whether the {@link ArchiveMode} of the publication equals the
      * default value.
-     * @return <code>true</code> if the archive mode is equal to {@link ArchiveMode#DEFAULT};
-     * otherwise, <code>false</code>.
+     * @return {@code true} if the archive mode is equal to {@link ArchiveMode#DEFAULT};
+     * otherwise, {@code false}.
      */
     public boolean usesDefaultArchiveMode() {
         return StringUtils.isBlank(this.archiveMode) || this.archiveMode.equals(ArchiveMode.DEFAULT.key);
@@ -196,7 +196,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     }
 
     /**
-     * Gets the key of the {@link UploadMode} that determines which artifacts to upload to the
+     * @return The key of the {@link UploadMode} that determines which artifacts to upload to the
      * store.
      */
     public String getUploadMode() {
@@ -206,8 +206,8 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     /**
      * Gets a value indicating whether the {@link UploadMode} of the publication equals the
      * default value.
-     * @return <code>true</code> if the upload mode is equal to {@link UploadMode#DEFAULT};
-     * otherwise, <code>false</code>.
+     * @return {@code true} if the upload mode is equal to {@link UploadMode#DEFAULT};
+     * otherwise, {@code false}.
      */
     public boolean usesDefaultUploadMode() {
         return StringUtils.isBlank(this.uploadMode) || this.uploadMode.equals(UploadMode.DEFAULT.key);
@@ -223,7 +223,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     }
 
     /**
-     * Gets the name to show for the application version uploaded to the store.
+     * @return The name to show for the application version uploaded to the store.
      */
     public String getName() {
         return this.name;
@@ -238,7 +238,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     }
 
     /**
-     * Gets the path of the icon to use for the version when uploading the artifact to the store.
+     * @return The path of the icon to use for the version when uploading the artifact to the store.
      */
     public String getIconPath() {
         return this.iconPath;
@@ -246,15 +246,15 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
 
     /**
      * Sets the path of the icon to use for the version when uploading the artifact to the store.
-     * @param iconPath The path of the icon to use, or <code>null</code> to use the icon specified
-     * by the artifact's meta-data.
+     * @param iconPath The path of the icon to use, or {@code null} to use the icon specified by
+     * the artifact's meta-data.
      */
     public void setIconPath(final String iconPath) {
         this.iconPath = iconPath;
     }
 
     /**
-     * Gets the path of the file that contains the version's change log.
+     * @return The path of the file that contains the version's change log.
      */
     public String getChangeLogPath() {
         return this.changeLogPath;
@@ -269,7 +269,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     }
 
     /**
-     * Gets the path of the file that contains the version's description.
+     * @return The path of the file that contains the version's description.
      */
     public String getDescriptionPath() {
         return this.descriptionPath;
@@ -284,7 +284,7 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
     }
 
     /**
-     * Gets the name to use for the version when uploading the artifact to the store.
+     * @return The name to use for the version when uploading the artifact to the store.
      */
     public String getVersionName() {
         return this.versionName;
@@ -292,9 +292,9 @@ public class Publication extends AbstractDescribableImpl<Publication>implements 
 
     /**
      * Sets the name to use for the version when uploading the artifact to the store.
-     * <p/>
+     * <p>
      * This is not the application's name, but its version name, i.e. the human readable version.
-     * @param versionName The version name to use, or <code>null</code> to use the version name
+     * @param versionName The version name to use, or {@code null} to use the version name
      * specified by the artifact's meta-data.
      */
     public void setVersionName(final String versionName) {

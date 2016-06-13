@@ -50,7 +50,6 @@ public class ApiResponse {
     /**
      * Converts the specified JSON formatted string to an instance of the specified class.
      * @param json A JSON formatted string.
-     * @param clazz A {@link Class} that extends {@link ApiResponse}.
      * @return An instance of the specified class.
      */
     public static ApiResponse fromJson(final String json) {
@@ -92,14 +91,14 @@ public class ApiResponse {
     }
 
     /**
-     * Gets the HTTP status code returned by the server.
+     * @return The HTTP status code returned by the server.
      */
     public int getStatusCode() {
         return this.statusCode;
     }
 
     /**
-     * Gets the status returned by the server.
+     * @return The status returned by the server.
      */
     public int getStatus() {
 
@@ -110,7 +109,7 @@ public class ApiResponse {
     }
 
     /**
-     * Gets the message returned by the server.
+     * @return The message returned by the server.
      */
     public String getMessage() {
 
@@ -129,28 +128,28 @@ public class ApiResponse {
     }
 
     /**
-     * Gets the {@link Error} returned by the server, or <code>null</null> if no error occurred.
+     * @return The {@link Error} returned by the server, or {@code null} if no error occurred.
      */
     public JsonObject getError() {
         return this.errors;
     }
 
     /**
-     * Gets the total number of results returned by the server.
+     * @return The total number of results returned by the server.
      */
     public int getCount() {
         return this.total;
     }
 
     /**
-     * Gets the results returned by the server.
+     * @return The results returned by the server.
      */
     public JsonArray getResults() {
         return this.results;
     }
 
     /**
-     * Gets a JSON formatted String that represents this instance.
+     * @return A JSON formatted String that represents this instance.
      */
     public String toJson() {
         return GSON.toJson(this);

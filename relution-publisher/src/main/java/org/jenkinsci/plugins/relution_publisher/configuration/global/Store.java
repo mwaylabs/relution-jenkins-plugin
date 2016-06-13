@@ -58,7 +58,7 @@ import hudson.util.ListBoxModel;
  * Represents a Relution Enterprise App Store that is used as a communication endpoint by the
  * plugin. A store is uniquely identified by its URL and the credentials required
  * to connect to the store.
- * <p/>
+ * <p>
  * Additionally it is possible to define the default {@link ReleaseStatus} to use when uploading
  * a version to this store. The default release status can be overridden on a per Jenkins project
  * basis.
@@ -130,12 +130,20 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
     /**
      * Initializes a new instance of the {@link Store} class.
+     * @param id The unique identifier of the store.
      * @param url The URL of the store.
      * @param organization The organization within the store to use.
      * @param username The user name to use when connecting to the store.
      * @param password The password to use when connecting to the store.
      * @param releaseStatus The key of the default release status to use when uploading a version
      * to this store.
+     * @param archiveMode The key of the archive mode to use when uploading a version to this
+     * store.
+     * @param uploadMode The key of the upload mode to use when uploading a version to this store.
+     * @param proxyHost The proxy host to use.
+     * @param proxyPort The proxy port to use.
+     * @param proxyUsername The proxy username to use.
+     * @param proxyPassword The proxy password to use.
      */
     @DataBoundConstructor
     public Store(
@@ -213,7 +221,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the unique identifier for the store.
+     * @return The unique identifier for the store.
      */
     public String getId() {
         return this.getId(this.mId);
@@ -228,7 +236,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the URL to use when connecting to the store.
+     * @return The URL to use when connecting to the store.
      */
     public String getUrl() {
         return this.mUrl;
@@ -243,7 +251,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the organization within the store to use.
+     * @return The organization within the store to use.
      */
     public String getOrganization() {
         return this.mOrganization;
@@ -258,7 +266,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the user name to use when connecting to the store.
+     * @return The user name to use when connecting to the store.
      */
     public String getUsername() {
         return this.mUsername;
@@ -273,7 +281,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the password to use when connecting to the store.
+     * @return The password to use when connecting to the store.
      */
     public String getPassword() {
         return this.mPassword;
@@ -288,7 +296,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the key of the default {@link ReleaseStatus} to use when uploading a version to the
+     * @return The key of the default {@link ReleaseStatus} to use when uploading a version to the
      * store.
      */
     public String getReleaseStatus() {
@@ -305,7 +313,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the key of the default {@link ArchiveMode} to use when uploading a version to the
+     * @return The key of the default {@link ArchiveMode} to use when uploading a version to the
      * store.
      */
     public String getArchiveMode() {
@@ -322,8 +330,8 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the key of the default {@link UploadMode} that determines which artifacts to upload to
-     * the store.
+     * @return The key of the default {@link UploadMode} that determines which artifacts to upload
+     * to the store.
      */
     public String getUploadMode() {
         return this.mUploadMode;
@@ -339,7 +347,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the host name of the proxy server to use.
+     * @return The host name of the proxy server to use.
      */
     public String getProxyHost() {
         return this.mProxyHost;
@@ -354,7 +362,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the port number of the proxy server to use.
+     * @return The port number of the proxy server to use.
      */
     public int getProxyPort() {
         return this.mProxyPort;
@@ -369,7 +377,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the username to use for proxy authentication.
+     * @return The username to use for proxy authentication.
      */
     public String getProxyUsername() {
         return this.mProxyUsername;
@@ -384,7 +392,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the password to use for proxy authentication.
+     * @return The password to use for proxy authentication.
      */
     public String getProxyPassword() {
         return this.mProxyPassword;
@@ -399,7 +407,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the host component of the store's {@link #getUrl() URL}.
+     * @return The host component of the store's {@link #getUrl() URL}.
      */
     public String getHostName() {
 
@@ -414,7 +422,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets an authorization token that can be used to authenticate with the store.
+     * @return An authorization token that can be used to authenticate with the store.
      */
     public String getAuthorizationToken() {
 
@@ -450,7 +458,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * Gets the unique identifier for the {@link Store}.
+     * @return The unique identifier for the {@link Store}.
      * @deprecated Use {@link #getId()}
      */
     @Deprecated

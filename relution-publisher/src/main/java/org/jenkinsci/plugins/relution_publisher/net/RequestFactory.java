@@ -31,8 +31,6 @@ import org.jenkinsci.plugins.relution_publisher.net.requests.ZeroCopyFileRequest
 import org.jenkinsci.plugins.relution_publisher.util.Json;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 
 
@@ -72,8 +70,8 @@ public final class RequestFactory {
     private final static String URL_FILES = "files";
 
     /**
-     * The URL used to request the unpersisted {@link Application} object associated with a
-     * previously uploaded {@link Asset}.
+     * The URL used to request the unpersisted application object associated with a previously
+     * uploaded asset.
      */
     private final static String URL_APPS_FROM_FILE = "apps/fromFile";
 
@@ -130,11 +128,10 @@ public final class RequestFactory {
     }
 
     /**
-     * Creates a {@link BaseRequest} that can be used to retrieve all {@link Application} objects
+     * Creates a {@link BaseRequest} that can be used to retrieve all application objects
      * stored in the server's database.
      * @param store The {@link Store} this request should be executed against.
      * @return A request that can be used to query all applications on the server.
-     * @throws URISyntaxException
      */
     public static EntityRequest createAppStoreItemsRequest(final Store store) {
 
@@ -152,7 +149,6 @@ public final class RequestFactory {
      * @param store The {@link Store} this request should be executed against.
      * @param file The {@link File} to upload.
      * @return A request that can be used to upload a file to the server.
-     * @throws IOException The specified file could not be buffered for sending.
      */
     public static ZeroCopyFileRequest createUploadRequest(final Store store, final File file) {
         final ZeroCopyFileRequest request = new ZeroCopyFileRequest(
@@ -164,10 +160,10 @@ public final class RequestFactory {
     }
 
     /**
-     * Creates a {@link BaseRequest} that can be used to retrieve the {@link Application} associated
-     * with the specified {@link Asset}.
+     * Creates a {@link BaseRequest} that can be used to retrieve the application associated
+     * with the specified asset.
      * @param store The {@link Store} this request should be executed against.
-     * @param asset The {@link Asset} for which to retrieve the {@link Application}
+     * @param asset The asset for which to retrieve the application.
      * @return A request that can be used to retrieved the application associated with an asset.
      */
     public static EntityRequest createAppFromFileRequest(final Store store, final JsonObject asset) {
@@ -182,13 +178,13 @@ public final class RequestFactory {
     }
 
     /**
-     * Creates a {@link BaseRequest} that can be used to persist the specified {@link Application}.
-     * <p/>
+     * Creates a {@link BaseRequest} that can be used to persist the specified application.
+     * <p>
      * This call must not be used to persist an application that has already been persisted. Doing
-     * so results in undefined behavior. An application is unpersisted if its
-     * {@link Application#getUuid() identifier} is <code>null</code>.
+     * so results in undefined behavior. An application is unpersisted if its identifier is
+     * {@code null}.
      * @param store The {@link Store} this request should be executed against.
-     * @param app The {@link Application} to persist.
+     * @param app The application to persist.
      * @return A request that can be used to persist the specified application.
      */
     public static EntityRequest createPersistApplicationRequest(final Store store, final JsonObject app) {
@@ -206,14 +202,14 @@ public final class RequestFactory {
 
     /**
      * Creates a {@link BaseRequest} that can be used to persist the specified application version.
-     * <p/>
+     * <p>
      * This call must not be used to persist a version that has already been persisted. Doing so
      * results in undefined behavior. A version is unpersisted if its
-     * {@link ApiObject#UUID identifier} is <code>null</code>. The {@link Application}
-     * associated with the version must already be persisted.
+     * {@link ApiObject#UUID identifier} is {@code null}. The application associated with the
+     * version must already be persisted.
      * @param store The {@link Store} this request should be executed against.
+     * @param app The application to persist.
      * @param version The application version to persist.
-     * @param version2
      * @return A request that can be used to persist the specified version.
      */
     public static EntityRequest createPersistVersionRequest(final Store store, final JsonObject app, final JsonObject version) {
