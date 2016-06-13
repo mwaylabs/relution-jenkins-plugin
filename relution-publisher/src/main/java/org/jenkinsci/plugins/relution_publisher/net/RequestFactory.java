@@ -18,7 +18,6 @@ package org.jenkinsci.plugins.relution_publisher.net;
 
 import com.google.gson.JsonObject;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.nio.entity.NStringEntity;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.constants.ApiObject;
@@ -29,6 +28,7 @@ import org.jenkinsci.plugins.relution_publisher.net.requests.BaseRequest;
 import org.jenkinsci.plugins.relution_publisher.net.requests.EntityRequest;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ZeroCopyFileRequest;
 import org.jenkinsci.plugins.relution_publisher.util.Json;
+import org.jenkinsci.plugins.relution_publisher.util.UrlUtils;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -40,69 +40,59 @@ import java.nio.charset.Charset;
  */
 public final class RequestFactory {
 
-    private static final String HEADER_ACCEPT        = "Accept";
-    private static final String HEADER_AUTHORIZATION = "Authorization";
-    private final static String HEADER_CONTENT_TYPE  = "Content-Type";
+    private static final String  HEADER_ACCEPT        = "Accept";
+    private static final String  HEADER_AUTHORIZATION = "Authorization";
+    private final static String  HEADER_CONTENT_TYPE  = "Content-Type";
 
-    private static final String APPLICATION_JSON = "application/json";
-    private static final String BASIC            = "Basic ";
+    private static final String  APPLICATION_JSON     = "application/json";
+    private static final String  BASIC                = "Basic ";
 
-    private final static Charset CHARSET = Charset.forName("UTF-8");
+    private final static Charset CHARSET              = Charset.forName("UTF-8");
+
+    //
+    // Relution paths
+    //
+    /**
+     * The base API URL.
+     */
+    private final static String  URL_API_V1           = "relution/api/v1";
 
     /**
      * The URL used to request the languages configured on the server.
      */
-    private final static String URL_LANGUAGES = "languages";
+    private final static String  URL_LANGUAGES        = URL_API_V1 + "/languages";
 
     /**
      * The URL used to request or persist application objects.
      */
-    private final static String URL_APPS = "apps";
-
-    /**
-     * The URL used to request or persist application version objects.
-     */
-    private final static String URL_VERSIONS = "versions";
+    private final static String  URL_APPS             = URL_API_V1 + "/apps";
 
     /**
      * The URL used to request or persist asset objects.
      */
-    private final static String URL_FILES = "files";
+    private final static String  URL_FILES            = URL_API_V1 + "/files";
 
     /**
      * The URL used to request the unpersisted application object associated with a previously
      * uploaded asset.
      */
-    private final static String URL_APPS_FROM_FILE = "apps/fromFile";
+    private final static String  URL_APPS_FROM_FILE   = URL_API_V1 + "/apps/fromFile";
+
+    //
+    // Path parts
+    //
+    /**
+     * The path used to request or persist application version objects.
+     */
+    private final static String  VERSIONS             = "versions";
 
     private RequestFactory() {
     }
 
-    public static String sanitizePath(final String path) {
-
-        if (StringUtils.isBlank(path)) {
-            return path;
-        }
-
-        if (path.endsWith("/")) {
-            return path.substring(0, path.length() - 1);
-        }
-        return path;
-    }
-
     private static String getUrl(final Store store, final String... parts) {
-
-        final StringBuilder sb = new StringBuilder();
-        sb.append(sanitizePath(store.getUrl()));
-
-        for (final String part : parts) {
-            if (!part.startsWith("/")) {
-                sb.append("/");
-            }
-            final String path = sanitizePath(part);
-            sb.append(path);
-        }
-        return sb.toString();
+        final String baseUrl = UrlUtils.toBaseUrl(store.getUrl());
+        final String path = UrlUtils.combine(parts);
+        return UrlUtils.combine(baseUrl, path);
     }
 
     private static void addAuthentication(final BaseRequest request, final Store store) {
@@ -217,7 +207,7 @@ public final class RequestFactory {
 
         final EntityRequest request = new EntityRequest(
                 Method.POST,
-                getUrl(store, URL_APPS, appUuid, URL_VERSIONS));
+                getUrl(store, URL_APPS, appUuid, VERSIONS));
 
         final NStringEntity entity = new NStringEntity(version.toString(), CHARSET);
         request.setEntity(entity);
@@ -233,7 +223,7 @@ public final class RequestFactory {
 
         final EntityRequest request = new EntityRequest(
                 Method.DELETE,
-                getUrl(store, URL_APPS, appUuid, URL_VERSIONS, uuid));
+                getUrl(store, URL_APPS, appUuid, VERSIONS, uuid));
 
         addAuthentication(request, store);
         return request;
