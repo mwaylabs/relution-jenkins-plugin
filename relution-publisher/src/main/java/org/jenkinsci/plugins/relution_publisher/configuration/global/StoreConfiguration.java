@@ -106,7 +106,6 @@ public class StoreConfiguration extends GlobalConfiguration {
      * @return The {@link Store} with the specified id, or {@code null} if no such store
      * exists.
      */
-    @SuppressWarnings("deprecation")
     public Store getStore(final String storeId) {
         if (this.stores == null) {
             return null;
@@ -114,8 +113,6 @@ public class StoreConfiguration extends GlobalConfiguration {
 
         for (final Store store : this.stores) {
             if (StringUtils.equals(storeId, store.getId())) {
-                return store;
-            } else if (store.getIdentifier().equals(storeId)) {
                 return store;
             }
         }

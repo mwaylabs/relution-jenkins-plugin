@@ -82,7 +82,6 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
 
     public final static String    KEY_ID             = "id";
     public final static String    KEY_URL            = "url";
-    public final static String    KEY_ORGANIZATION   = "organization";
 
     public final static String    KEY_USERNAME       = "username";
     public final static String    KEY_PASSWORD       = "password";
@@ -101,8 +100,6 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
 
     private String                mId;
     private String                mUrl;
-
-    private String                mOrganization;
 
     private String                mUsername;
     private String                mPassword;
@@ -163,9 +160,13 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
 
         this.setId(id);
         this.setUrl(url);
-        this.setOrganization(organization);
 
-        this.setUsername(username);
+        if (StringUtils.isNotBlank(organization)) {
+            this.setUsername(organization + "\\" + username);
+        } else {
+            this.setUsername(username);
+        }
+
         this.setPassword(password);
 
         this.setReleaseStatus(releaseStatus);
@@ -181,14 +182,13 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
 
     public Store(
             final String url,
-            final String organization,
             final String username,
             final String password,
             final String proxyHost,
             final int proxyPort,
             final String proxyUsername,
             final String proxyPassword) {
-        this(null, url, organization, username, password, null, null, null, proxyHost, proxyPort, proxyUsername, proxyPassword);
+        this(null, url, null, username, password, null, null, null, proxyHost, proxyPort, proxyUsername, proxyPassword);
     }
 
     /**
@@ -198,7 +198,6 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
     public Store(final JSONObject storeJsonObject) {
         this.setId(storeJsonObject.optString(KEY_ID));
         this.setUrl(storeJsonObject.getString(KEY_URL));
-        this.setOrganization(storeJsonObject.getString(KEY_ORGANIZATION));
 
         this.setUsername(storeJsonObject.getString(KEY_USERNAME));
         this.setPassword(storeJsonObject.getString(KEY_PASSWORD));
@@ -249,21 +248,6 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
      */
     public void setUrl(final String url) {
         this.mUrl = url;
-    }
-
-    /**
-     * @return The organization within the store to use.
-     */
-    public String getOrganization() {
-        return this.mOrganization;
-    }
-
-    /**
-     * Sets the organization within the store to use.
-     * @param organization The organization to use.
-     */
-    public void setOrganization(final String organization) {
-        this.mOrganization = organization;
     }
 
     /**
@@ -431,7 +415,6 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
 
         json.put(KEY_ID, this.getId(this.mId));
         json.put(KEY_URL, this.mUrl);
-        json.put(KEY_ORGANIZATION, this.mOrganization);
 
         json.put(KEY_USERNAME, this.mUsername);
         json.put(KEY_PASSWORD, this.mPassword);
@@ -447,19 +430,6 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
         json.put(KEY_PROXY_PASSWORD, this.mProxyPassword);
 
         return json;
-    }
-
-    /**
-     * @return The unique identifier for the {@link Store}.
-     * @deprecated Use {@link #getId()}
-     */
-    @Deprecated
-    public String getIdentifier() {
-        return String.format(
-                "%s:%s:%s",
-                this.mUsername,
-                this.mOrganization,
-                this.mUrl);
     }
 
     @Override
@@ -493,8 +463,7 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
                 Locale.ENGLISH,
                 "%s - %s@%s",
                 this.getHostName(),
-                this.mUsername,
-                this.mOrganization);
+                this.mUsername);
     }
 
     @Extension
@@ -563,7 +532,6 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
         public FormValidation doTestConnection(
                 @QueryParameter(Store.KEY_URL) final String url,
                 @QueryParameter(Store.KEY_USERNAME) final String username,
-                @QueryParameter(Store.KEY_ORGANIZATION) final String organization,
                 @QueryParameter(Store.KEY_PASSWORD) final String password,
                 @QueryParameter(Store.KEY_PROXY_HOST) final String proxyHost,
                 @QueryParameter(Store.KEY_PROXY_PORT) final int proxyPort,
@@ -581,7 +549,7 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
 
             SessionManager sessionManager = null;
             try {
-                final Store store = new Store(url, organization, username, password, proxyHost, proxyPort, proxyUsername, proxyPassword);
+                final Store store = new Store(url, username, password, proxyHost, proxyPort, proxyUsername, proxyPassword);
                 final BaseRequest request = RequestFactory.createAppStoreItemsRequest(store);
 
                 sessionManager = new SessionManager();

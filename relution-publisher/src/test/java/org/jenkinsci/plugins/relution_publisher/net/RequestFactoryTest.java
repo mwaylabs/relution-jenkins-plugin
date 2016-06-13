@@ -26,9 +26,9 @@ public class RequestFactoryTest {
     private final Store         store               = new Store(
             "store-1-uuid",
             "https://example.com",
-            "test",
-            "test",
-            "test",
+            "organization",
+            "username",
+            "password",
             ReleaseStatus.DEFAULT.key,
             ArchiveMode.DEFAULT.key,
             UploadMode.DEFAULT.key,
