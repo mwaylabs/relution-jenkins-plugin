@@ -9,4 +9,4 @@ install:
  - mvn -f relution-publisher/pom.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
 script:
- - mvn -f relution-publisher/pom.xml clean compile package -B
+ - mvn -f relution-publisher/pom.xml test -B
