@@ -31,8 +31,9 @@ import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
 import org.jenkinsci.plugins.relution_publisher.constants.Language;
 import org.jenkinsci.plugins.relution_publisher.constants.Version;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
+import org.jenkinsci.plugins.relution_publisher.model.ServerVersion;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
-import org.jenkinsci.plugins.relution_publisher.net.RequestManager;
+import org.jenkinsci.plugins.relution_publisher.net.SessionManager;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.jenkinsci.plugins.relution_publisher.util.Builds;
@@ -92,7 +93,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
     private Set<String>          locales;
 
-    private final RequestManager requestManager;
+    private final SessionManager sessionManager;
 
     /**
      * Initializes a new instance of the {@link ArtifactFileUploader} class.
@@ -109,9 +110,9 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.store = store;
         this.log = log;
 
-        this.requestManager = new RequestManager();
-        this.requestManager.setProxy(store.getProxyHost(), store.getProxyPort());
-        this.requestManager.setProxyCredentials(store.getProxyUsername(), store.getProxyPassword());
+        this.sessionManager = new SessionManager();
+        this.sessionManager.setProxy(store.getProxyHost(), store.getProxyPort());
+        this.sessionManager.setProxyCredentials(store.getProxyUsername(), store.getProxyPassword());
     }
 
     @Override
@@ -119,6 +120,12 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             throws IOException, InterruptedException {
 
         try {
+            this.log.write(this, "Log in to server…");
+            this.sessionManager.logIn(this.store);
+
+            final ServerVersion serverVersion = this.sessionManager.getServerVersion();
+            this.log.write(this, "Logged in (Relution server version %s)", serverVersion);
+
             this.log.write(this, "Uploading build artifacts…");
             final List<JsonObject> assets = this.uploadAssets(
                     basePath,
@@ -153,7 +160,9 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             Builds.setResult(this, Result.UNSTABLE, this.log);
 
         } finally {
-            this.requestManager.close();
+            this.log.write(this, "Closing connection…");
+            this.sessionManager.close();
+            this.log.write(this, "Connection closed");
 
         }
 
@@ -165,7 +174,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         this.log.write(this, "Requesting app associated with asset {%s}…", Json.getString(asset, ApiObject.UUID));
         final ApiRequest request = RequestFactory.createAppFromFileRequest(this.store, asset);
-        final ApiResponse response = this.requestManager.execute(request, this.log);
+        final ApiResponse response = this.sessionManager.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Retrieval of app failed.");
@@ -264,7 +273,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
 
         try {
             final ApiRequest request = RequestFactory.createDeleteVersionRequest(this.store, version);
-            final ApiResponse response = this.requestManager.execute(request, this.log);
+            final ApiResponse response = this.sessionManager.execute(request, this.log);
 
             if (!this.verifyDeleteResponse(response)) {
                 this.log.write(this, "Error deleting app version");
@@ -391,7 +400,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "Requesting configured languages…");
 
         final ApiRequest request = RequestFactory.createLanguageRequest(this.store);
-        final ApiResponse response = this.requestManager.execute(request, this.log);
+        final ApiResponse response = this.sessionManager.execute(request, this.log);
 
         final JsonArray languages = response.getResults();
         this.locales = new HashSet<String>(languages.size());
@@ -420,7 +429,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "App is new, persisting app…");
 
         final ApiRequest request = RequestFactory.createPersistApplicationRequest(this.store, app);
-        final ApiResponse response = this.requestManager.execute(request, this.log);
+        final ApiResponse response = this.sessionManager.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting app.");
@@ -437,7 +446,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
         this.log.write(this, "App version is new, persisting app version…");
 
         final ApiRequest request = RequestFactory.createPersistVersionRequest(this.store, app, version);
-        final ApiResponse response = this.requestManager.execute(request, this.log);
+        final ApiResponse response = this.sessionManager.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting app version.");
@@ -493,7 +502,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             this.log.write(this, "Uploading \"%s\" (%,d Byte)…", fileName, file.length());
 
             sw.start();
-            final ApiResponse response = this.requestManager.execute(request, this.log);
+            final ApiResponse response = this.sessionManager.execute(request, this.log);
             sw.stop();
 
             final String speed = this.getUploadSpeed(sw, file);
