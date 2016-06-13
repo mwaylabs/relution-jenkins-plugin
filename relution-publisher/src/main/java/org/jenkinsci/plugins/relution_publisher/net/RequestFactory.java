@@ -42,7 +42,6 @@ import java.nio.charset.Charset;
 public final class RequestFactory {
 
     private static final String  APPLICATION_JSON   = "application/json";
-    private static final String  BASIC              = "Basic ";
 
     private final static Charset CHARSET            = Charset.forName("UTF-8");
 
@@ -105,12 +104,6 @@ public final class RequestFactory {
         return UrlUtils.combine(baseUrl, path);
     }
 
-    private static void addAuthentication(final BaseRequest request, final Store store) {
-
-        request.setHeader(Headers.ACCEPT, APPLICATION_JSON);
-        request.setHeader(Headers.AUTHORIZATION, BASIC + store.getAuthorizationToken());
-    }
-
     /**
      * Creates a {@link EntityRequest} that can be used to authenticate the user against the server.
      * @param store The {@link Store} this request should be executed against.
@@ -159,7 +152,6 @@ public final class RequestFactory {
                 Method.GET,
                 getUrl(store, URL_LANGUAGES));
 
-        addAuthentication(request, store);
         return request;
     }
 
@@ -176,7 +168,6 @@ public final class RequestFactory {
                 getUrl(store, URL_APPS));
 
         request.queryFields().add("locale", "de");
-        addAuthentication(request, store);
         return request;
     }
 
@@ -191,7 +182,6 @@ public final class RequestFactory {
                 getUrl(store, URL_FILES),
                 file);
 
-        addAuthentication(request, store);
         return request;
     }
 
@@ -209,7 +199,6 @@ public final class RequestFactory {
                 Method.POST,
                 getUrl(store, URL_APPS_FROM_FILE, uuid));
 
-        addAuthentication(request, store);
         return request;
     }
 
@@ -232,7 +221,6 @@ public final class RequestFactory {
         request.setEntity(entity);
 
         request.setHeader(Headers.CONTENT_TYPE, APPLICATION_JSON);
-        addAuthentication(request, store);
         return request;
     }
 
@@ -259,7 +247,6 @@ public final class RequestFactory {
         request.setEntity(entity);
 
         request.setHeader(Headers.CONTENT_TYPE, APPLICATION_JSON);
-        addAuthentication(request, store);
         return request;
     }
 
@@ -271,7 +258,6 @@ public final class RequestFactory {
                 Method.DELETE,
                 getUrl(store, URL_APPS, appUuid, VERSIONS, uuid));
 
-        addAuthentication(request, store);
         return request;
     }
 }

@@ -19,7 +19,6 @@ package org.jenkinsci.plugins.relution_publisher.configuration.global;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -421,15 +420,6 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
             e.printStackTrace();
         }
         return this.mUrl;
-    }
-
-    /**
-     * @return An authorization token that can be used to authenticate with the store.
-     */
-    public String getAuthorizationToken() {
-
-        final String authorization = this.mUsername + ":" + this.mOrganization + ":" + this.mPassword;
-        return Base64.encodeBase64String(authorization.getBytes());
     }
 
     /**
