@@ -49,6 +49,72 @@ public class RequestFactoryTest {
     }
 
     @Test
+    public void shouldCreateLoginRequestFromHostName() {
+        this.store.setUrl(URL_HOST_NAME);
+
+        final EntityRequest request = RequestFactory.createLoginRequest(this.store);
+
+        assertThat(request).isNotNull();
+        assertThat(request.getMethod()).isEqualTo(Method.POST);
+        assertThat(request.getUri()).isEqualTo("https://example.com/gofer/security/rest/auth/login");
+    }
+
+    @Test
+    public void shouldCreateLoginRequestFromApiUrl() {
+        this.store.setUrl(URL_API_URL);
+
+        final EntityRequest request = RequestFactory.createLoginRequest(this.store);
+
+        assertThat(request).isNotNull();
+        assertThat(request.getMethod()).isEqualTo(Method.POST);
+        assertThat(request.getUri()).isEqualTo("https://example.com/gofer/security/rest/auth/login");
+    }
+
+    @Test
+    public void shouldCreateLoginRequestFromHostNameSlash() {
+        this.store.setUrl(URL_HOST_NAME_SLASH);
+
+        final EntityRequest request = RequestFactory.createLoginRequest(this.store);
+
+        assertThat(request).isNotNull();
+        assertThat(request.getMethod()).isEqualTo(Method.POST);
+        assertThat(request.getUri()).isEqualTo("https://example.com/gofer/security/rest/auth/login");
+    }
+
+    @Test
+    public void shouldCreateLoginRequestFromApiUrlSlash() {
+        this.store.setUrl(URL_API_URL_SLASH);
+
+        final EntityRequest request = RequestFactory.createLoginRequest(this.store);
+
+        assertThat(request).isNotNull();
+        assertThat(request.getMethod()).isEqualTo(Method.POST);
+        assertThat(request.getUri()).isEqualTo("https://example.com/gofer/security/rest/auth/login");
+    }
+
+    @Test
+    public void shouldCreateLogoutUrlFromHostName() {
+        this.store.setUrl(URL_HOST_NAME);
+
+        final EntityRequest request = RequestFactory.createLogoutRequest(this.store);
+
+        assertThat(request).isNotNull();
+        assertThat(request.getMethod()).isEqualTo(Method.POST);
+        assertThat(request.getUri()).isEqualTo("https://example.com/gofer/security/rest/auth/logout");
+    }
+
+    @Test
+    public void shouldCreateLogoutUrlFromApiUrl() {
+        this.store.setUrl(URL_API_URL);
+
+        final EntityRequest request = RequestFactory.createLogoutRequest(this.store);
+
+        assertThat(request).isNotNull();
+        assertThat(request.getMethod()).isEqualTo(Method.POST);
+        assertThat(request.getUri()).isEqualTo("https://example.com/gofer/security/rest/auth/logout");
+    }
+
+    @Test
     public void shouldCreatePersistAppRequestFromHostName() {
         this.store.setUrl(URL_HOST_NAME);
         final JsonObject app = new JsonObject();

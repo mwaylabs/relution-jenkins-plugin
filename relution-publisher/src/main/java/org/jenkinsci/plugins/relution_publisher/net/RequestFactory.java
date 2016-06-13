@@ -50,6 +50,19 @@ public final class RequestFactory {
     private final static Charset CHARSET              = Charset.forName("UTF-8");
 
     //
+    // Relution core paths
+    //
+    /**
+     * The URL used to authenticate the user and start a session.
+     */
+    private static final String  URL_AUTH_LOGIN       = "gofer/security/rest/auth/login";
+
+    /**
+     * The URL used to close an existing session.
+     */
+    private static final String  URL_AUTH_LOGOUT      = "gofer/security/rest/auth/logout";
+
+    //
     // Relution paths
     //
     /**
@@ -99,6 +112,42 @@ public final class RequestFactory {
 
         request.setHeader(HEADER_ACCEPT, APPLICATION_JSON);
         request.setHeader(HEADER_AUTHORIZATION, BASIC + store.getAuthorizationToken());
+    }
+
+    /**
+     * Creates a {@link EntityRequest} that can be used to authenticate the user against the server.
+     * @param store The {@link Store} this request should be executed against.
+     * @return A request that can be used to authenticate the user.
+     */
+    public static EntityRequest createLoginRequest(final Store store) {
+        final EntityRequest request = new EntityRequest(
+                Method.POST,
+                getUrl(store, URL_AUTH_LOGIN));
+
+        final JsonObject credentials = new JsonObject();
+        credentials.addProperty("userName", store.getUsername());
+        credentials.addProperty("password", store.getPassword());
+
+        final NStringEntity entity = new NStringEntity(credentials.toString(), CHARSET);
+        request.setEntity(entity);
+
+        request.setHeader(HEADER_CONTENT_TYPE, APPLICATION_JSON);
+        return request;
+    }
+
+    /**
+     * Creates a {@link EntityRequest} that can be used to close a session started with a login
+     * request.
+     * @param store The {@link Store} this request should be executed against.
+     * @return A request that can be used to close a session.
+     * @see #createLoginRequest(Store)
+     */
+    public static EntityRequest createLogoutRequest(final Store store) {
+        final EntityRequest request = new EntityRequest(
+                Method.POST,
+                getUrl(store, URL_AUTH_LOGOUT));
+
+        return request;
     }
 
     /**
