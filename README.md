@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mwaylabs/relution-jenkins-plugin.svg?branch=master)](https://travis-ci.org/mwaylabs/relution-jenkins-plugin)
+
 relution-jenkins-plugin
 =======================
 
