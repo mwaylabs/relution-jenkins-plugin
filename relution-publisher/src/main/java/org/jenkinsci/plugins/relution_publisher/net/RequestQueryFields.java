@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2013-2014 M-Way Solutions GmbH
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -67,7 +67,7 @@ public class RequestQueryFields {
     }
 
     /**
-     * Gets the character set used when encoding strings.
+     * @return The character set used when encoding strings.
      */
     public String getCharset() {
         return this.mCharsetName;
@@ -90,14 +90,14 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, keeping existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name has already been specified it will <b>not</b> be
      * replaced, i.e. the query can contain multiple parameters with the same name and any value
      * previously specified. To replace existing parameters with the same name use {@link #set}.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
-     * @param fieldName
-     * @param value
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
      * @see #set
      */
     public void add(final String fieldName, final String value) {
@@ -125,14 +125,14 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, keeping existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name has already been specified it will <b>not</b> be
      * replaced, i.e. the query can contain multiple parameters with the same name and any value
      * previously specified. To replace existing parameters with the same name use {@link #set}.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
-     * @param fieldName
-     * @param value
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
      * @see #set
      */
     public void add(final String fieldName, final int value) {
@@ -142,14 +142,14 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, keeping existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name has already been specified it will <b>not</b> be
      * replaced, i.e. the query can contain multiple parameters with the same name and any value
      * previously specified. To replace existing parameters with the same name use {@link #set}.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
-     * @param fieldName
-     * @param value
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
      * @see #set
      */
     public void add(final String fieldName, final long value) {
@@ -159,14 +159,14 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, keeping existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name has already been specified it will <b>not</b> be
      * replaced, i.e. the query can contain multiple parameters with the same name and any value
      * previously specified. To replace existing parameters with the same name use {@link #set}.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
-     * @param fieldName
-     * @param value
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
      * @see #set
      */
     public void add(final String fieldName, final double value) {
@@ -176,14 +176,14 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, keeping existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name has already been specified it will <b>not</b> be
      * replaced, i.e. the query can contain multiple parameters with the same name and any value
      * previously specified. To replace existing parameters with the same name use {@link #set}.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
-     * @param fieldName
-     * @param value
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
      * @see #set
      */
     public void add(final String fieldName, final boolean value) {
@@ -193,28 +193,28 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, keeping existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name has already been specified it will <b>not</b> be
      * replaced, i.e. the query can contain multiple parameters with the same name and any value
      * previously specified. To replace existing parameters with the same name use {@link #set}.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
-     * @param fieldName
-     * @param value
+     * @param fieldName The name of the query parameter to add.
+     * @param value The value of the query parameter to add.
      * @see #set
      */
-    public void add(final String fieldName, final Date date) {
-        this.add(fieldName, date != null ? date.getTime() : null);
+    public void add(final String fieldName, final Date value) {
+        this.add(fieldName, value != null ? value.getTime() : null);
     }
 
     /**
      * Adds a query parameter with the specified name and value to the query, replacing existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name already exists it will be replace, i.e. the query
      * will only contain the specified value. The keep existing parameters with the same name
      * use {@link #add} instead.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
      * @param fieldName The name of the query parameter to add.
      * @param value The value of the query parameter to add.
@@ -241,11 +241,11 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, replacing existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name already exists it will be replace, i.e. the query
      * will only contain the specified value. The keep existing parameters with the same name
      * use {@link #add} instead.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
      * @param fieldName The name of the query parameter to add.
      * @param value The value of the query parameter to add.
@@ -258,11 +258,11 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, replacing existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name already exists it will be replace, i.e. the query
      * will only contain the specified value. The keep existing parameters with the same name
      * use {@link #add} instead.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
      * @param fieldName The name of the query parameter to add.
      * @param value The value of the query parameter to add.
@@ -275,11 +275,11 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, replacing existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name already exists it will be replace, i.e. the query
      * will only contain the specified value. The keep existing parameters with the same name
      * use {@link #add} instead.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
      * @param fieldName The name of the query parameter to add.
      * @param value The value of the query parameter to add.
@@ -292,11 +292,11 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, replacing existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name already exists it will be replace, i.e. the query
      * will only contain the specified value. The keep existing parameters with the same name
      * use {@link #add} instead.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
      * @param fieldName The name of the query parameter to add.
      * @param value The value of the query parameter to add.
@@ -309,18 +309,18 @@ public class RequestQueryFields {
     /**
      * Adds a query parameter with the specified name and value to the query, replacing existing
      * values with the same name.
-     * <p/>
+     * <p>
      * If another parameter with the same name already exists it will be replace, i.e. the query
      * will only contain the specified value. The keep existing parameters with the same name
      * use {@link #add} instead.
-     * <p/>
+     * <p>
      * If the specified value is {@code null} or an empty string the query parameter is removed.
      * @param fieldName The name of the query parameter to add.
      * @param value The value of the query parameter to add.
      * @see #add
      */
-    public void set(final String fieldName, final Date date) {
-        this.set(fieldName, date != null ? date.getTime() : null);
+    public void set(final String fieldName, final Date value) {
+        this.set(fieldName, value != null ? value.getTime() : null);
     }
 
     /**
@@ -367,7 +367,7 @@ public class RequestQueryFields {
     /**
      * Returns a string representation of the query parameters represented by this instance. The
      * string is formatted so that it can be appended to a URI. Keys and values URL encoded.
-     * <p/><b>Example</b>:
+     * <p><b>Example</b>:
      * <pre>{@code ?key=value&key=value}.</pre>
      * @return The URL encoded string representation of this query that can be appended to a URI.
      */

@@ -26,7 +26,7 @@ import hudson.util.ListBoxModel.Option;
 
 /**
  * Indicates the upload mode of a build artifact.
- * <p/>
+ * <p>
  * The upload mode of an application defines how to handle unstable builds, i.e. whether they
  * should be uploaded to the store or not.
  */
@@ -36,13 +36,13 @@ public final class UploadMode extends Choice {
      * Versions produced by the build process should use the upload mode defined in the associated
      * {@link Store}.
      */
-    public final static UploadMode DEFAULT = new UploadMode("DEFAULT", "(default)");
+    public final static UploadMode DEFAULT  = new UploadMode("DEFAULT", "(default)");
 
     /**
      * Versions produced by the build process should only be uploaded if they completed with
      * {@link Result#SUCCESS} (default).
      */
-    public final static UploadMode SUCCESS = new UploadMode("SUCCESS", "build is successful");
+    public final static UploadMode SUCCESS  = new UploadMode("SUCCESS", "build is successful");
 
     /**
      * Versions produces by the build process should also be uploaded if they complete with
@@ -93,7 +93,7 @@ public final class UploadMode extends Choice {
      * including the special status {@link #DEFAULT}. If <i>Default</i> is selected, the upload
      * mode defined in the build's {@link Store} configuration is used.
      * @param list The {@link ListBoxModel} to which the items should be added.
-     * @param store
+     * @param store The {@link Store} that defines the default option.
      */
     public static void fillListBox(final ListBoxModel list, final Store store) {
         list.add(0, optionOrDefault(store));

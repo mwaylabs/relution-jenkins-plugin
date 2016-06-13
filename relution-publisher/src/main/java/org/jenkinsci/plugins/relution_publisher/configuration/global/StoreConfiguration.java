@@ -39,9 +39,9 @@ public class StoreConfiguration extends GlobalConfiguration {
     public final static String KEY_STORES        = "stores";
     public final static String KEY_DEBUG_ENABLED = "debugEnabled";
 
-    private final List<Store> stores = new ArrayList<Store>();
+    private final List<Store>  stores            = new ArrayList<Store>();
 
-    private boolean isDebugEnabled;
+    private boolean            isDebugEnabled;
 
     /**
      * Initializes a new instance of the {@link StoreConfiguration} class.
@@ -94,7 +94,7 @@ public class StoreConfiguration extends GlobalConfiguration {
     }
 
     /**
-     * Gets the list of {@link Store}s configured for this publisher.
+     * @return The list of {@link Store}s configured for this publisher.
      */
     public List<Store> getStores() {
         return this.stores;
@@ -103,7 +103,7 @@ public class StoreConfiguration extends GlobalConfiguration {
     /**
      * Gets the store with the specified identifier.
      * @param storeId A store's {@link Store#getId() identifier}.
-     * @return The {@link Store} with the specified id, or <code>null</code> if no such store
+     * @return The {@link Store} with the specified id, or {@code null} if no such store
      * exists.
      */
     @SuppressWarnings("deprecation")

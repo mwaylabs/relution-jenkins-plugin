@@ -1,19 +1,16 @@
-*.class
-
-# Package Files #
-*.jar
-*.war
-*.ear
-
-# Binary folders
+bin/
+build/
+gen/
 target/
 work/
-bin/
-
-# Platform files
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+local.properties
+dependency-reduced-pom.xml
+buildNumber.properties
 .DS_Store
-
-# Misc
-.idea
-test-*
-*.iml
+.mvn/timing.properties
+.settings/

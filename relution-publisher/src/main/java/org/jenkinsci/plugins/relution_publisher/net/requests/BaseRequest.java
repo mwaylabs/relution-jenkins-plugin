@@ -26,12 +26,11 @@ import java.util.Map;
 
 /**
  * Basic implementation of an {@link ApiRequest}.
- * @param <T> The type of response entity returned by the request.
  */
 public abstract class BaseRequest implements ApiRequest {
 
-    private final Method mMethod;
-    private final String mUri;
+    private final Method              mMethod;
+    private final String              mUri;
 
     private final Map<String, String> mHeaders     = new HashMap<String, String>();
     private final RequestQueryFields  mQueryFields = new RequestQueryFields();
@@ -39,9 +38,7 @@ public abstract class BaseRequest implements ApiRequest {
     /**
      * Creates a new instance of the {@link BaseRequest} class.
      * @param method The request {@link Method} to be used for the request.
-     * @param url The base URI that identifies the target of the request.
-     * @param responseClass A class that identifies the type of entity that is expected to be
-     * returned as a response of the request.
+     * @param uri The base URI that identifies the target of the request.
      */
     protected BaseRequest(final Method method, final String uri) {
         Args.notNull(method, "method");
@@ -100,7 +97,7 @@ public abstract class BaseRequest implements ApiRequest {
 
     /**
      * Gets the URI to use for the request, with optional query parameters appended.
-     * <p/>
+     * <p>
      * If no query parameters where specified the URI that is returned is identical to the URI that
      * was specified when this request was created; otherwise query parameters will be appended.
      * @return The URI that identifies the target of the request.

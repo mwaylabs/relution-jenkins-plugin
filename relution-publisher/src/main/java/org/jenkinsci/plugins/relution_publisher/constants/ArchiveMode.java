@@ -25,7 +25,7 @@ import hudson.util.ListBoxModel.Option;
 
 /**
  * Indicates the archive mode of a build artifact.
- * <p/>
+ * <p>
  * The archive mode of an application defines how to handle existing versions that have the same
  * release status. By default any existing version will be replaced by the new version, moving the
  * existing version to the archive. If the archive mode is set to {@link #OVERWRITE} the existing
@@ -38,13 +38,13 @@ public final class ArchiveMode extends Choice {
      * Versions produced by the build process should use the archive mode defined in the associated
      * {@link Store}.
      */
-    public final static ArchiveMode DEFAULT = new ArchiveMode("DEFAULT", "(default)");
+    public final static ArchiveMode DEFAULT   = new ArchiveMode("DEFAULT", "(default)");
 
     /**
      * Versions produced by the build process should replace any existing version, moving the
      * current version to the archive (default).
      */
-    public final static ArchiveMode ARCHIVE = new ArchiveMode("ARCHIVE", "archive the previous version");
+    public final static ArchiveMode ARCHIVE   = new ArchiveMode("ARCHIVE", "archive the previous version");
 
     /**
      * Versions produced by the build process should remove any existing version, essentially
@@ -95,7 +95,7 @@ public final class ArchiveMode extends Choice {
      * including the special status {@link #DEFAULT}. If <i>Default</i> is selected, the archive
      * mode defined in the build's {@link Store} configuration is used.
      * @param list The {@link ListBoxModel} to which the items should be added.
-     * @param store
+     * @param store The {@link Store} that defines the default option.
      */
     public static void fillListBox(final ListBoxModel list, final Store store) {
         list.add(0, optionOrDefault(store));
