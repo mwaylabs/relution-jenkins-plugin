@@ -231,14 +231,6 @@ public class RequestManager implements Closeable, Serializable {
         }
     }
 
-    public HttpHost getProxy() {
-        return this.mProxyHost;
-    }
-
-    public boolean hasCredentials() {
-        return this.mCredentials != null;
-    }
-
     public ApiResponse execute(final ApiRequest request, final Log log) throws IOException, InterruptedException, ExecutionException {
         final HttpResponse httpResponse = this.send(request, log);
         return this.parseNetworkResponse(request, httpResponse);
