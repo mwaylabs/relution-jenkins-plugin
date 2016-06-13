@@ -183,7 +183,7 @@ public class RequestManager implements Closeable, Serializable {
             }
 
         } catch (final Exception e) {
-            e.printStackTrace();
+            System.out.format("Unable to parse server's response: %s\n", e.getMessage());
         }
         final ApiResponse response = new ApiResponse();
         response.setMessage(payload);
