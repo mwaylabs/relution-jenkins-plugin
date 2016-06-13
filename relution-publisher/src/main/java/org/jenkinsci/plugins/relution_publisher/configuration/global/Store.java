@@ -19,7 +19,7 @@ package org.jenkinsci.plugins.relution_publisher.configuration.global;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
-import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpException;
@@ -28,8 +28,9 @@ import org.apache.http.ParseException;
 import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
 import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
 import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
+import org.jenkinsci.plugins.relution_publisher.model.ServerVersion;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
-import org.jenkinsci.plugins.relution_publisher.net.RequestManager;
+import org.jenkinsci.plugins.relution_publisher.net.SessionManager;
 import org.jenkinsci.plugins.relution_publisher.net.requests.BaseRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.jenkinsci.plugins.relution_publisher.util.ErrorType;
@@ -63,7 +64,7 @@ import hudson.util.ListBoxModel;
  * a version to this store. The default release status can be overridden on a per Jenkins project
  * basis.
  */
-public class Store extends AbstractDescribableImpl<Store>implements Serializable {
+public class Store extends AbstractDescribableImpl<Store> implements Serializable {
 
     /**
      * The serial version number of this class.
@@ -77,44 +78,41 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
      * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
      * Versioning of Serializable Objects</a>.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long     serialVersionUID   = 1L;
 
-    public final static String KEY_ID           = "id";
-    public final static String KEY_URL          = "url";
-    public final static String KEY_ORGANIZATION = "organization";
+    public final static String    KEY_ID             = "id";
+    public final static String    KEY_URL            = "url";
 
-    public final static String KEY_USERNAME = "username";
-    public final static String KEY_PASSWORD = "password";
+    public final static String    KEY_USERNAME       = "username";
+    public final static String    KEY_PASSWORD       = "password";
 
-    public final static String KEY_RELEASE_STATUS = "releaseStatus";
-    public final static String KEY_ARCHIVE_MODE   = "archiveMode";
-    public final static String KEY_UPLOAD_MODE    = "uploadMode";
+    public final static String    KEY_RELEASE_STATUS = "releaseStatus";
+    public final static String    KEY_ARCHIVE_MODE   = "archiveMode";
+    public final static String    KEY_UPLOAD_MODE    = "uploadMode";
 
-    public final static String KEY_PROXY_HOST = "proxyHost";
-    public final static String KEY_PROXY_PORT = "proxyPort";
+    public final static String    KEY_PROXY_HOST     = "proxyHost";
+    public final static String    KEY_PROXY_PORT     = "proxyPort";
 
-    public final static String KEY_PROXY_USERNAME = "proxyUsername";
-    public final static String KEY_PROXY_PASSWORD = "proxyPassword";
+    public final static String    KEY_PROXY_USERNAME = "proxyUsername";
+    public final static String    KEY_PROXY_PASSWORD = "proxyPassword";
 
-    private final static String[] URL_SCHEMES = {"http", "https"};
+    private final static String[] URL_SCHEMES        = {"http", "https"};
 
-    private String mId;
-    private String mUrl;
+    private String                mId;
+    private String                mUrl;
 
-    private String mOrganization;
+    private String                mUsername;
+    private String                mPassword;
 
-    private String mUsername;
-    private String mPassword;
+    private String                mReleaseStatus;
+    private String                mArchiveMode;
+    private String                mUploadMode;
 
-    private String mReleaseStatus;
-    private String mArchiveMode;
-    private String mUploadMode;
+    private String                mProxyHost;
+    private int                   mProxyPort;
 
-    private String mProxyHost;
-    private int    mProxyPort;
-
-    private String mProxyUsername;
-    private String mProxyPassword;
+    private String                mProxyUsername;
+    private String                mProxyPassword;
 
     /**
      * Creates a new instance of the {@link Store} class initialized with the values in
@@ -162,9 +160,13 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
         this.setId(id);
         this.setUrl(url);
-        this.setOrganization(organization);
 
-        this.setUsername(username);
+        if (StringUtils.isNotBlank(organization)) {
+            this.setUsername(organization + "\\" + username);
+        } else {
+            this.setUsername(username);
+        }
+
         this.setPassword(password);
 
         this.setReleaseStatus(releaseStatus);
@@ -180,14 +182,13 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
     public Store(
             final String url,
-            final String organization,
             final String username,
             final String password,
             final String proxyHost,
             final int proxyPort,
             final String proxyUsername,
             final String proxyPassword) {
-        this(null, url, organization, username, password, null, null, null, proxyHost, proxyPort, proxyUsername, proxyPassword);
+        this(null, url, null, username, password, null, null, null, proxyHost, proxyPort, proxyUsername, proxyPassword);
     }
 
     /**
@@ -197,7 +198,6 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     public Store(final JSONObject storeJsonObject) {
         this.setId(storeJsonObject.optString(KEY_ID));
         this.setUrl(storeJsonObject.getString(KEY_URL));
-        this.setOrganization(storeJsonObject.getString(KEY_ORGANIZATION));
 
         this.setUsername(storeJsonObject.getString(KEY_USERNAME));
         this.setPassword(storeJsonObject.getString(KEY_PASSWORD));
@@ -248,21 +248,6 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
      */
     public void setUrl(final String url) {
         this.mUrl = url;
-    }
-
-    /**
-     * @return The organization within the store to use.
-     */
-    public String getOrganization() {
-        return this.mOrganization;
-    }
-
-    /**
-     * Sets the organization within the store to use.
-     * @param organization The organization to use.
-     */
-    public void setOrganization(final String organization) {
-        this.mOrganization = organization;
     }
 
     /**
@@ -422,15 +407,6 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
     }
 
     /**
-     * @return An authorization token that can be used to authenticate with the store.
-     */
-    public String getAuthorizationToken() {
-
-        final String authorization = this.mUsername + ":" + this.mOrganization + ":" + this.mPassword;
-        return Base64.encodeBase64String(authorization.getBytes());
-    }
-
-    /**
      * Converts the store to its JSON representation.
      * @return A {@link JSONObject} that represents this {@link Store}.
      */
@@ -439,7 +415,6 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
         json.put(KEY_ID, this.getId(this.mId));
         json.put(KEY_URL, this.mUrl);
-        json.put(KEY_ORGANIZATION, this.mOrganization);
 
         json.put(KEY_USERNAME, this.mUsername);
         json.put(KEY_PASSWORD, this.mPassword);
@@ -455,19 +430,6 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
         json.put(KEY_PROXY_PASSWORD, this.mProxyPassword);
 
         return json;
-    }
-
-    /**
-     * @return The unique identifier for the {@link Store}.
-     * @deprecated Use {@link #getId()}
-     */
-    @Deprecated
-    public String getIdentifier() {
-        return String.format(
-                "%s:%s:%s",
-                this.mUsername,
-                this.mOrganization,
-                this.mUrl);
     }
 
     @Override
@@ -501,8 +463,7 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
                 Locale.ENGLISH,
                 "%s - %s@%s",
                 this.getHostName(),
-                this.mUsername,
-                this.mOrganization);
+                this.mUsername);
     }
 
     @Extension
@@ -571,13 +532,12 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
         public FormValidation doTestConnection(
                 @QueryParameter(Store.KEY_URL) final String url,
                 @QueryParameter(Store.KEY_USERNAME) final String username,
-                @QueryParameter(Store.KEY_ORGANIZATION) final String organization,
                 @QueryParameter(Store.KEY_PASSWORD) final String password,
                 @QueryParameter(Store.KEY_PROXY_HOST) final String proxyHost,
                 @QueryParameter(Store.KEY_PROXY_PORT) final int proxyPort,
                 @QueryParameter(Store.KEY_PROXY_USERNAME) final String proxyUsername,
                 @QueryParameter(Store.KEY_PROXY_PASSWORD) final String proxyPassword)
-                        throws IOException, ServletException {
+                throws IOException, ServletException {
 
             if (StringUtils.isEmpty(url)) {
                 return FormValidation.warning("Unable to validate, the specified URL is empty.");
@@ -587,19 +547,22 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
                 return FormValidation.warning("Host name for proxy set, but invalid port configured.");
             }
 
+            SessionManager sessionManager = null;
             try {
-                final Store store = new Store(url, organization, username, password, proxyHost, proxyPort, proxyUsername, proxyPassword);
+                final Store store = new Store(url, username, password, proxyHost, proxyPort, proxyUsername, proxyPassword);
                 final BaseRequest request = RequestFactory.createAppStoreItemsRequest(store);
 
-                final RequestManager requestManager = new RequestManager();
-                requestManager.setProxy(proxyHost, proxyPort);
-                requestManager.setProxyCredentials(proxyUsername, proxyPassword);
+                sessionManager = new SessionManager();
+                sessionManager.setProxy(proxyHost, proxyPort);
+                sessionManager.setProxyCredentials(proxyUsername, proxyPassword);
 
-                final ApiResponse response = requestManager.execute(request);
+                sessionManager.logIn(store);
+                final ApiResponse response = sessionManager.execute(request);
 
                 switch (response.getStatusCode()) {
                     case HttpStatus.SC_OK:
-                        return FormValidation.ok("Connection attempt successful");
+                        final ServerVersion serverVersion = sessionManager.getServerVersion();
+                        return FormValidation.ok("Connection attempt successful (Relution %s)", serverVersion);
 
                     case HttpStatus.SC_FORBIDDEN:
                         return FormValidation.error(
@@ -619,6 +582,9 @@ public class Store extends AbstractDescribableImpl<Store>implements Serializable
 
             } catch (final Exception e) {
                 return this.parseError(e);
+
+            } finally {
+                IOUtils.closeQuietly(sessionManager);
 
             }
         }

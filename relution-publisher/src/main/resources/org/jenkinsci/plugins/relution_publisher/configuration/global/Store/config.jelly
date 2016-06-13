@@ -32,13 +32,8 @@
 			<f:textbox />
 		</f:entry>
 		<f:entry
-			title="${%User name}"
+			title="${%Username}"
 			field="username">
-			<f:textbox />
-		</f:entry>
-		<f:entry
-			title="${%Organization}"
-			field="organization">
 			<f:textbox />
 		</f:entry>
 		<f:entry
