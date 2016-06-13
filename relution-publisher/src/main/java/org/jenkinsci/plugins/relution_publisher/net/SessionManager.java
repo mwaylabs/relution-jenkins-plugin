@@ -59,14 +59,24 @@ public class SessionManager extends RequestManager {
         final HttpResponse httpResponse = response.getHttpResponse();
 
         final Header cookie = httpResponse.getFirstHeader(Headers.SET_COOKIE);
+
+        if (cookie == null) {
+            return null;
+        }
+
         return this.parseSessionId(cookie.getValue());
     }
 
     private ServerVersion parseServerVersion(final ApiResponse response) {
         final HttpResponse httpResponse = response.getHttpResponse();
 
-        final Header cookie = httpResponse.getFirstHeader(Headers.RELUTION_VERSION);
-        return new ServerVersion(cookie.getValue());
+        final Header version = httpResponse.getFirstHeader(Headers.RELUTION_VERSION);
+
+        if (version == null) {
+            return new ServerVersion(null);
+        }
+
+        return new ServerVersion(version.getValue());
     }
 
     public void logIn(final Store store) throws InterruptedException, ExecutionException, IOException {
