@@ -27,7 +27,7 @@
 		to find them. -->
 	<f:section title="${%Relution Enterprise App Store configuration}">
 		<f:entry
-			title="${%App store API URL}"
+			title="${%App store URL}"
 			field="url">
 			<f:textbox />
 		</f:entry>
