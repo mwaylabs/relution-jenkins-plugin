@@ -461,9 +461,9 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
 
         return String.format(
                 Locale.ENGLISH,
-                "%s - %s@%s",
-                this.getHostName(),
-                this.mUsername);
+                "%s@%s",
+                this.mUsername,
+                this.getHostName());
     }
 
     @Extension
