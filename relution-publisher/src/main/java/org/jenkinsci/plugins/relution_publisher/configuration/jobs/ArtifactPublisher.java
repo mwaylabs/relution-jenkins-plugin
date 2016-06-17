@@ -220,9 +220,10 @@ public class ArtifactPublisher extends Recorder {
         @Inject
         private StoreConfiguration globalConfiguration;
 
-        private List<Publication> publications;
+        private List<Publication>  publications;
 
         public ArtifactPublisherDescriptor() {
+            super(ArtifactPublisher.class);
             this.load();
         }
 
