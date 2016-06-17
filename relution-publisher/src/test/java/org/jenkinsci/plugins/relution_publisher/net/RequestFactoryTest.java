@@ -17,13 +17,15 @@ import org.junit.Test;
 
 public class RequestFactoryTest {
 
-    private static final String URL_HOST_NAME       = "https://example.com";
-    private static final String URL_HOST_NAME_SLASH = "https://example.com/";
+    private static final String  URL_HOST_NAME       = "https://example.com";
+    private static final String  URL_HOST_NAME_SLASH = "https://example.com/";
 
-    private static final String URL_API_URL         = "https://example.com/relution/api/v1";
-    private static final String URL_API_URL_SLASH   = "https://example.com/relution/api/v1/";
+    private static final String  URL_API_URL         = "https://example.com/relution/api/v1";
+    private static final String  URL_API_URL_SLASH   = "https://example.com/relution/api/v1/";
 
-    private final Store         store               = new Store(
+    private final RequestFactory requestFactory      = new RequestFactory();
+
+    private final Store          store               = new Store(
             "store-1-uuid",
             "https://example.com",
             "organization",
@@ -37,8 +39,8 @@ public class RequestFactoryTest {
             null,
             null);
 
-    private final JsonObject    app                 = new JsonObject();
-    private final JsonObject    version             = new JsonObject();
+    private final JsonObject     app                 = new JsonObject();
+    private final JsonObject     version             = new JsonObject();
 
     @Before
     public void initialize() {
@@ -52,7 +54,7 @@ public class RequestFactoryTest {
     public void shouldCreateLoginRequestFromHostName() {
         this.store.setUrl(URL_HOST_NAME);
 
-        final EntityRequest request = RequestFactory.createLoginRequest(this.store);
+        final EntityRequest request = this.requestFactory.createLoginRequest(this.store);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.POST);
@@ -63,7 +65,7 @@ public class RequestFactoryTest {
     public void shouldCreateLoginRequestFromApiUrl() {
         this.store.setUrl(URL_API_URL);
 
-        final EntityRequest request = RequestFactory.createLoginRequest(this.store);
+        final EntityRequest request = this.requestFactory.createLoginRequest(this.store);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.POST);
@@ -74,7 +76,7 @@ public class RequestFactoryTest {
     public void shouldCreateLoginRequestFromHostNameSlash() {
         this.store.setUrl(URL_HOST_NAME_SLASH);
 
-        final EntityRequest request = RequestFactory.createLoginRequest(this.store);
+        final EntityRequest request = this.requestFactory.createLoginRequest(this.store);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.POST);
@@ -85,7 +87,7 @@ public class RequestFactoryTest {
     public void shouldCreateLoginRequestFromApiUrlSlash() {
         this.store.setUrl(URL_API_URL_SLASH);
 
-        final EntityRequest request = RequestFactory.createLoginRequest(this.store);
+        final EntityRequest request = this.requestFactory.createLoginRequest(this.store);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.POST);
@@ -96,7 +98,7 @@ public class RequestFactoryTest {
     public void shouldCreateLogoutUrlFromHostName() {
         this.store.setUrl(URL_HOST_NAME);
 
-        final EntityRequest request = RequestFactory.createLogoutRequest(this.store);
+        final EntityRequest request = this.requestFactory.createLogoutRequest(this.store);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.POST);
@@ -107,7 +109,7 @@ public class RequestFactoryTest {
     public void shouldCreateLogoutUrlFromApiUrl() {
         this.store.setUrl(URL_API_URL);
 
-        final EntityRequest request = RequestFactory.createLogoutRequest(this.store);
+        final EntityRequest request = this.requestFactory.createLogoutRequest(this.store);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.POST);
@@ -120,7 +122,7 @@ public class RequestFactoryTest {
         final JsonObject app = new JsonObject();
         app.addProperty("appUuid", "{app-uuid}");
 
-        final EntityRequest request = RequestFactory.createPersistApplicationRequest(this.store, app);
+        final EntityRequest request = this.requestFactory.createPersistApplicationRequest(this.store, app);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.POST);
@@ -133,7 +135,7 @@ public class RequestFactoryTest {
         final JsonObject app = new JsonObject();
         app.addProperty("uuid", "{app-uuid}");
 
-        final EntityRequest request = RequestFactory.createPersistApplicationRequest(this.store, app);
+        final EntityRequest request = this.requestFactory.createPersistApplicationRequest(this.store, app);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.POST);
@@ -144,7 +146,7 @@ public class RequestFactoryTest {
     public void shouldCreatePersistVersionRequestFromHostName() {
         this.store.setUrl(URL_HOST_NAME);
 
-        final EntityRequest request = RequestFactory.createPersistVersionRequest(this.store, this.app, this.version);
+        final EntityRequest request = this.requestFactory.createPersistVersionRequest(this.store, this.app, this.version);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.POST);
@@ -155,7 +157,7 @@ public class RequestFactoryTest {
     public void shouldCreatePersistVersionRequestFromApiUrl() {
         this.store.setUrl(URL_API_URL);
 
-        final EntityRequest request = RequestFactory.createPersistVersionRequest(this.store, this.app, this.version);
+        final EntityRequest request = this.requestFactory.createPersistVersionRequest(this.store, this.app, this.version);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.POST);
@@ -166,7 +168,7 @@ public class RequestFactoryTest {
     public void shouldCreateDeleteVersionRequestFromHostName() {
         this.store.setUrl(URL_HOST_NAME);
 
-        final EntityRequest request = RequestFactory.createDeleteVersionRequest(this.store, this.version);
+        final EntityRequest request = this.requestFactory.createDeleteVersionRequest(this.store, this.version);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.DELETE);
@@ -177,7 +179,7 @@ public class RequestFactoryTest {
     public void shouldCreateDeleteVersionRequestFromApiUrl() {
         this.store.setUrl(URL_API_URL);
 
-        final EntityRequest request = RequestFactory.createDeleteVersionRequest(this.store, this.version);
+        final EntityRequest request = this.requestFactory.createDeleteVersionRequest(this.store, this.version);
 
         assertThat(request).isNotNull();
         assertThat(request.getMethod()).isEqualTo(Method.DELETE);

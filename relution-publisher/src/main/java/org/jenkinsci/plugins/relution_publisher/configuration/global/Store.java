@@ -29,6 +29,7 @@ import org.jenkinsci.plugins.relution_publisher.model.ArchiveMode;
 import org.jenkinsci.plugins.relution_publisher.model.ReleaseStatus;
 import org.jenkinsci.plugins.relution_publisher.model.ServerVersion;
 import org.jenkinsci.plugins.relution_publisher.model.UploadMode;
+import org.jenkinsci.plugins.relution_publisher.net.AuthenticatedNetwork;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
 import org.jenkinsci.plugins.relution_publisher.net.SessionManager;
 import org.jenkinsci.plugins.relution_publisher.net.requests.BaseRequest;
@@ -547,21 +548,21 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
                 return FormValidation.warning("Host name for proxy set, but invalid port configured.");
             }
 
-            SessionManager sessionManager = null;
+            final RequestFactory requestFactory = new RequestFactory();
+            final AuthenticatedNetwork network = new SessionManager(requestFactory);
             try {
                 final Store store = new Store(url, username, password, proxyHost, proxyPort, proxyUsername, proxyPassword);
-                final BaseRequest request = RequestFactory.createAppStoreItemsRequest(store);
+                final BaseRequest request = requestFactory.createAppStoreItemsRequest(store);
 
-                sessionManager = new SessionManager();
-                sessionManager.setProxy(proxyHost, proxyPort);
-                sessionManager.setProxyCredentials(proxyUsername, proxyPassword);
+                network.setProxy(proxyHost, proxyPort);
+                network.setProxyCredentials(proxyUsername, proxyPassword);
 
-                sessionManager.logIn(store);
-                final ApiResponse response = sessionManager.execute(request);
+                network.logIn(store);
+                final ApiResponse response = network.execute(request);
 
                 switch (response.getStatusCode()) {
                     case HttpStatus.SC_OK:
-                        final ServerVersion serverVersion = sessionManager.getServerVersion();
+                        final ServerVersion serverVersion = network.getServerVersion();
                         return FormValidation.ok("Connection attempt successful (Relution %s)", serverVersion);
 
                     case HttpStatus.SC_FORBIDDEN:
@@ -584,7 +585,7 @@ public class Store extends AbstractDescribableImpl<Store> implements Serializabl
                 return this.parseError(e);
 
             } finally {
-                IOUtils.closeQuietly(sessionManager);
+                IOUtils.closeQuietly(network);
 
             }
         }

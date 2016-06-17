@@ -30,14 +30,17 @@ public class SessionManager extends RequestManager implements AuthenticatedNetwo
      * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
      * Versioning of Serializable Objects</a>.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long    serialVersionUID = 1L;
 
-    private Store             store;
+    private final RequestFactory requestFactory;
 
-    private String            sessionId;
-    private ServerVersion     serverVersion;
+    private Store                store;
 
-    public SessionManager() {
+    private String               sessionId;
+    private ServerVersion        serverVersion;
+
+    public SessionManager(final RequestFactory requestFactory) {
+        this.requestFactory = requestFactory;
     }
 
     private String parseSessionId(final String cookie) {
@@ -89,7 +92,7 @@ public class SessionManager extends RequestManager implements AuthenticatedNetwo
             throw new IllegalStateException("Already logged in");
         }
 
-        final ApiRequest request = RequestFactory.createLoginRequest(store);
+        final ApiRequest request = this.requestFactory.createLoginRequest(store);
         final ApiResponse response = this.execute(request);
 
         this.store = store;
@@ -104,7 +107,7 @@ public class SessionManager extends RequestManager implements AuthenticatedNetwo
         }
 
         try {
-            final ApiRequest request = RequestFactory.createLogoutRequest(this.store);
+            final ApiRequest request = this.requestFactory.createLogoutRequest(this.store);
             this.execute(request);
             return true;
         } catch (final InterruptedException e) {
