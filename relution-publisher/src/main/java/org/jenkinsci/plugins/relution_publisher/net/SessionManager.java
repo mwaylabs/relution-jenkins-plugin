@@ -5,8 +5,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
-import org.jenkinsci.plugins.relution_publisher.constants.Headers;
 import org.jenkinsci.plugins.relution_publisher.model.ServerVersion;
+import org.jenkinsci.plugins.relution_publisher.model.constants.Headers;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 

@@ -20,8 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.relution_publisher.builder.ArtifactFileUploader;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
-import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
+import org.jenkinsci.plugins.relution_publisher.model.UploadMode;
 import org.jenkinsci.plugins.relution_publisher.util.Builds;
 import org.kohsuke.stapler.DataBoundConstructor;
 

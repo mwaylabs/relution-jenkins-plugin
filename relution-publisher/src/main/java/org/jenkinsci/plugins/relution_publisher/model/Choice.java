@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.constants;
+package org.jenkinsci.plugins.relution_publisher.model;
 
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;

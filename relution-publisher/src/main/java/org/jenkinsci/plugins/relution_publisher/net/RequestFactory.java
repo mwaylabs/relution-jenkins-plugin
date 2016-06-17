@@ -20,9 +20,9 @@ import com.google.gson.JsonObject;
 
 import org.apache.http.nio.entity.NStringEntity;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
-import org.jenkinsci.plugins.relution_publisher.constants.ApiObject;
-import org.jenkinsci.plugins.relution_publisher.constants.Headers;
-import org.jenkinsci.plugins.relution_publisher.constants.Version;
+import org.jenkinsci.plugins.relution_publisher.model.constants.Headers;
+import org.jenkinsci.plugins.relution_publisher.model.entities.ApiObject;
+import org.jenkinsci.plugins.relution_publisher.model.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest.Method;
 import org.jenkinsci.plugins.relution_publisher.net.requests.BaseRequest;

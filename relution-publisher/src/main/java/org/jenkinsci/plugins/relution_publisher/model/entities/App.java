@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.constants;
+package org.jenkinsci.plugins.relution_publisher.model.entities;
 
-public class ApiObject {
+public final class App extends ApiObject {
 
-    public static final String UUID = "uuid";
+    public static final String INTERNAL_NAME = "internalName";
 
-    protected ApiObject() {
+    public static final String VERSIONS = "versions";
+
+    private App() {
     }
 }

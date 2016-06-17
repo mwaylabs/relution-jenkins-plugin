@@ -1,5 +1,5 @@
 
-package org.jenkinsci.plugins.relution_publisher.constants;
+package org.jenkinsci.plugins.relution_publisher.model.constants;
 
 public class Headers {
 

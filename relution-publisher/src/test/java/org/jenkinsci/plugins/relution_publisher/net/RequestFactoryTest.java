@@ -6,9 +6,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.gson.JsonObject;
 
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
-import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
-import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
-import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
+import org.jenkinsci.plugins.relution_publisher.model.ArchiveMode;
+import org.jenkinsci.plugins.relution_publisher.model.ReleaseStatus;
+import org.jenkinsci.plugins.relution_publisher.model.UploadMode;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest.Method;
 import org.jenkinsci.plugins.relution_publisher.net.requests.EntityRequest;
 import org.junit.Before;

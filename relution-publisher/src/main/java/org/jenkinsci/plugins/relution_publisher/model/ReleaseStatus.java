@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.constants;
+package org.jenkinsci.plugins.relution_publisher.model;
 
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
