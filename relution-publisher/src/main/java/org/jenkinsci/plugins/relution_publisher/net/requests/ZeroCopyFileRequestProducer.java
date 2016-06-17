@@ -70,7 +70,7 @@ public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
 
     private final List<Item>          mItems;
 
-    private final Iterator<Item>      mItemIterator;
+    private Iterator<Item>            mItemIterator;
     private Item                      mItem;
 
     private RandomAccessFile          mFile;
@@ -81,14 +81,6 @@ public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
     public ZeroCopyFileRequestProducer(final ZeroCopyFileRequest request) throws FileNotFoundException {
         this.mRequest = request;
         this.mItems = request.getItems();
-        this.mItemIterator = this.mItems.iterator();
-    }
-
-    private void closeChannel() throws IOException {
-        if (this.mFileChannel != null) {
-            this.mFileChannel.close();
-            this.mFileChannel = null;
-        }
     }
 
     private String getContentType(final File file) {
@@ -219,6 +211,10 @@ public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
     public synchronized void produceContent(final ContentEncoder encoder, final IOControl ioctrl)
             throws IOException {
 
+        if (this.mItemIterator == null) {
+            this.mItemIterator = this.mItems.iterator();
+        }
+
         if (this.mItem == null && this.mItemIterator.hasNext()) {
             this.mItem = this.mItemIterator.next();
             this.mMultipartHeaderIndex = 0;
@@ -278,9 +274,12 @@ public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
 
     @Override
     public synchronized void resetRequest() throws IOException {
+        IOUtils.closeQuietly(this.mFileChannel);
+        IOUtils.closeQuietly(this.mFile);
         this.mMultipartHeaderIndex = 0;
         this.mMultipartFooterIndex = 0;
-        this.closeChannel();
+        this.mItemIterator = null;
+        this.mFilePosition = 0;
     }
 
     @Override
@@ -291,6 +290,7 @@ public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
 
     @Override
     public synchronized void close() throws IOException {
+        IOUtils.closeQuietly(this.mFileChannel);
         IOUtils.closeQuietly(this.mFile);
     }
 }
