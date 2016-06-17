@@ -179,8 +179,9 @@ public final class RequestFactory {
      */
     public static ZeroCopyFileRequest createUploadRequest(final Store store, final File file) {
         final ZeroCopyFileRequest request = new ZeroCopyFileRequest(
-                getUrl(store, URL_FILES),
-                file);
+                getUrl(store, URL_FILES));
+
+        request.addItem("file", file);
 
         return request;
     }
