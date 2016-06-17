@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class SessionManager extends RequestManager {
+public class SessionManager extends RequestManager implements AuthenticatedNetwork {
 
     /**
      * The serial version number of this class.
@@ -79,6 +79,7 @@ public class SessionManager extends RequestManager {
         return new ServerVersion(version.getValue());
     }
 
+    @Override
     public void logIn(final Store store) throws InterruptedException, ExecutionException, IOException {
         if (store == null) {
             throw new IllegalArgumentException("The specified argument cannot be null: store");
@@ -96,6 +97,7 @@ public class SessionManager extends RequestManager {
         this.serverVersion = this.parseServerVersion(response);
     }
 
+    @Override
     public boolean logOut() {
         if (this.store == null || this.sessionId == null) {
             return false;
@@ -121,6 +123,7 @@ public class SessionManager extends RequestManager {
         }
     }
 
+    @Override
     public ServerVersion getServerVersion() {
         return this.serverVersion;
     }
