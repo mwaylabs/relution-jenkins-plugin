@@ -76,7 +76,7 @@ public class MultiRequestUploader implements Uploader {
     }
 
     @Override
-    public boolean publish(final File basePath, final Publication publication)
+    public Result publish(final File basePath, final Publication publication)
             throws URISyntaxException, InterruptedException, IOException, ExecutionException {
         final String artifactPath = publication.getArtifactPath();
         final String excludePath = publication.getArtifactExcludePath();
@@ -89,12 +89,12 @@ public class MultiRequestUploader implements Uploader {
 
         if (this.isEmpty(assets) && this.result == Result.UNSTABLE) {
             this.log.write(this, "Upload of build artifacts failed.");
-            return true;
+            return this.result;
 
         } else if (this.isEmpty(assets)) {
             this.log.write(this, "No artifacts to upload found.");
             this.result = Builds.determineResult(this.result, Result.NOT_BUILT, this.log);
-            return true;
+            return this.result;
         }
 
         for (final JsonObject asset : assets) {
@@ -102,7 +102,7 @@ public class MultiRequestUploader implements Uploader {
             this.retrieveApplication(basePath, asset);
         }
 
-        return true;
+        return this.result;
     }
 
     private void retrieveApplication(final File basePath, final JsonObject asset)

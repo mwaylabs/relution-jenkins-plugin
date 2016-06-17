@@ -101,7 +101,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             final UploaderFactory factory = new UploaderFactory(this.requestFactory, this.network, this.log);
             final Uploader uploader = factory.createUploader(serverVersion, this.publication, this.store, this.result);
 
-            uploader.publish(basePath, this.publication);
+            this.result = uploader.publish(basePath, this.publication);
 
         } catch (final IOException e) {
             this.log.write(this, "Publication failed.\n\n%s\n", e);

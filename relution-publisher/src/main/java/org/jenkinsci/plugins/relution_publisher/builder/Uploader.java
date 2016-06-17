@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 
+import hudson.model.Result;
+
 
 public interface Uploader {
 
-    boolean publish(File basePath, Publication publication) throws URISyntaxException, InterruptedException, IOException, ExecutionException;
+    Result publish(File basePath, Publication publication) throws URISyntaxException, InterruptedException, IOException, ExecutionException;
 }
