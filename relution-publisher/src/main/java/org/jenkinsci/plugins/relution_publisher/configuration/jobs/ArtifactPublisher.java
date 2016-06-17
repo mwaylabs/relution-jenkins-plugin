@@ -221,10 +221,16 @@ public class ArtifactPublisher extends Recorder {
         private StoreConfiguration globalConfiguration;
 
         private List<Publication>  publications;
+        private boolean            isLoaded;
 
         public ArtifactPublisherDescriptor() {
             super(ArtifactPublisher.class);
-            this.load();
+        }
+
+        @Override
+        public synchronized void load() {
+            super.load();
+            this.isLoaded = true;
         }
 
         public StoreConfiguration getGlobalConfiguration() {
@@ -232,6 +238,9 @@ public class ArtifactPublisher extends Recorder {
         }
 
         public List<Publication> getPublications() {
+            if (!this.isLoaded) {
+                this.load();
+            }
             return this.publications;
         }
 
