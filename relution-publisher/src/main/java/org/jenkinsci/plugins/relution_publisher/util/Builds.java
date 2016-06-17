@@ -16,16 +16,16 @@
 
 package org.jenkinsci.plugins.relution_publisher.util;
 
-import hudson.model.Result;
-import hudson.model.AbstractBuild;
-
 import org.jenkinsci.plugins.relution_publisher.builder.ArtifactFileUploader;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
+
+import hudson.model.AbstractBuild;
+import hudson.model.Result;
 
 
 public class Builds {
 
-    private static Result determineResult(final Result oldResult, final Result newResult, final Log log) {
+    public static Result determineResult(final Result oldResult, final Result newResult, final Log log) {
         if (severity(oldResult) == severity(newResult)) {
             return oldResult;
         }
