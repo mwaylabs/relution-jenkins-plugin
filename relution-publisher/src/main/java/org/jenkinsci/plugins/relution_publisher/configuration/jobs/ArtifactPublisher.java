@@ -190,9 +190,7 @@ public class ArtifactPublisher extends Recorder {
             return;
         }
 
-        workspace.act(publisher);
-
-        final Result newResult = publisher.getResult();
+        final Result newResult = workspace.act(publisher);
         Builds.setResult(build, newResult, log);
     }
 

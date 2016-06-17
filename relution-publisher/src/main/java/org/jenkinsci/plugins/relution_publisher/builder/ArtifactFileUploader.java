@@ -41,7 +41,7 @@ import hudson.remoting.VirtualChannel;
  * Uploads build artifacts to a {@link Store} that has been specified in a Jenkins project's
  * post-build action, in the form of a {@link Publication}.
  */
-public class ArtifactFileUploader implements FileCallable<Boolean> {
+public class ArtifactFileUploader implements FileCallable<Result> {
 
     /**
      * The serial version number of this class.
@@ -88,7 +88,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
     }
 
     @Override
-    public Boolean invoke(final File basePath, final VirtualChannel channel)
+    public Result invoke(final File basePath, final VirtualChannel channel)
             throws IOException, InterruptedException {
 
         try {
@@ -121,7 +121,7 @@ public class ArtifactFileUploader implements FileCallable<Boolean> {
             this.log.write(this, "Connection closed");
 
         }
-        return true;
+        return this.result;
     }
 
     public Result getResult() {
