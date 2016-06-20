@@ -94,17 +94,20 @@ public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
         }
     }
 
-    private byte[] getHeader(final Item item) {
+    private byte[] getHeader(final Item item, final boolean first) {
         byte[] header = this.mMultipartHeaderMap.get(item);
 
         if (header == null) {
             final StringBuilder sb = new StringBuilder();
+            if (!first) {
+                this.writeln(sb);
+            }
+
             this.writeln(sb, "--%s", this.mMultipartBoundary);
             this.writeln(sb, "Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"", item.getName(), item.getFile().getName());
 
             final String contentType = this.getContentType(item.getFile());
             this.writeln(sb, "Content-Type: %s", contentType);
-
             this.writeln(sb, "Content-Transfer-Encoding: binary");
             this.writeln(sb);
 
@@ -130,8 +133,8 @@ public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
         return this.mMultipartFooter;
     }
 
-    private boolean writeHeader(final ContentEncoder encoder, final IOControl ioctrl, final Item item) throws IOException {
-        final byte[] array = this.getHeader(item);
+    private boolean writeHeader(final ContentEncoder encoder, final IOControl ioctrl, final Item item, final boolean first) throws IOException {
+        final byte[] array = this.getHeader(item, first);
 
         if (this.mMultipartHeaderIndex >= array.length) {
             return true;
@@ -186,8 +189,9 @@ public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
     public long getContentLength() {
         long length = 0;
 
-        for (final Item item : this.mItems) {
-            final byte[] header = this.getHeader(item);
+        for (int n = 0; n < this.mItems.size(); n++) {
+            final Item item = this.mItems.get(n);
+            final byte[] header = this.getHeader(item, n == 0);
             length += header.length;
             length += item.getFile().length();
         }
@@ -210,9 +214,13 @@ public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
     @Override
     public synchronized void produceContent(final ContentEncoder encoder, final IOControl ioctrl)
             throws IOException {
+        final boolean first;
 
         if (this.mItemIterator == null) {
             this.mItemIterator = this.mItems.iterator();
+            first = true;
+        } else {
+            first = false;
         }
 
         if (this.mItem == null && this.mItemIterator.hasNext()) {
@@ -221,7 +229,7 @@ public class ZeroCopyFileRequestProducer implements HttpAsyncRequestProducer {
         }
 
         if (this.mItem != null) {
-            if (!this.writeHeader(encoder, ioctrl, this.mItem)) {
+            if (!this.writeHeader(encoder, ioctrl, this.mItem, first)) {
                 return;
             }
 
