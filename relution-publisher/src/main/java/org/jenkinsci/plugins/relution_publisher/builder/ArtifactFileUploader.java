@@ -20,6 +20,7 @@ import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.jobs.Publication;
 import org.jenkinsci.plugins.relution_publisher.factories.UploaderFactory;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
+import org.jenkinsci.plugins.relution_publisher.model.ResultHolder;
 import org.jenkinsci.plugins.relution_publisher.model.ServerVersion;
 import org.jenkinsci.plugins.relution_publisher.net.AuthenticatedNetwork;
 import org.jenkinsci.plugins.relution_publisher.net.RequestFactory;
@@ -41,7 +42,7 @@ import hudson.remoting.VirtualChannel;
  * Uploads build artifacts to a {@link Store} that has been specified in a Jenkins project's
  * post-build action, in the form of a {@link Publication}.
  */
-public class ArtifactFileUploader implements FileCallable<Result> {
+public class ArtifactFileUploader implements FileCallable<Result>, ResultHolder {
 
     /**
      * The serial version number of this class.
@@ -124,10 +125,12 @@ public class ArtifactFileUploader implements FileCallable<Result> {
         return this.result;
     }
 
+    @Override
     public Result getResult() {
         return this.result;
     }
 
+    @Override
     public void setResult(final Result result) {
         this.result = result;
     }
