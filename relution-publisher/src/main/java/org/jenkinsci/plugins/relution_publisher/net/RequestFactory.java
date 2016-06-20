@@ -202,6 +202,26 @@ public final class RequestFactory implements Serializable {
     }
 
     /**
+     * Creates a {@link BaseRequest} that can be used to upload a {@link File} to the server.
+     * @param store The {@link Store} this request should be executed against.
+     * @return A request that can be used to upload a file to the server.
+     */
+    public ZeroCopyFileRequest createUploadAppRequest(
+            final Store store,
+            final String releaseStatus,
+            final boolean archivePreviousVersion,
+            final String environmentUuid) {
+        final ZeroCopyFileRequest request = new ZeroCopyFileRequest(
+                this.getUrl(store, URL_APPS));
+
+        request.queryFields().add("releaseStatus", releaseStatus);
+        request.queryFields().add("archiveFormerVersion", archivePreviousVersion);
+        request.queryFields().add("environmentUuid", environmentUuid);
+
+        return request;
+    }
+
+    /**
      * Creates a {@link BaseRequest} that can be used to retrieve the application associated
      * with the specified asset.
      * @param store The {@link Store} this request should be executed against.
