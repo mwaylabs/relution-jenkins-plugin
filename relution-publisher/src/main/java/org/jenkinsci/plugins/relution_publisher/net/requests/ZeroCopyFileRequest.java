@@ -32,7 +32,8 @@ import java.util.concurrent.Future;
 
 public class ZeroCopyFileRequest extends BaseRequest {
 
-    private final List<Item> mFiles = new ArrayList<>();
+    private final List<Item>            mFiles = new ArrayList<>();
+    private ZeroCopyFileRequestProducer mProducer;
 
     public ZeroCopyFileRequest(final String uri) {
         super(Method.POST, uri);
@@ -52,11 +53,21 @@ public class ZeroCopyFileRequest extends BaseRequest {
 
     @Override
     public Future<HttpResponse> execute(final HttpAsyncClient httpClient) throws FileNotFoundException {
-
         final HttpAsyncResponseConsumer<HttpResponse> consumer = new BasicAsyncResponseConsumer();
-        final HttpAsyncRequestProducer producer = new ZeroCopyFileRequestProducer(this);
-
+        final HttpAsyncRequestProducer producer = this.getProducer();
         return httpClient.execute(producer, consumer, null);
+    }
+
+    public long getContentLength() throws FileNotFoundException {
+        final ZeroCopyFileRequestProducer producer = this.getProducer();
+        return producer.getContentLength();
+    }
+
+    private ZeroCopyFileRequestProducer getProducer() throws FileNotFoundException {
+        if (this.mProducer == null) {
+            this.mProducer = new ZeroCopyFileRequestProducer(this);
+        }
+        return this.mProducer;
     }
 
     public static class Item {
