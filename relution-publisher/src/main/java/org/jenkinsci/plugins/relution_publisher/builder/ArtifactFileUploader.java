@@ -20,6 +20,7 @@ import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.jobs.Publication;
 import org.jenkinsci.plugins.relution_publisher.factories.UploaderFactory;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
+import org.jenkinsci.plugins.relution_publisher.model.Artifact;
 import org.jenkinsci.plugins.relution_publisher.model.ResultHolder;
 import org.jenkinsci.plugins.relution_publisher.model.ServerVersion;
 import org.jenkinsci.plugins.relution_publisher.net.AuthenticatedNetwork;
@@ -100,9 +101,10 @@ public class ArtifactFileUploader implements FileCallable<Result>, ResultHolder 
             this.log.write(this, "Logged in (Relution server version %s)", serverVersion);
 
             final UploaderFactory factory = new UploaderFactory(this.requestFactory, this.network, this.log);
-            final Uploader uploader = factory.createUploader(serverVersion, this.publication, this.store, this.result);
+            final Uploader uploader = factory.createUploader(serverVersion);
 
-            this.result = uploader.publish(basePath, this.publication);
+            final Artifact artifact = new Artifact(this.store, basePath, this.publication, this.result);
+            this.result = uploader.publish(artifact);
 
         } catch (final IOException e) {
             this.log.write(this, "Publication failed.\n\n%s\n", e);

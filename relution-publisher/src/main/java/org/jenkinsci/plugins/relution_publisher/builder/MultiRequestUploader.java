@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2013-2016 M-Way Solutions GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.jenkinsci.plugins.relution_publisher.builder;
 
@@ -8,10 +23,11 @@ import com.google.gson.JsonObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.types.FileSet;
-import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.jobs.Publication;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.jenkinsci.plugins.relution_publisher.model.ArchiveMode;
+import org.jenkinsci.plugins.relution_publisher.model.Artifact;
+import org.jenkinsci.plugins.relution_publisher.model.ResultHolder;
 import org.jenkinsci.plugins.relution_publisher.model.entities.ApiObject;
 import org.jenkinsci.plugins.relution_publisher.model.entities.App;
 import org.jenkinsci.plugins.relution_publisher.model.entities.Language;
@@ -48,73 +64,62 @@ public class MultiRequestUploader implements Uploader {
      */
     private static final int     MAX_TEXT_LENGTH = 49152;
 
-    private final Publication    publication;
-    private final Store          store;
-    private final Log            log;
-
     private final RequestFactory requestFactory;
     private final Network        network;
-
-    private Result               result;
+    private final Log            log;
 
     private Set<String>          locales;
 
-    public MultiRequestUploader(final Publication publication,
-            final Store store,
-            final Log log,
+    public MultiRequestUploader(
             final RequestFactory requestFactory,
             final Network network,
-            final Result result) {
-        this.publication = publication;
-        this.store = store;
-        this.log = log;
-
+            final Log log) {
         this.requestFactory = requestFactory;
         this.network = network;
-
-        this.result = result;
+        this.log = log;
     }
 
     @Override
-    public Result publish(final File basePath, final Publication publication)
+    public Result publish(final Artifact artifact)
             throws URISyntaxException, InterruptedException, IOException, ExecutionException {
+        final Publication publication = artifact.getPublication();
         final String artifactPath = publication.getArtifactPath();
         final String excludePath = publication.getArtifactExcludePath();
 
         this.log.write(this, "Uploading build artifacts…");
         final List<JsonObject> assets = this.uploadAssets(
-                basePath,
+                artifact,
                 artifactPath,
                 excludePath);
 
-        if (this.isEmpty(assets) && this.result == Result.UNSTABLE) {
+        if (this.isEmpty(assets) && artifact.is(Result.UNSTABLE)) {
             this.log.write(this, "Upload of build artifacts failed.");
-            return this.result;
+            return artifact.getResult();
 
         } else if (this.isEmpty(assets)) {
             this.log.write(this, "No artifacts to upload found.");
-            this.result = Builds.determineResult(this.result, Result.NOT_BUILT, this.log);
-            return this.result;
+            return Builds.setResult(artifact, Result.NOT_BUILT, this.log);
+
         }
 
         for (final JsonObject asset : assets) {
-            this.log.write();
-            this.retrieveApplication(basePath, asset);
+            this.retrieveApplication(artifact, asset);
         }
 
-        return this.result;
+        return artifact.getResult();
     }
 
-    private void retrieveApplication(final File basePath, final JsonObject asset)
+    private void retrieveApplication(final Artifact artifact, final JsonObject asset)
             throws URISyntaxException, IOException, InterruptedException, ExecutionException {
-
+        this.log.write();
         this.log.write(this, "Requesting app associated with asset {%s}…", Json.getString(asset, ApiObject.UUID));
-        final ApiRequest request = this.requestFactory.createAppFromFileRequest(this.store, asset);
+
+        final ApiRequest request = this.requestFactory.createAppFromFileRequest(artifact.getStore(), asset);
         final ApiResponse response = this.network.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Retrieval of app failed.");
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
             return;
         }
 
@@ -122,8 +127,8 @@ public class MultiRequestUploader implements Uploader {
         final JsonObject app = this.getApplication(applications, asset);
 
         if (Json.isNull(app)) {
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
             this.log.write(this, "Could not find app associated with uploaded file.");
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
             return;
         }
 
@@ -133,19 +138,19 @@ public class MultiRequestUploader implements Uploader {
 
         if (Json.isNull(version)) {
             this.log.write(this, "Could not find app version associated with uploaded file.");
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
             return;
         }
 
         this.log.write(this, "Found app version \"%s\".", Json.getString(version, Version.VERSION_NAME));
-        this.setVersionMetadata(basePath, version);
+        this.setVersionMetadata(artifact, version);
 
         if (Json.isNull(app, ApiObject.UUID)) {
-            this.persistApplication(app);
+            this.persistApplication(artifact, app);
 
         } else {
-            if (this.persistVersion(app, version)) {
-                this.manageArchivedVersions(app, version);
+            if (this.persistVersion(artifact, app, version)) {
+                this.manageArchivedVersions(artifact, app, version);
             }
         }
 
@@ -178,19 +183,19 @@ public class MultiRequestUploader implements Uploader {
         return archived;
     }
 
-    private void manageArchivedVersions(final JsonObject app, final JsonObject version)
+    private void manageArchivedVersions(final Artifact artifact, final JsonObject app, final JsonObject version)
             throws URISyntaxException, InterruptedException, ExecutionException {
 
-        final String archiveMode = !this.publication.usesDefaultArchiveMode()
-                ? this.publication.getArchiveMode()
-                : this.store.getArchiveMode();
+        final String archiveMode = !artifact.getPublication().usesDefaultArchiveMode()
+                ? artifact.getPublication().getArchiveMode()
+                : artifact.getStore().getArchiveMode();
 
         if (StringUtils.equals(archiveMode, ArchiveMode.OVERWRITE.key)) {
             this.log.write(this, "Delete previous app version from \"%s\"", Json.getString(version, Version.RELEASE_STATUS));
             final List<JsonObject> archived = this.getArchivedVersions(app, version);
 
             for (final JsonObject current : archived) {
-                this.deleteVersion(current);
+                this.deleteVersion(artifact, current);
             }
 
         } else {
@@ -199,7 +204,8 @@ public class MultiRequestUploader implements Uploader {
         }
     }
 
-    private void deleteVersion(final JsonObject version) throws URISyntaxException, InterruptedException, ExecutionException {
+    private void deleteVersion(final Artifact artifact, final JsonObject version)
+            throws URISyntaxException, InterruptedException, ExecutionException {
         this.log.write(
                 this,
                 "Deleting app version \"%s\" (%d) from \"%s\"…",
@@ -208,12 +214,12 @@ public class MultiRequestUploader implements Uploader {
                 Json.getString(version, Version.RELEASE_STATUS));
 
         try {
-            final ApiRequest request = this.requestFactory.createDeleteVersionRequest(this.store, version);
+            final ApiRequest request = this.requestFactory.createDeleteVersionRequest(artifact.getStore(), version);
             final ApiResponse response = this.network.execute(request, this.log);
 
             if (!this.verifyDeleteResponse(response)) {
                 this.log.write(this, "Error deleting app version");
-                this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+                Builds.setResult(artifact, Result.UNSTABLE, this.log);
                 return;
             }
 
@@ -223,93 +229,95 @@ public class MultiRequestUploader implements Uploader {
         }
     }
 
-    private void setVersionMetadata(final File basePath, final JsonObject version)
+    private void setVersionMetadata(final Artifact artifact, final JsonObject version)
             throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+        this.setReleaseStatus(artifact, version);
 
-        this.setReleaseStatus(version);
+        this.setName(artifact, version);
+        this.setIcon(artifact, version);
 
-        this.setName(version);
-        this.setIcon(basePath, version);
+        this.setChangeLog(artifact, version);
+        this.setDescription(artifact, version);
 
-        this.setChangeLog(basePath, version);
-        this.setDescription(basePath, version);
-
-        this.setVersionName(version);
+        this.setVersionName(artifact, version);
     }
 
-    private void setReleaseStatus(final JsonObject version) {
-        final String releaseStatus = !this.publication.usesDefaultReleaseStatus()
-                ? this.publication.getReleaseStatus()
-                : this.store.getReleaseStatus();
+    private void setReleaseStatus(final Artifact artifact, final JsonObject version) {
+        final String releaseStatus = !artifact.getPublication().usesDefaultReleaseStatus()
+                ? artifact.getPublication().getReleaseStatus()
+                : artifact.getStore().getReleaseStatus();
 
         if (!StringUtils.isBlank(releaseStatus)) {
             version.addProperty("releaseStatus", releaseStatus);
         }
     }
 
-    private void setName(final JsonObject version) throws IOException, InterruptedException, ExecutionException {
-        if (StringUtils.isBlank(this.publication.getName())) {
+    private void setName(final Artifact artifact, final JsonObject version) throws IOException, InterruptedException, ExecutionException {
+        if (StringUtils.isBlank(artifact.getPublication().getName())) {
             this.log.write(this, "No name set, default name will be used.");
             return;
         }
 
-        this.setText("name", version.get(Version.NAME), this.publication.getName());
+        this.setText(artifact, "name", version.get(Version.NAME), artifact.getPublication().getName());
     }
 
-    private void setIcon(final File basePath, final JsonObject version)
+    private void setIcon(final Artifact artifact, final JsonObject version)
             throws URISyntaxException, IOException, InterruptedException, ExecutionException {
 
-        if (StringUtils.isBlank(this.publication.getIconPath())) {
+        if (StringUtils.isBlank(artifact.getPublication().getIconPath())) {
             this.log.write(this, "No icon set, default icon will be used.");
             return;
         }
 
         this.log.write(this, "Uploading app icon…");
-        final String filePath = this.publication.getIconPath();
-        final List<JsonObject> assets = this.uploadAssets(basePath, filePath, null);
+        final String filePath = artifact.getPublication().getIconPath();
+        final List<JsonObject> assets = this.uploadAssets(artifact, filePath, null);
 
         if (assets == null) {
             this.log.write(this, "Could not upload app icon.");
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
             return;
         }
 
         if (assets.size() != 1) {
             this.log.write(this, "More than one unpersisted asset returned by server.");
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
             return;
         }
 
         version.add("icon", assets.get(0));
     }
 
-    private void setChangeLog(final File basePath, final JsonObject version)
+    private void setChangeLog(final Artifact artifact, final JsonObject version)
             throws IOException, InterruptedException, ExecutionException {
+        final Publication publication = artifact.getPublication();
 
-        if (StringUtils.isBlank(this.publication.getChangeLogPath())) {
+        if (StringUtils.isBlank(publication.getChangeLogPath())) {
             this.log.write(this, "The change log path is empty, nothing to set.");
             return;
         }
 
-        final String filePath = this.publication.getChangeLogPath();
-        final String changeLogText = this.readFile(basePath, filePath);
-        this.setText("change log", version.get(Version.CHANGE_LOG), changeLogText);
+        final String filePath = publication.getChangeLogPath();
+        final String changeLogText = this.readFile(artifact.getBasePath(), filePath);
+        this.setText(artifact, "change log", version.get(Version.CHANGE_LOG), changeLogText);
     }
 
-    private void setDescription(final File basePath, final JsonObject version)
+    private void setDescription(final Artifact artifact, final JsonObject version)
             throws IOException, InterruptedException, ExecutionException {
+        final Publication publication = artifact.getPublication();
 
-        if (StringUtils.isBlank(this.publication.getDescriptionPath())) {
+        if (StringUtils.isBlank(publication.getDescriptionPath())) {
             this.log.write(this, "The description path is empty, nothing to set.");
             return;
         }
 
-        final String filePath = this.publication.getDescriptionPath();
-        final String descriptionText = this.readFile(basePath, filePath);
-        this.setText("description", version.get(Version.DESCRIPTION), descriptionText);
+        final String filePath = publication.getDescriptionPath();
+        final String descriptionText = this.readFile(artifact.getBasePath(), filePath);
+        this.setText(artifact, "description", version.get(Version.DESCRIPTION), descriptionText);
     }
 
-    private void setText(final String item, final JsonElement element, final String text) throws IOException, InterruptedException, ExecutionException {
+    private void setText(final Artifact artifact, final String item, final JsonElement element, final String text)
+            throws IOException, InterruptedException, ExecutionException {
         if (StringUtils.isBlank(text)) {
             this.log.write(this, "The %s is empty, nothing to set.", item);
             return;
@@ -320,7 +328,7 @@ public class MultiRequestUploader implements Uploader {
 
         // Add the text for each locale
         final JsonObject localizedString = element.getAsJsonObject();
-        final Set<String> locales = this.getLocales();
+        final Set<String> locales = this.getLocales(artifact);
 
         for (final String locale : locales) {
             this.log.write(this, "Set %s for locale %s.", item, locale);
@@ -328,14 +336,14 @@ public class MultiRequestUploader implements Uploader {
         }
     }
 
-    private Set<String> getLocales() throws IOException, InterruptedException, ExecutionException {
+    private Set<String> getLocales(final Artifact artifact) throws IOException, InterruptedException, ExecutionException {
         if (this.locales != null) {
             return this.locales;
         }
 
         this.log.write(this, "Requesting configured languages…");
 
-        final ApiRequest request = this.requestFactory.createLanguageRequest(this.store);
+        final ApiRequest request = this.requestFactory.createLanguageRequest(artifact.getStore());
         final ApiResponse response = this.network.execute(request, this.log);
 
         final JsonArray languages = response.getResults();
@@ -353,23 +361,26 @@ public class MultiRequestUploader implements Uploader {
         return this.locales;
     }
 
-    private void setVersionName(final JsonObject version) {
-        if (StringUtils.isBlank(this.publication.getVersionName())) {
+    private void setVersionName(final Artifact artifact, final JsonObject version) {
+        final Publication publication = artifact.getPublication();
+
+        if (StringUtils.isBlank(publication.getVersionName())) {
             this.log.write(this, "No version name set, default name will be used.");
             return;
         }
-        version.addProperty("versionName", this.publication.getVersionName());
+        version.addProperty("versionName", publication.getVersionName());
     }
 
-    private boolean persistApplication(final JsonObject app) throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+    private boolean persistApplication(final Artifact artifact, final JsonObject app)
+            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
         this.log.write(this, "App is new, persisting app…");
 
-        final ApiRequest request = this.requestFactory.createPersistApplicationRequest(this.store, app);
+        final ApiRequest request = this.requestFactory.createPersistApplicationRequest(artifact.getStore(), app);
         final ApiResponse response = this.network.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting app.");
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
             return false;
         }
 
@@ -377,16 +388,16 @@ public class MultiRequestUploader implements Uploader {
         return true;
     }
 
-    private boolean persistVersion(final JsonObject app, final JsonObject version)
+    private boolean persistVersion(final Artifact artifact, final JsonObject app, final JsonObject version)
             throws URISyntaxException, IOException, InterruptedException, ExecutionException {
         this.log.write(this, "App version is new, persisting app version…");
 
-        final ApiRequest request = this.requestFactory.createPersistVersionRequest(this.store, app, version);
+        final ApiRequest request = this.requestFactory.createPersistVersionRequest(artifact.getStore(), app, version);
         final ApiResponse response = this.network.execute(request, this.log);
 
         if (!this.verifyApplicationResponse(response)) {
             this.log.write(this, "Error persisting app version.");
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
             return false;
         }
 
@@ -394,7 +405,7 @@ public class MultiRequestUploader implements Uploader {
         return true;
     }
 
-    private List<JsonObject> uploadAssets(final File basePath, final String includes, final String excludes)
+    private List<JsonObject> uploadAssets(final Artifact artifact, final String includes, final String excludes)
             throws URISyntaxException, InterruptedException {
 
         if (StringUtils.isBlank(includes)) {
@@ -406,7 +417,7 @@ public class MultiRequestUploader implements Uploader {
             this.log.write(this, "Excluding files that match \"%s\"", excludes);
         }
 
-        final FileSet fileSet = Util.createFileSet(basePath, includes, excludes);
+        final FileSet fileSet = Util.createFileSet(artifact.getBasePath(), includes, excludes);
         final File directory = fileSet.getDirectoryScanner().getBasedir();
 
         if (fileSet.getDirectoryScanner().getIncludedFilesCount() < 1) {
@@ -417,7 +428,7 @@ public class MultiRequestUploader implements Uploader {
         final List<JsonObject> assets = new ArrayList<JsonObject>();
 
         for (final String fileName : fileSet.getDirectoryScanner().getIncludedFiles()) {
-            final JsonObject asset = this.uploadAsset(directory, fileName);
+            final JsonObject asset = this.uploadAsset(artifact, directory, fileName);
 
             if (asset != null) {
                 assets.add(asset);
@@ -427,13 +438,13 @@ public class MultiRequestUploader implements Uploader {
         return assets;
     }
 
-    private JsonObject uploadAsset(final File directory, final String fileName)
+    private JsonObject uploadAsset(final Artifact artifact, final File directory, final String fileName)
             throws URISyntaxException, InterruptedException {
 
         try {
             final Stopwatch sw = new Stopwatch();
             final File file = new File(directory, fileName);
-            final ApiRequest request = this.requestFactory.createUploadRequest(this.store, file);
+            final ApiRequest request = this.requestFactory.createUploadRequest(artifact.getStore(), file);
 
             this.log.write(this, "Uploading \"%s\" (%,d Byte)…", fileName, file.length());
 
@@ -444,21 +455,21 @@ public class MultiRequestUploader implements Uploader {
             final String speed = this.getUploadSpeed(sw, file);
             this.log.write(this, "Upload of file completed (%s, %s).", sw, speed);
 
-            return this.extractAsset(response);
+            return this.extractAsset(artifact, response);
 
         } catch (final IOException e) {
             this.log.write(this, "Upload of file failed, error during execution:\n\n%s\n", e);
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
 
         } catch (final ExecutionException e) {
             this.log.write(this, "Upload of file failed, error during execution:\n\n%s\n", e);
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
 
         }
         return null;
     }
 
-    private JsonObject extractAsset(final ApiResponse response) {
+    private JsonObject extractAsset(final ResultHolder artifact, final ApiResponse response) {
         if (response == null) {
             this.log.write(this, "Error during upload, server's response is empty.");
             return null;
@@ -466,7 +477,7 @@ public class MultiRequestUploader implements Uploader {
 
         if (!this.verifyAssetResponse(response)) {
             this.log.write(this, "Upload of asset failed.");
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
             return null;
         }
 
@@ -474,7 +485,7 @@ public class MultiRequestUploader implements Uploader {
 
         if (assets.size() != 1) {
             this.log.write(this, "Error during upload, more than one asset returned by server.");
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
             return null;
         }
 
@@ -482,7 +493,7 @@ public class MultiRequestUploader implements Uploader {
 
         if (Json.isNull(asset)) {
             this.log.write(this, "Error during upload, asset is null.");
-            this.result = Builds.determineResult(this.result, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
             return null;
         }
 
