@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -81,7 +80,7 @@ public class MultiRequestUploader implements Uploader {
 
     @Override
     public Result publish(final Artifact artifact)
-            throws URISyntaxException, InterruptedException, IOException, ExecutionException {
+            throws InterruptedException, IOException, ExecutionException {
         final Publication publication = artifact.getPublication();
         final String artifactPath = publication.getArtifactPath();
         final String excludePath = publication.getArtifactExcludePath();
@@ -110,7 +109,7 @@ public class MultiRequestUploader implements Uploader {
     }
 
     private void retrieveApplication(final Artifact artifact, final JsonObject asset)
-            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+            throws IOException, InterruptedException, ExecutionException {
         this.log.write();
         this.log.write(this, "Requesting app associated with asset {%s}…", Json.getString(asset, ApiObject.UUID));
 
@@ -184,7 +183,7 @@ public class MultiRequestUploader implements Uploader {
     }
 
     private void manageArchivedVersions(final Artifact artifact, final JsonObject app, final JsonObject version)
-            throws URISyntaxException, InterruptedException, ExecutionException {
+            throws InterruptedException, ExecutionException {
 
         final String archiveMode = !artifact.getPublication().usesDefaultArchiveMode()
                 ? artifact.getPublication().getArchiveMode()
@@ -205,7 +204,7 @@ public class MultiRequestUploader implements Uploader {
     }
 
     private void deleteVersion(final Artifact artifact, final JsonObject version)
-            throws URISyntaxException, InterruptedException, ExecutionException {
+            throws InterruptedException, ExecutionException {
         this.log.write(
                 this,
                 "Deleting app version \"%s\" (%d) from \"%s\"…",
@@ -230,7 +229,7 @@ public class MultiRequestUploader implements Uploader {
     }
 
     private void setVersionMetadata(final Artifact artifact, final JsonObject version)
-            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+            throws IOException, InterruptedException, ExecutionException {
         this.setReleaseStatus(artifact, version);
 
         this.setName(artifact, version);
@@ -262,7 +261,7 @@ public class MultiRequestUploader implements Uploader {
     }
 
     private void setIcon(final Artifact artifact, final JsonObject version)
-            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+            throws IOException, InterruptedException, ExecutionException {
 
         if (StringUtils.isBlank(artifact.getPublication().getIconPath())) {
             this.log.write(this, "No icon set, default icon will be used.");
@@ -372,7 +371,7 @@ public class MultiRequestUploader implements Uploader {
     }
 
     private boolean persistApplication(final Artifact artifact, final JsonObject app)
-            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+            throws IOException, InterruptedException, ExecutionException {
         this.log.write(this, "App is new, persisting app…");
 
         final ApiRequest request = this.requestFactory.createPersistApplicationRequest(artifact.getStore(), app);
@@ -389,7 +388,7 @@ public class MultiRequestUploader implements Uploader {
     }
 
     private boolean persistVersion(final Artifact artifact, final JsonObject app, final JsonObject version)
-            throws URISyntaxException, IOException, InterruptedException, ExecutionException {
+            throws IOException, InterruptedException, ExecutionException {
         this.log.write(this, "App version is new, persisting app version…");
 
         final ApiRequest request = this.requestFactory.createPersistVersionRequest(artifact.getStore(), app, version);
@@ -406,7 +405,7 @@ public class MultiRequestUploader implements Uploader {
     }
 
     private List<JsonObject> uploadAssets(final Artifact artifact, final String includes, final String excludes)
-            throws URISyntaxException, InterruptedException {
+            throws InterruptedException {
 
         if (StringUtils.isBlank(includes)) {
             this.log.write(this, "No file to upload specified, filter expression is empty, upload failed.");
@@ -439,7 +438,7 @@ public class MultiRequestUploader implements Uploader {
     }
 
     private JsonObject uploadAsset(final Artifact artifact, final File directory, final String fileName)
-            throws URISyntaxException, InterruptedException {
+            throws InterruptedException {
 
         try {
             final Stopwatch sw = new Stopwatch();

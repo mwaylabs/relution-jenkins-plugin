@@ -31,8 +31,6 @@ import org.jenkinsci.remoting.RoleChecker;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.concurrent.ExecutionException;
 
 import hudson.FilePath.FileCallable;
 import hudson.model.Result;
@@ -106,15 +104,7 @@ public class ArtifactFileUploader implements FileCallable<Result>, ResultHolder 
             final Artifact artifact = new Artifact(this.store, basePath, this.publication, this.result);
             this.result = uploader.publish(artifact);
 
-        } catch (final IOException e) {
-            this.log.write(this, "Publication failed.\n\n%s\n", e);
-            Builds.setResult(this, Result.UNSTABLE, this.log);
-
-        } catch (final URISyntaxException e) {
-            this.log.write(this, "Publication failed.\n\n%s\n", e);
-            Builds.setResult(this, Result.UNSTABLE, this.log);
-
-        } catch (final ExecutionException e) {
+        } catch (final Exception e) {
             this.log.write(this, "Publication failed.\n\n%s\n", e);
             Builds.setResult(this, Result.UNSTABLE, this.log);
 
