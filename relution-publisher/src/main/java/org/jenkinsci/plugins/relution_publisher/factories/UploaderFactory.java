@@ -17,6 +17,7 @@
 package org.jenkinsci.plugins.relution_publisher.factories;
 
 import org.jenkinsci.plugins.relution_publisher.builder.MultiRequestUploader;
+import org.jenkinsci.plugins.relution_publisher.builder.SingleRequestUploader;
 import org.jenkinsci.plugins.relution_publisher.builder.Uploader;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.jenkinsci.plugins.relution_publisher.model.ServerVersion;
@@ -40,11 +41,13 @@ public class UploaderFactory implements Serializable {
      * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
      * Versioning of Serializable Objects</a>.
      */
-    private static final long    serialVersionUID = 1L;
+    private static final long          serialVersionUID = 1L;
 
-    private final RequestFactory requestFactory;
-    private final Network        network;
-    private final Log            log;
+    private static final ServerVersion RELUTION_3_36    = new ServerVersion("3.36");
+
+    private final RequestFactory       requestFactory;
+    private final Network              network;
+    private final Log                  log;
 
     public UploaderFactory(final RequestFactory requestFactory, final Network network, final Log log) {
         this.requestFactory = requestFactory;
@@ -53,9 +56,16 @@ public class UploaderFactory implements Serializable {
     }
 
     public Uploader createUploader(final ServerVersion version) {
-        return new MultiRequestUploader(
-                this.requestFactory,
-                this.network,
-                this.log);
+        if (version.compareTo(RELUTION_3_36) >= 0) {
+            return new SingleRequestUploader(
+                    this.requestFactory,
+                    this.network,
+                    this.log);
+        } else {
+            return new MultiRequestUploader(
+                    this.requestFactory,
+                    this.network,
+                    this.log);
+        }
     }
 }
