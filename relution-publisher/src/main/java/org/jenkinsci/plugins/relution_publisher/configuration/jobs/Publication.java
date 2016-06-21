@@ -70,6 +70,7 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
     private String            changeLogPath;
     private String            descriptionPath;
     private String            versionName;
+    private final String      environmentUuid;
 
     @DataBoundConstructor
     public Publication(
@@ -83,7 +84,8 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
             final String iconPath,
             final String changeLogPath,
             final String descriptionPath,
-            final String versionName) {
+            final String versionName,
+            final String environmentUuid) {
 
         this.setArtifactPath(artifactPath);
         this.setArtifactExcludePath(artifactExcludePath);
@@ -96,6 +98,7 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
         this.setChangeLogPath(changeLogPath);
         this.setDescriptionPath(descriptionPath);
         this.setVersionName(versionName);
+        this.environmentUuid = environmentUuid;
     }
 
     /**
@@ -299,6 +302,14 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
      */
     public void setVersionName(final String versionName) {
         this.versionName = versionName;
+    }
+
+    /**
+     * @return The unique identifier of the development environment the publication is associated
+     * with.
+     */
+    public String getEnvironmentUuid() {
+        return this.environmentUuid;
     }
 
     @Extension

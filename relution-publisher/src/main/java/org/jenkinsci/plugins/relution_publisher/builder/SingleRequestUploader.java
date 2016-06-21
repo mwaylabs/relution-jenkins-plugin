@@ -172,7 +172,8 @@ public class SingleRequestUploader implements Uploader {
     }
 
     private String getEnvironmentUuid(final Artifact artifact) {
-        return null;
+        final Publication publication = artifact.getPublication();
+        return publication.getEnvironmentUuid();
     }
 
     private FileSet getFileSet(final Artifact artifact, final String includes, final String excludes) {
