@@ -95,9 +95,10 @@ public class SingleRequestUploader implements Uploader {
 
     private void publish(final Artifact artifact, final FileSet fileSet, final String fileName, final File changelog)
             throws IOException, InterruptedException, ExecutionException {
-        final File app = new File(fileSet.getDirectoryScanner().getBasedir(), fileName);
+        this.log.write();
         this.log.write(this, "Uploading %s…", fileName);
 
+        final File app = new File(fileSet.getDirectoryScanner().getBasedir(), fileName);
         final ApiResponse upload = this.upload(artifact, app, changelog);
 
         this.verifyUpload(upload);
@@ -160,6 +161,7 @@ public class SingleRequestUploader implements Uploader {
         final String includes = publication.getArtifactPath();
         final String excludes = publication.getArtifactExcludePath();
 
+        this.log.write();
         this.log.write(this, "Find artifact files to upload…");
         return this.getFileSet(artifact, includes, excludes);
     }
