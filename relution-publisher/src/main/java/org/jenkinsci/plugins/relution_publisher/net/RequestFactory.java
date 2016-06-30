@@ -203,7 +203,15 @@ public final class RequestFactory implements Serializable {
 
     /**
      * Creates a {@link BaseRequest} that can be used to upload a {@link File} to the server.
+     * <p>
+     * <b>Note: </b>This request does not have a file associated with it. It must be added using
+     * the {@link ZeroCopyFileRequest#addItem(String, File)} method.
      * @param store The {@link Store} this request should be executed against.
+     * @param releaseStatus The release status to use for the build artifact.
+     * @param archivePreviousVersion {@code true} to archive the previous version; {@code false}
+     * to replace the previous version.
+     * @param environmentUuid The development environment the build artifact is associated with,
+     * can be {@code null}.
      * @return A request that can be used to upload a file to the server.
      */
     public ZeroCopyFileRequest createUploadAppRequest(
