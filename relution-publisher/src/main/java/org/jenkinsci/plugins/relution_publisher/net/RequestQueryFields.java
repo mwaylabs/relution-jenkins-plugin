@@ -66,6 +66,30 @@ public class RequestQueryFields {
         }
     }
 
+    private String valueOf(final int value) {
+        return String.valueOf(value);
+    }
+
+    private String valueOf(final long value) {
+        return String.valueOf(value);
+    }
+
+    private String valueOf(final double value) {
+        return String.format(Locale.ENGLISH, "%1$f", value);
+    }
+
+    private String valueOf(final boolean value) {
+        return value ? "true" : "false";
+    }
+
+    private String valueOf(final Date value) {
+        if (value == null) {
+            return null;
+        }
+        final long time = value.getTime();
+        return this.valueOf(time);
+    }
+
     /**
      * @return The character set used when encoding strings.
      */
@@ -136,7 +160,7 @@ public class RequestQueryFields {
      * @see #set
      */
     public void add(final String fieldName, final int value) {
-        this.add(fieldName, String.valueOf(value));
+        this.add(fieldName, this.valueOf(value));
     }
 
     /**
@@ -153,7 +177,7 @@ public class RequestQueryFields {
      * @see #set
      */
     public void add(final String fieldName, final long value) {
-        this.add(fieldName, String.valueOf(value));
+        this.add(fieldName, this.valueOf(value));
     }
 
     /**
@@ -170,7 +194,7 @@ public class RequestQueryFields {
      * @see #set
      */
     public void add(final String fieldName, final double value) {
-        this.add(fieldName, String.format(Locale.ENGLISH, "%1$f", value));
+        this.add(fieldName, this.valueOf(value));
     }
 
     /**
@@ -187,7 +211,7 @@ public class RequestQueryFields {
      * @see #set
      */
     public void add(final String fieldName, final boolean value) {
-        this.add(fieldName, value ? "true" : "false");
+        this.add(fieldName, this.valueOf(value));
     }
 
     /**
@@ -204,7 +228,7 @@ public class RequestQueryFields {
      * @see #set
      */
     public void add(final String fieldName, final Date value) {
-        this.add(fieldName, value != null ? value.getTime() : null);
+        this.add(fieldName, this.valueOf(value));
     }
 
     /**
@@ -252,7 +276,7 @@ public class RequestQueryFields {
      * @see #add
      */
     public void set(final String fieldName, final int value) {
-        this.set(fieldName, String.valueOf(value));
+        this.set(fieldName, this.valueOf(value));
     }
 
     /**
@@ -269,7 +293,7 @@ public class RequestQueryFields {
      * @see #add
      */
     public void set(final String fieldName, final long value) {
-        this.set(fieldName, String.valueOf(value));
+        this.set(fieldName, this.valueOf(value));
     }
 
     /**
@@ -286,7 +310,7 @@ public class RequestQueryFields {
      * @see #add
      */
     public void set(final String fieldName, final double value) {
-        this.set(fieldName, String.format(Locale.ENGLISH, "%1$f", value));
+        this.set(fieldName, this.valueOf(value));
     }
 
     /**
@@ -303,7 +327,7 @@ public class RequestQueryFields {
      * @see #add
      */
     public void set(final String fieldName, final boolean value) {
-        this.set(fieldName, value ? "true" : "false");
+        this.set(fieldName, this.valueOf(value));
     }
 
     /**
@@ -320,7 +344,7 @@ public class RequestQueryFields {
      * @see #add
      */
     public void set(final String fieldName, final Date value) {
-        this.set(fieldName, value != null ? value.getTime() : null);
+        this.set(fieldName, this.valueOf(value));
     }
 
     /**
