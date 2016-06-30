@@ -22,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.tika.io.IOUtils;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.plugins.relution_publisher.configuration.jobs.Publication;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
@@ -41,9 +42,11 @@ import org.jenkinsci.plugins.relution_publisher.util.Json;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -540,11 +543,15 @@ public class MultiRequestUploader implements Uploader {
     }
 
     private void readFile(final File file, final StringBuilder sb) {
-
+        FileInputStream fis = null;
+        InputStreamReader sr = null;
+        BufferedReader br = null;
         try {
-            final BufferedReader br = new BufferedReader(new FileReader(file));
-            String line;
+            fis = new FileInputStream(file);
+            sr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+            br = new BufferedReader(sr);
 
+            String line;
             while ((line = br.readLine()) != null && sb.length() < MAX_TEXT_LENGTH) {
                 sb.append(line);
                 sb.append("\n");
@@ -554,12 +561,14 @@ public class MultiRequestUploader implements Uploader {
                 this.log.write(this, "Text in file \"%s\" exceeds %d characters and will be truncated.", file.getName(), MAX_TEXT_LENGTH);
             }
 
-            br.close();
-
         } catch (final FileNotFoundException e) {
             e.printStackTrace();
         } catch (final IOException e) {
             e.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(br);
+            IOUtils.closeQuietly(sr);
+            IOUtils.closeQuietly(fis);
         }
     }
 
