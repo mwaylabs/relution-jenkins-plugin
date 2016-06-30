@@ -52,8 +52,9 @@ public class Builds {
     }
 
     public static int severity(final Result result) {
-
-        if (result.equals(Result.FAILURE)) {
+        if (result == null) {
+            return -1;
+        } else if (result.equals(Result.FAILURE)) {
             return 4;
         } else if (result.equals(Result.UNSTABLE)) {
             return 3;
