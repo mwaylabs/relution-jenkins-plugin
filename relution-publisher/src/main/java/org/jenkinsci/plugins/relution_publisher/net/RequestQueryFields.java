@@ -401,9 +401,8 @@ public class RequestQueryFields {
         if (this.mQuery == null) {
             final StringBuilder sb = new StringBuilder();
 
-            for (final String name : this.mFields.keySet()) {
-                final List<String> values = this.mFields.get(name);
-                this.append(sb, name, values);
+            for (final Map.Entry<String, List<String>> entry : this.mFields.entrySet()) {
+                this.append(sb, entry.getKey(), entry.getValue());
             }
             this.mQuery = sb.toString();
         }
