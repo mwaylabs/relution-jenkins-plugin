@@ -50,8 +50,8 @@ public abstract class BaseRequest implements ApiRequest {
 
     protected void addHeaders(final HttpRequest request) {
 
-        for (final String name : this.mHeaders.keySet()) {
-            request.addHeader(name, this.mHeaders.get(name));
+        for (final Map.Entry<String, String> entry : this.mHeaders.entrySet()) {
+            request.addHeader(entry.getKey(), entry.getValue());
         }
     }
 
