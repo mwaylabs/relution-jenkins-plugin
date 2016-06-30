@@ -1,0 +1,77 @@
+def getVersionCode() {
+    ext.buildNumber = "$System.env.BUILD_NUMBER"
+
+    if (ext.buildNumber == "null") {
+        println('Version name is 0')
+        return 0
+    }
+
+    println('Version name is ' + ext.buildNumber)
+    return ext.buildNumber.toInteger()
+}
+
+def getBranch = {
+    def detectedBranch = System.getenv('GIT_BRANCH');
+    return detectedBranch?.trim();
+}
+
+def branch = getBranch();
+
+def runCommand = { String cmd, def defaultValue ->
+    def cmdOut = new ByteArrayOutputStream()
+    def error = new ByteArrayOutputStream()
+    try {
+        exec {
+            println('Execute command ' + cmd)
+            commandLine cmd.split(" ")
+            standardOutput = cmdOut
+            errorOutput = error
+        }
+        return cmdOut.toString().trim();
+    }
+    catch (ignored) {
+        println('Error executing command: ' + cmd + ', cause: ' + error.toString())
+        return defaultValue;
+    }
+}
+
+def getVersionName = {
+    if (branch == null || branch.isEmpty()) {
+        def git_branchname = "git symbolic-ref --short HEAD";
+        branch = runCommand(git_branchname, "unknown");
+    } else {
+        if (branch.startsWith("origin/")) {
+            branch = branch.replace("origin/", "");
+        }
+    }
+    println('Branch name is ' + branch)
+
+    // Get git description of commit and current branch name
+    def git_describe = "git describe --tags --dirty"
+    def version = runCommand(git_describe, null);
+
+    if (version != null) {
+        println('Version name is ' + version)
+    } else {
+        println('Version name could not be determined')
+    }
+
+    if (!"master".equalsIgnoreCase(branch)) {
+        branch = branch.replace("/", "_")
+
+        if (version != null) {
+            version = version + "-" + branch
+        } else {
+            version = branch
+        }
+    }
+
+    return version;
+}
+
+project.extensions.getAppVersionCode = {
+    return getVersionCode();
+}
+project.extensions.getAppVersionName = {
+    return getVersionName();
+}

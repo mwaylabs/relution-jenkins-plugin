@@ -1,0 +1,35 @@
+apply plugin: 'com.android.application'
+apply from: "$rootDir/include.gradle"
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        applicationId "com.mwaysolutions.jenkinsandroidtest"
+        minSdkVersion 10
+        targetSdkVersion 24
+        versionCode getAppVersionCode()
+        versionName getAppVersionName()
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    applicationVariants.all { variant ->
+        def file = variant.outputs[0].outputFile
+        def fileName = file.name.replace(".apk", "-" + variant.versionName + ".apk")
+
+        println('Set file name to ' + fileName)
+        variant.outputs[0].outputFile = new File(file.parent, fileName)
+    }
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:24.0.0'
+}
