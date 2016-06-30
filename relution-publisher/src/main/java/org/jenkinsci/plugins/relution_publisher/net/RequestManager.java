@@ -181,7 +181,7 @@ public class RequestManager implements Network {
             }
 
         } catch (final Exception e) {
-            System.out.format("Unable to parse server's response: %s\n", e.getMessage());
+            System.out.format("Unable to parse server's response: %s%n", e.getMessage());
         }
         final ApiResponse response = new ApiResponse();
         response.setMessage(payload);
