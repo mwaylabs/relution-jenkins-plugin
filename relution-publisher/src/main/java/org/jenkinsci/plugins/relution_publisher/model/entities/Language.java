@@ -14,26 +14,14 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.constants;
+package org.jenkinsci.plugins.relution_publisher.model.entities;
 
-public final class Version extends ApiObject {
-
-    public static final String APP_UUID = "appUuid";
+public final class Language extends ApiObject {
 
     public static final String NAME = "name";
 
-    public static final String FILE = "file";
+    public static final String LOCALE = "locale";
 
-    public static final String VERSION_NAME = "versionName";
-
-    public static final String VERSION_CODE = "versionCode";
-
-    public static final String RELEASE_STATUS = "releaseStatus";
-
-    public static final String DESCRIPTION = "description";
-
-    public static final String CHANGE_LOG = "changelog";
-
-    private Version() {
+    private Language() {
     }
 }

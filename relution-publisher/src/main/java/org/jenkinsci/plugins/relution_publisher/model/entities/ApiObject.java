@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.constants;
+package org.jenkinsci.plugins.relution_publisher.model.entities;
 
-public final class Language extends ApiObject {
+public class ApiObject {
 
-    public static final String NAME = "name";
+    public static final String UUID = "uuid";
 
-    public static final String LOCALE = "locale";
-
-    private Language() {
+    protected ApiObject() {
     }
 }

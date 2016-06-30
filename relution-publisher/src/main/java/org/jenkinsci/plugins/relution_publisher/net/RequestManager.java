@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 M-Way Solutions GmbH
+ * Copyright (c) 2013-2016 M-Way Solutions GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,7 @@ import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 import org.jenkinsci.plugins.relution_publisher.util.ErrorType;
 
-import java.io.Closeable;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
@@ -46,7 +44,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
-public class RequestManager implements Closeable, Serializable {
+public class RequestManager implements Network {
 
     /**
      * The serial version number of this class.
@@ -217,6 +215,7 @@ public class RequestManager implements Closeable, Serializable {
         log.write(this, format, args);
     }
 
+    @Override
     public void setProxy(final String hostname, final int port) {
         if (!StringUtils.isBlank(hostname) && port != 0) {
             this.closeQuietly();
@@ -224,6 +223,7 @@ public class RequestManager implements Closeable, Serializable {
         }
     }
 
+    @Override
     public void setProxyCredentials(final String username, final String password) {
         if (!StringUtils.isBlank(username)) {
             this.closeQuietly();
@@ -231,11 +231,13 @@ public class RequestManager implements Closeable, Serializable {
         }
     }
 
+    @Override
     public ApiResponse execute(final ApiRequest request, final Log log) throws IOException, InterruptedException, ExecutionException {
         final HttpResponse httpResponse = this.send(request, log);
         return this.parseNetworkResponse(request, httpResponse);
     }
 
+    @Override
     public ApiResponse execute(final ApiRequest request) throws InterruptedException, ExecutionException, IOException {
         return this.execute(request, null);
     }

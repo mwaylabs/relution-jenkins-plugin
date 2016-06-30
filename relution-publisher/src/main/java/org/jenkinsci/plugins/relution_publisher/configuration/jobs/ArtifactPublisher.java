@@ -20,8 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.relution_publisher.builder.ArtifactFileUploader;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
-import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
+import org.jenkinsci.plugins.relution_publisher.model.UploadMode;
 import org.jenkinsci.plugins.relution_publisher.util.Builds;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -190,9 +190,7 @@ public class ArtifactPublisher extends Recorder {
             return;
         }
 
-        workspace.act(publisher);
-
-        final Result newResult = publisher.getResult();
+        final Result newResult = workspace.act(publisher);
         Builds.setResult(build, newResult, log);
     }
 
@@ -220,10 +218,17 @@ public class ArtifactPublisher extends Recorder {
         @Inject
         private StoreConfiguration globalConfiguration;
 
-        private List<Publication> publications;
+        private List<Publication>  publications;
+        private boolean            isLoaded;
 
         public ArtifactPublisherDescriptor() {
-            this.load();
+            super(ArtifactPublisher.class);
+        }
+
+        @Override
+        public synchronized void load() {
+            super.load();
+            this.isLoaded = true;
         }
 
         public StoreConfiguration getGlobalConfiguration() {
@@ -231,6 +236,9 @@ public class ArtifactPublisher extends Recorder {
         }
 
         public List<Publication> getPublications() {
+            if (!this.isLoaded) {
+                this.load();
+            }
             return this.publications;
         }
 

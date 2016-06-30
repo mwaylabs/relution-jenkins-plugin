@@ -1,3 +1,18 @@
+/*
+ * Copyright 2016 M-Way Solutions GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.jenkinsci.plugins.relution_publisher.net;
 
@@ -5,8 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
-import org.jenkinsci.plugins.relution_publisher.constants.Headers;
 import org.jenkinsci.plugins.relution_publisher.model.ServerVersion;
+import org.jenkinsci.plugins.relution_publisher.model.constants.Headers;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.responses.ApiResponse;
 
@@ -16,7 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class SessionManager extends RequestManager {
+public class SessionManager extends RequestManager implements AuthenticatedNetwork {
 
     /**
      * The serial version number of this class.
@@ -30,14 +45,17 @@ public class SessionManager extends RequestManager {
      * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
      * Versioning of Serializable Objects</a>.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long    serialVersionUID = 1L;
 
-    private Store             store;
+    private final RequestFactory requestFactory;
 
-    private String            sessionId;
-    private ServerVersion     serverVersion;
+    private Store                store;
 
-    public SessionManager() {
+    private String               sessionId;
+    private ServerVersion        serverVersion;
+
+    public SessionManager(final RequestFactory requestFactory) {
+        this.requestFactory = requestFactory;
     }
 
     private String parseSessionId(final String cookie) {
@@ -79,6 +97,7 @@ public class SessionManager extends RequestManager {
         return new ServerVersion(version.getValue());
     }
 
+    @Override
     public void logIn(final Store store) throws InterruptedException, ExecutionException, IOException {
         if (store == null) {
             throw new IllegalArgumentException("The specified argument cannot be null: store");
@@ -88,7 +107,7 @@ public class SessionManager extends RequestManager {
             throw new IllegalStateException("Already logged in");
         }
 
-        final ApiRequest request = RequestFactory.createLoginRequest(store);
+        final ApiRequest request = this.requestFactory.createLoginRequest(store);
         final ApiResponse response = this.execute(request);
 
         this.store = store;
@@ -96,13 +115,14 @@ public class SessionManager extends RequestManager {
         this.serverVersion = this.parseServerVersion(response);
     }
 
+    @Override
     public boolean logOut() {
         if (this.store == null || this.sessionId == null) {
             return false;
         }
 
         try {
-            final ApiRequest request = RequestFactory.createLogoutRequest(this.store);
+            final ApiRequest request = this.requestFactory.createLogoutRequest(this.store);
             this.execute(request);
             return true;
         } catch (final InterruptedException e) {
@@ -121,6 +141,7 @@ public class SessionManager extends RequestManager {
         }
     }
 
+    @Override
     public ServerVersion getServerVersion() {
         return this.serverVersion;
     }

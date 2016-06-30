@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 M-Way Solutions GmbH
+ * Copyright (c) 2013-2016 M-Way Solutions GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import com.google.gson.JsonObject;
 
 import org.apache.http.nio.entity.NStringEntity;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
-import org.jenkinsci.plugins.relution_publisher.constants.ApiObject;
-import org.jenkinsci.plugins.relution_publisher.constants.Headers;
-import org.jenkinsci.plugins.relution_publisher.constants.Version;
+import org.jenkinsci.plugins.relution_publisher.model.constants.Headers;
+import org.jenkinsci.plugins.relution_publisher.model.entities.ApiObject;
+import org.jenkinsci.plugins.relution_publisher.model.entities.Version;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest;
 import org.jenkinsci.plugins.relution_publisher.net.requests.ApiRequest.Method;
 import org.jenkinsci.plugins.relution_publisher.net.requests.BaseRequest;
@@ -32,6 +32,7 @@ import org.jenkinsci.plugins.relution_publisher.util.Json;
 import org.jenkinsci.plugins.relution_publisher.util.UrlUtils;
 
 import java.io.File;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 
 
@@ -39,7 +40,21 @@ import java.nio.charset.Charset;
  * Provides static methods that can be used to create {@link ApiRequest}s that can be used to
  * communicate with the Relution Enterprise Appstore.
  */
-public final class RequestFactory {
+public final class RequestFactory implements Serializable {
+
+    /**
+     * The serial version number of this class.
+     * <p>
+     * This version number is used to determine whether a serialized representation of this class
+     * is compatible with the current implementation of the class.
+     * <p>
+     * <b>Note</b> Maintainers must change this value <b>if and only if</b> the new version of this
+     * class is not compatible with old versions.
+     * @see
+     * <a href="http://docs.oracle.com/javase/6/docs/platform/serialization/spec/version.html">
+     * Versioning of Serializable Objects</a>.
+     */
+    private static final long    serialVersionUID   = 1L;
 
     private static final String  APPLICATION_JSON   = "application/json";
 
@@ -95,10 +110,10 @@ public final class RequestFactory {
      */
     private final static String  VERSIONS           = "versions";
 
-    private RequestFactory() {
+    public RequestFactory() {
     }
 
-    private static String getUrl(final Store store, final String... parts) {
+    private String getUrl(final Store store, final String... parts) {
         final String baseUrl = UrlUtils.toBaseUrl(store.getUrl());
         final String path = UrlUtils.combine(parts);
         return UrlUtils.combine(baseUrl, path);
@@ -109,10 +124,10 @@ public final class RequestFactory {
      * @param store The {@link Store} this request should be executed against.
      * @return A request that can be used to authenticate the user.
      */
-    public static EntityRequest createLoginRequest(final Store store) {
+    public EntityRequest createLoginRequest(final Store store) {
         final EntityRequest request = new EntityRequest(
                 Method.POST,
-                getUrl(store, URL_AUTH_LOGIN));
+                this.getUrl(store, URL_AUTH_LOGIN));
 
         final JsonObject credentials = new JsonObject();
         credentials.addProperty("userName", store.getUsername());
@@ -132,10 +147,10 @@ public final class RequestFactory {
      * @return A request that can be used to close a session.
      * @see #createLoginRequest(Store)
      */
-    public static EntityRequest createLogoutRequest(final Store store) {
+    public EntityRequest createLogoutRequest(final Store store) {
         final EntityRequest request = new EntityRequest(
                 Method.POST,
-                getUrl(store, URL_AUTH_LOGOUT));
+                this.getUrl(store, URL_AUTH_LOGOUT));
 
         return request;
     }
@@ -146,11 +161,11 @@ public final class RequestFactory {
      * @param store The {@link Store} this request should be executed against.
      * @return A request that can be used to query all languages on the server.
      */
-    public static EntityRequest createLanguageRequest(final Store store) {
+    public EntityRequest createLanguageRequest(final Store store) {
 
         final EntityRequest request = new EntityRequest(
                 Method.GET,
-                getUrl(store, URL_LANGUAGES));
+                this.getUrl(store, URL_LANGUAGES));
 
         return request;
     }
@@ -161,11 +176,11 @@ public final class RequestFactory {
      * @param store The {@link Store} this request should be executed against.
      * @return A request that can be used to query all applications on the server.
      */
-    public static EntityRequest createAppStoreItemsRequest(final Store store) {
+    public EntityRequest createAppStoreItemsRequest(final Store store) {
 
         final EntityRequest request = new EntityRequest(
                 Method.GET,
-                getUrl(store, URL_APPS));
+                this.getUrl(store, URL_APPS));
 
         request.queryFields().add("locale", "de");
         return request;
@@ -177,10 +192,31 @@ public final class RequestFactory {
      * @param file The {@link File} to upload.
      * @return A request that can be used to upload a file to the server.
      */
-    public static ZeroCopyFileRequest createUploadRequest(final Store store, final File file) {
+    public ZeroCopyFileRequest createUploadRequest(final Store store, final File file) {
         final ZeroCopyFileRequest request = new ZeroCopyFileRequest(
-                getUrl(store, URL_FILES),
-                file);
+                this.getUrl(store, URL_FILES));
+
+        request.addItem("file", file);
+
+        return request;
+    }
+
+    /**
+     * Creates a {@link BaseRequest} that can be used to upload a {@link File} to the server.
+     * @param store The {@link Store} this request should be executed against.
+     * @return A request that can be used to upload a file to the server.
+     */
+    public ZeroCopyFileRequest createUploadAppRequest(
+            final Store store,
+            final String releaseStatus,
+            final boolean archivePreviousVersion,
+            final String environmentUuid) {
+        final ZeroCopyFileRequest request = new ZeroCopyFileRequest(
+                this.getUrl(store, URL_APPS));
+
+        request.queryFields().add("releaseStatus", releaseStatus);
+        request.queryFields().add("archiveFormerVersion", archivePreviousVersion);
+        request.queryFields().add("environmentUuid", environmentUuid);
 
         return request;
     }
@@ -192,12 +228,12 @@ public final class RequestFactory {
      * @param asset The asset for which to retrieve the application.
      * @return A request that can be used to retrieved the application associated with an asset.
      */
-    public static EntityRequest createAppFromFileRequest(final Store store, final JsonObject asset) {
+    public EntityRequest createAppFromFileRequest(final Store store, final JsonObject asset) {
         final String uuid = Json.getString(asset, ApiObject.UUID);
 
         final EntityRequest request = new EntityRequest(
                 Method.POST,
-                getUrl(store, URL_APPS_FROM_FILE, uuid));
+                this.getUrl(store, URL_APPS_FROM_FILE, uuid));
 
         return request;
     }
@@ -212,10 +248,10 @@ public final class RequestFactory {
      * @param app The application to persist.
      * @return A request that can be used to persist the specified application.
      */
-    public static EntityRequest createPersistApplicationRequest(final Store store, final JsonObject app) {
+    public EntityRequest createPersistApplicationRequest(final Store store, final JsonObject app) {
         final EntityRequest request = new EntityRequest(
                 Method.POST,
-                getUrl(store, URL_APPS));
+                this.getUrl(store, URL_APPS));
 
         final NStringEntity entity = new NStringEntity(app.toString(), CHARSET);
         request.setEntity(entity);
@@ -236,12 +272,12 @@ public final class RequestFactory {
      * @param version The application version to persist.
      * @return A request that can be used to persist the specified version.
      */
-    public static EntityRequest createPersistVersionRequest(final Store store, final JsonObject app, final JsonObject version) {
+    public EntityRequest createPersistVersionRequest(final Store store, final JsonObject app, final JsonObject version) {
         final String appUuid = Json.getString(app, ApiObject.UUID);
 
         final EntityRequest request = new EntityRequest(
                 Method.POST,
-                getUrl(store, URL_APPS, appUuid, VERSIONS));
+                this.getUrl(store, URL_APPS, appUuid, VERSIONS));
 
         final NStringEntity entity = new NStringEntity(version.toString(), CHARSET);
         request.setEntity(entity);
@@ -250,13 +286,13 @@ public final class RequestFactory {
         return request;
     }
 
-    public static EntityRequest createDeleteVersionRequest(final Store store, final JsonObject version) {
+    public EntityRequest createDeleteVersionRequest(final Store store, final JsonObject version) {
         final String appUuid = Json.getString(version, Version.APP_UUID);
         final String uuid = Json.getString(version, ApiObject.UUID);
 
         final EntityRequest request = new EntityRequest(
                 Method.DELETE,
-                getUrl(store, URL_APPS, appUuid, VERSIONS, uuid));
+                this.getUrl(store, URL_APPS, appUuid, VERSIONS, uuid));
 
         return request;
     }

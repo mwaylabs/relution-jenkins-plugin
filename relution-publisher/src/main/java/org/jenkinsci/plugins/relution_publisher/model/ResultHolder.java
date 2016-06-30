@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 M-Way Solutions GmbH
+ * Copyright 2016 M-Way Solutions GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,24 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.relution_publisher.constants;
+package org.jenkinsci.plugins.relution_publisher.model;
 
-public class ApiObject {
+import hudson.model.Result;
 
-    public static final String UUID = "uuid";
 
-    protected ApiObject() {
-    }
+/**
+ * Interface definition for a class that holds a {@link Result}.
+ */
+public interface ResultHolder {
+
+    /**
+     * @return The {@link Result}.
+     */
+    Result getResult();
+
+    /**
+     * Sets the result to the specified value.
+     * @param result The {@link Result} to set.
+     */
+    void setResult(final Result result);
 }

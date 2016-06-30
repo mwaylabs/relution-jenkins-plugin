@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 M-Way Solutions GmbH
+ * Copyright (c) 2013-2016 M-Way Solutions GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ package org.jenkinsci.plugins.relution_publisher.configuration.jobs;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
-import org.jenkinsci.plugins.relution_publisher.constants.ArchiveMode;
-import org.jenkinsci.plugins.relution_publisher.constants.ReleaseStatus;
-import org.jenkinsci.plugins.relution_publisher.constants.UploadMode;
+import org.jenkinsci.plugins.relution_publisher.model.ArchiveMode;
+import org.jenkinsci.plugins.relution_publisher.model.ReleaseStatus;
+import org.jenkinsci.plugins.relution_publisher.model.UploadMode;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -70,6 +70,7 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
     private String            changeLogPath;
     private String            descriptionPath;
     private String            versionName;
+    private final String      environmentUuid;
 
     @DataBoundConstructor
     public Publication(
@@ -83,7 +84,8 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
             final String iconPath,
             final String changeLogPath,
             final String descriptionPath,
-            final String versionName) {
+            final String versionName,
+            final String environmentUuid) {
 
         this.setArtifactPath(artifactPath);
         this.setArtifactExcludePath(artifactExcludePath);
@@ -96,6 +98,7 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
         this.setChangeLogPath(changeLogPath);
         this.setDescriptionPath(descriptionPath);
         this.setVersionName(versionName);
+        this.environmentUuid = environmentUuid;
     }
 
     /**
@@ -299,6 +302,14 @@ public class Publication extends AbstractDescribableImpl<Publication> implements
      */
     public void setVersionName(final String versionName) {
         this.versionName = versionName;
+    }
+
+    /**
+     * @return The unique identifier of the development environment the publication is associated
+     * with.
+     */
+    public String getEnvironmentUuid() {
+        return this.environmentUuid;
     }
 
     @Extension
