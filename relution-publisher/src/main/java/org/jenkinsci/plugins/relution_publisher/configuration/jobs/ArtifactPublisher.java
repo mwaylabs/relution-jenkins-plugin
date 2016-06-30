@@ -235,14 +235,14 @@ public class ArtifactPublisher extends Recorder {
             return this.globalConfiguration;
         }
 
-        public List<Publication> getPublications() {
+        public synchronized List<Publication> getPublications() {
             if (!this.isLoaded) {
                 this.load();
             }
             return this.publications;
         }
 
-        public void setPublications(final List<Publication> publications) {
+        public synchronized void setPublications(final List<Publication> publications) {
             this.publications = publications;
         }
 
