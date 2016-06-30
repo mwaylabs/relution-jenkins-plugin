@@ -88,7 +88,8 @@ public class RequestManager implements Network {
     private transient CloseableHttpAsyncClient mHttpClient;
 
     private HttpHost                           mProxyHost;
-    private Credentials                        mCredentials;
+    private String                             mProxyUsername;
+    private String                             mProxyPassword;
 
     private CloseableHttpAsyncClient createHttpClient() {
 
@@ -106,10 +107,11 @@ public class RequestManager implements Network {
         final RequestConfig requestConfig = requestConfigBuilder.build();
         clientBuilder.setDefaultRequestConfig(requestConfig);
 
-        if (this.mProxyHost != null && this.mCredentials != null) {
+        if (this.mProxyHost != null && !StringUtils.isEmpty(this.mProxyUsername)) {
             final AuthScope authScope = new AuthScope(this.mProxyHost);
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(authScope, this.mCredentials);
+            final Credentials credentials = new UsernamePasswordCredentials(this.mProxyUsername, this.mProxyPassword);
+            credentialsProvider.setCredentials(authScope, credentials);
             clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
         }
 
@@ -227,7 +229,8 @@ public class RequestManager implements Network {
     public void setProxyCredentials(final String username, final String password) {
         if (!StringUtils.isBlank(username)) {
             this.closeQuietly();
-            this.mCredentials = new UsernamePasswordCredentials(username, password);
+            this.mProxyUsername = username;
+            this.mProxyPassword = password;
         }
     }
 
