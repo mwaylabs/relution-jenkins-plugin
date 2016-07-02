@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/mwaylabs/relution-jenkins-plugin.svg?branch=master)](https://travis-ci.org/mwaylabs/relution-jenkins-plugin)
 
-relution-jenkins-plugin
-=======================
+# relution-jenkins-plugin
 
 A Jenkins plugin for the Relution Enterprise Appstore by M-Way Solutions GmbH. See http://www.relution.io for more details about the Relution Enterprise Appstore itself. This plugin allows to automatically upload artefacts created by a Jenkins build process to an instance of the Relution Enterprise Appstore. Typical build artefacts are Apple iOS or Google Android binaries (.ipa and .apk files).
 
@@ -11,8 +10,7 @@ Just as Jenkins frees developers from the tedious task of producing deployable a
 
 Additionally, this means that a binary published to the store has also gone through all those nifty regression tests that everyone includes as part of their build process. You are doing regression tests, right?
 
-Getting started
----------------
+## Getting started
 
 Before you can start using this plugin you should have set up an automated build process, using Jenkins, and this build process should be producing working application binaries for Apple iOS (.ipa) or Google Android (.apk).
 
@@ -32,8 +30,7 @@ example.com -"(username)" @ "(organization)" .
 
 After you've built your project it should now be automatically uploaded to the appstore. Be aware that you cannot upload the same version more than once, so your application's version number should include an auto-incremented build number.
 
-What's next?
-------------
+## What's next?
 
 By default the plugin uploads applications in the state Development, which is typically only accessible to developers. Once a developer is satisfied with his work, he can manually move the version to Review state, using the appstore's web interface. After a version has passed a review process it can be moved to Release state, making it available to configured end users.
 
@@ -41,16 +38,30 @@ If developers already test builds on their local machines, you might want to ski
 
 It is also possible to skip the review process altogether by uploading applications directly to Release state. Usually not recommended unless you want all of your users to become beta testers. Or you're just that confident in your own abilities.
 
-License
--------
+## Development
+
+If you want to get involved with the plugin's development, here are some resources to get you started: [Jenkins Android test project](jenkins-android-test/README.md). If you're not a developer, you can still help us by providing bug reports or other feedback.
+
+## License
+
+Apache License, Version 2.0
+```
+Copyright 2013-2016 M-Way Solutions GmbH
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
- http://www.apache.org/licenses/LICENSE-2.0
+     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+```
+
+## Maintainers
+
+- [Markus Pfeiffer](https://github.com/mpfeiffermway) (M-Way Solutions GmbH) – 2013-2016
+
