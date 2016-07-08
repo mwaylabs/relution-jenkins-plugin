@@ -101,7 +101,9 @@ public class SingleRequestUploader implements Uploader {
         final File app = new File(fileSet.getDirectoryScanner().getBasedir(), fileName);
         final ApiResponse upload = this.upload(artifact, app, changelog);
 
-        this.verifyUpload(upload);
+        if (!this.verifyUpload(upload)) {
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
+        }
     }
 
     private ApiResponse upload(final Artifact artifact, final File app, final File changelog)
