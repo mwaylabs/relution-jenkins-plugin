@@ -68,7 +68,7 @@ public class SingleRequestUploader implements Uploader {
     private void publish(final Artifact artifact, final FileSet fileSet) throws InterruptedException {
         if (fileSet == null) {
             this.log.write(this, "No build artifacts found, upload failed.");
-            Builds.setResult(artifact, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.NOT_BUILT, this.log);
             return;
         }
 
