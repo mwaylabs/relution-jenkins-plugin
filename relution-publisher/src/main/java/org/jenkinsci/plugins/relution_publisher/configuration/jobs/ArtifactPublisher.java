@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.relution_publisher.builder.ArtifactFileUploader;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.Store;
 import org.jenkinsci.plugins.relution_publisher.configuration.global.StoreConfiguration;
+import org.jenkinsci.plugins.relution_publisher.logging.BuildLog;
 import org.jenkinsci.plugins.relution_publisher.logging.Log;
 import org.jenkinsci.plugins.relution_publisher.model.UploadMode;
 import org.jenkinsci.plugins.relution_publisher.util.Builds;
@@ -79,7 +80,7 @@ public class ArtifactPublisher extends Recorder {
     @Override
     public boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
 
-        final Log log = new Log(listener);
+        final Log log = new BuildLog(listener);
         log.write();
 
         if (this.publications == null) {
