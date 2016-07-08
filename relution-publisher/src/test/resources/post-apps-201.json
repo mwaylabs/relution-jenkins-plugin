@@ -1,0 +1,148 @@
+{
+    "status": "0",
+    "message": "App created successfully",
+    "errors": {},
+    "exception": null,
+    "total": 1,
+    "results": [
+        {
+            "uuid": "DDD1D28A-B59E-4304-B10E-5EE3D1A9D6AF",
+            "organizationUuid": "07C9A86A-DA15-4CC8-9B6D-A21609C8540E",
+            "type": "NATIVE",
+            "defaultName": "Jenkins Android test",
+            "internalName": "com.mwaysolutions.jenkinsandroidtest",
+            "country": null,
+            "categories": [],
+            "versions": [
+                {
+                    "uuid": "2C0D7FD5-74C5-4F87-A1B9-DB96A3AA8453",
+                    "appUuid": "DDD1D28A-B59E-4304-B10E-5EE3D1A9D6AF",
+                    "releaseStatus": "DEVELOPMENT",
+                    "versionName": "relution-publisher-1.23-3-g302eef8-feature_add-test-android-app",
+                    "versionCode": 1,
+                    "downloadCount": 0,
+                    "link": null,
+                    "screenshots": [],
+                    "icon": {
+                        "uuid": "E58B0750-619A-4A21-906B-D9F8E0E8AE2D",
+                        "name": "ic_launcher.png",
+                        "contentType": "image/png",
+                        "size": 4366,
+                        "modificationDate": 1467968221000,
+                        "downloadCount": 0,
+                        "hashcode": "6pjIPwKEBPETQcDGRmd0Bw==",
+                        "link": "/relution/api/v1/files/E58B0750-619A-4A21-906B-D9F8E0E8AE2D/content",
+                        "properties": {}
+                    },
+                    "platforms": [
+                        "ANDROID"
+                    ],
+                    "keywords": {},
+                    "constraints": [
+                        {
+                            "name": "osversion",
+                            "value": "2.3.3",
+                            "type": "string"
+                        },
+                        {
+                            "name": "osversionnumber",
+                            "value": 2000300030000,
+                            "type": "long"
+                        },
+                        {
+                            "name": "require.sw.api.min",
+                            "value": 10,
+                            "type": "long"
+                        },
+                        {
+                            "name": "require.sw.api.opt",
+                            "value": 24,
+                            "type": "long"
+                        }
+                    ],
+                    "copyright": null,
+                    "developerName": null,
+                    "publisherId": null,
+                    "developerWeb": null,
+                    "developerEmail": null,
+                    "createdBy": "ppp",
+                    "creationDate": 1467968221147,
+                    "modifiedBy": "ppp",
+                    "modificationDate": 1467968221147,
+                    "assigneeUuid": null,
+                    "workflowStep": null,
+                    "expirationDate": null,
+                    "provisioningInfo": {
+                        "applicationIdentifierPrefix": null,
+                        "creationDate": null,
+                        "expirationDate": null,
+                        "entitlements": {},
+                        "name": null,
+                        "teamName": null
+                    },
+                    "features": [],
+                    "changelog": {},
+                    "rating": 0,
+                    "ratingCount": 0,
+                    "description": {},
+                    "installCount": 0,
+                    "file": {
+                        "uuid": "16083F49-8A5A-49B8-9134-32F22558FC4E",
+                        "name": "app-v1.apk",
+                        "contentType": "application/vnd.android.package-archive",
+                        "size": 1263954,
+                        "modificationDate": 1467968221094,
+                        "downloadCount": 0,
+                        "hashcode": "NZQa6wXmmqliTicr9dwWew==",
+                        "link": "/relution/api/v1/files/16083F49-8A5A-49B8-9134-32F22558FC4E/content",
+                        "properties": {}
+                    },
+                    "name": {
+                        "en_US": "Jenkins Android test",
+                        "de_DE": "Jenkins Android test"
+                    },
+                    "hiddenGroups": []
+                }
+            ],
+            "createdBy": "ppp",
+            "creationDate": 1467968221147,
+            "modifiedBy": "ppp",
+            "modificationDate": 1467968221147,
+            "rating": 0,
+            "ratingCount": 0,
+            "downloadCount": 0,
+            "autoUpdate": false,
+            "externalId": null,
+            "priceType": "FREE",
+            "requested": false,
+            "requestCount": 0,
+            "currency": null,
+            "price": 0,
+            "securityRating": null,
+            "securityRatingPending": false,
+            "canUpdateSecurityRating": false,
+            "expirationDate": null,
+            "environment": null,
+            "acl": {
+                "DEVELOPMENT": [
+                    "644E01EC-1235-4CD1-9F4C-1FC56D026E27:r",
+                    "972C0997-20B9-45DA-8233-BBDC13C31CAE:rw"
+                ],
+                "ARCHIVE": [
+                    "972C0997-20B9-45DA-8233-BBDC13C31CAE:rw"
+                ],
+                "REVIEW": [
+                    "0F213DB7-A607-4412-8A1A-E602B62CDD3D:w",
+                    "644E01EC-1235-4CD1-9F4C-1FC56D026E27:rw",
+                    "972C0997-20B9-45DA-8233-BBDC13C31CAE:rw"
+                ],
+                "RELEASE": [
+                    "0F213DB7-A607-4412-8A1A-E602B62CDD3D:r",
+                    "644E01EC-1235-4CD1-9F4C-1FC56D026E27:rw",
+                    "65EA7149-E95D-4810-AA7F-6CFC4FC7A5E5:r",
+                    "972C0997-20B9-45DA-8233-BBDC13C31CAE:rw"
+                ]
+            }
+        }
+    ]
+}

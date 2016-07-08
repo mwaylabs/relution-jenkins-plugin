@@ -1,0 +1,18 @@
+{
+    "status": "-1",
+    "message": "Version already exists. Please delete the old one to upload the same version again.",
+    "errors": {
+        "2047": "Version already exists. Please delete the old one to upload the same version again."
+    },
+    "exception": {
+        "className": "com.mwaysolutions.relution.common.domain.RelutionException",
+        "cause": null,
+        "errorCode": "VERSION_ALREADY_EXISTS",
+        "httpStatus": 422,
+        "message": "Version already exists. Please delete the old one to upload the same version again.",
+        "localizedMessage": "Version already exists. Please delete the old one to upload the same version again.",
+        "suppressed": []
+    },
+    "total": 0,
+    "results": []
+}
