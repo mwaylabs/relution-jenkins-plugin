@@ -22,7 +22,7 @@ public class MockLog implements Log {
 
     @Override
     public void write() {
-        // Do nothing
+        System.out.println();
     }
 
     @Override
