@@ -68,7 +68,7 @@ public class SingleRequestUploader implements Uploader {
     private void publish(final Artifact artifact, final FileSet fileSet) throws InterruptedException {
         if (fileSet == null) {
             this.log.write(this, "No build artifacts found, upload failed.");
-            Builds.setResult(artifact, Result.UNSTABLE, this.log);
+            Builds.setResult(artifact, Result.NOT_BUILT, this.log);
             return;
         }
 
@@ -101,7 +101,9 @@ public class SingleRequestUploader implements Uploader {
         final File app = new File(fileSet.getDirectoryScanner().getBasedir(), fileName);
         final ApiResponse upload = this.upload(artifact, app, changelog);
 
-        this.verifyUpload(upload);
+        if (!this.verifyUpload(upload)) {
+            Builds.setResult(artifact, Result.UNSTABLE, this.log);
+        }
     }
 
     private ApiResponse upload(final Artifact artifact, final File app, final File changelog)
